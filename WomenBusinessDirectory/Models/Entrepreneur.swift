@@ -10,17 +10,16 @@ import SwiftData
 
 @Model
 class Entrepreneur: Identifiable {
-    @Attribute(.unique)
-    var id = UUID()
-    var firstName: String
-    var lastName: String
+    @Attribute(.unique) var id = UUID()
+    var fullName: String
     var image: String
     var bioDescr: String
+    var companies: [Company]
     
-    init(firstName: String, lastName: String, image: String, bioDescr: String) {
-        self.firstName = firstName
-        self.lastName = lastName
+  init(fullName: String, image: String, bioDescr: String, companies: [Company]) {
+        self.fullName = fullName
         self.image = image
         self.bioDescr = bioDescr
+        self.companies = companies
     }
 }

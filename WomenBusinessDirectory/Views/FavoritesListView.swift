@@ -8,11 +8,12 @@
 import SwiftUI
 
 struct FavoritesListView: View {
-    var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
-    }
+  var body: some View {
+    Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+  }
 }
 
 #Preview {
-    FavoritesListView()
+  FavoritesListView()
+    .environment(\.modelContext, createPreviewModelContainer().mainContext)
 }

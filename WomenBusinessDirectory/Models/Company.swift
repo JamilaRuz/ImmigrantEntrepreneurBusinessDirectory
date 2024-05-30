@@ -11,8 +11,7 @@ import SwiftUI
 
 @Model
 class Company: Identifiable {
-    @Attribute(.unique)
-    var id = UUID()
+    @Attribute(.unique) var id = UUID()
     var name: String
     var logoImg: String
     var aboutUs: String
@@ -23,15 +22,15 @@ class Company: Identifiable {
     var workHours: String
     var directions: String
     var category: Category
-    var entrepreneur: Entrepreneur
     var isFavorite = false
+  @Relationship(inverse: \Entrepreneur.companies) var entrepreneurs: [Entrepreneur]
     
-    init(name: String, logoImg: String, aboutUs: String, dateFounded: String, entrepreneur: Entrepreneur, address: String, phoneNum: String, email: String, workHours: String, directions: String, category: Category, isFavorite: Bool) {
+    init(name: String, logoImg: String, aboutUs: String, dateFounded: String, entrepreneurs: [Entrepreneur], address: String, phoneNum: String, email: String, workHours: String, directions: String, category: Category, isFavorite: Bool) {
         self.name = name
         self.logoImg = logoImg
         self.dateFounded = dateFounded
         self.aboutUs = aboutUs
-        self.entrepreneur = entrepreneur
+        self.entrepreneurs = entrepreneurs
         self.address = address
         self.phoneNum = phoneNum
         self.email = email

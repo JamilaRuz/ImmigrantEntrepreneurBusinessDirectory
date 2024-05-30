@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8D4B959B2BF80F8800A0AF45 /* AddCompanyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D4B959A2BF80F8800A0AF45 /* AddCompanyView.swift */; };
+		8D4D7EAF2C091B7800FF7EF5 /* StubData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D4D7EAE2C091B7800FF7EF5 /* StubData.swift */; };
+		8DAECA452C014B240037A601 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DAECA442C014B240037A601 /* ProfileView.swift */; };
+		8DAECA472C018AF20037A601 /* AddProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DAECA462C018AF20037A601 /* AddProfileView.swift */; };
 		8DDB66FD2BC9981D00D9A2C8 /* WomenBusinessDirectoryApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DDB66FC2BC9981D00D9A2C8 /* WomenBusinessDirectoryApp.swift */; };
 		8DDB66FF2BC9981D00D9A2C8 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DDB66FE2BC9981D00D9A2C8 /* ContentView.swift */; };
 		8DDB67032BC9982000D9A2C8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8DDB67022BC9982000D9A2C8 /* Assets.xcassets */; };
@@ -22,6 +26,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		8D4B959A2BF80F8800A0AF45 /* AddCompanyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCompanyView.swift; sourceTree = "<group>"; };
+		8D4D7EAE2C091B7800FF7EF5 /* StubData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StubData.swift; sourceTree = "<group>"; };
+		8DAECA442C014B240037A601 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
+		8DAECA462C018AF20037A601 /* AddProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddProfileView.swift; sourceTree = "<group>"; };
 		8DDB66F92BC9981D00D9A2C8 /* WomenBusinessDirectory.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WomenBusinessDirectory.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8DDB66FC2BC9981D00D9A2C8 /* WomenBusinessDirectoryApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WomenBusinessDirectoryApp.swift; sourceTree = "<group>"; };
 		8DDB66FE2BC9981D00D9A2C8 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -48,6 +56,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		8D4D7EB02C091B9500FF7EF5 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				8D4D7EAE2C091B7800FF7EF5 /* StubData.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
 		8DDB66F02BC9981D00D9A2C8 = {
 			isa = PBXGroup;
 			children = (
@@ -70,6 +86,7 @@
 				8DDB66FC2BC9981D00D9A2C8 /* WomenBusinessDirectoryApp.swift */,
 				8DDB67172BC99FF600D9A2C8 /* Models */,
 				8DDB67122BC99F6F00D9A2C8 /* Views */,
+				8D4D7EB02C091B9500FF7EF5 /* Utils */,
 				8DDB67022BC9982000D9A2C8 /* Assets.xcassets */,
 				8DDB67042BC9982000D9A2C8 /* Preview Content */,
 			);
@@ -91,6 +108,9 @@
 				8DDB670C2BC99DF900D9A2C8 /* DirectoryListView.swift */,
 				8DDB671C2BCD742300D9A2C8 /* CardView.swift */,
 				8DDB67182BCADBF500D9A2C8 /* CompaniesListView.swift */,
+				8D4B959A2BF80F8800A0AF45 /* AddCompanyView.swift */,
+				8DAECA442C014B240037A601 /* ProfileView.swift */,
+				8DAECA462C018AF20037A601 /* AddProfileView.swift */,
 				8DDB671A2BCADE6200D9A2C8 /* CompanyDetailView.swift */,
 				8DDB67102BC99E3A00D9A2C8 /* EventsListView.swift */,
 				8DDB670E2BC99E2500D9A2C8 /* FavoritesListView.swift */,
@@ -181,12 +201,16 @@
 				8DDB670F2BC99E2500D9A2C8 /* FavoritesListView.swift in Sources */,
 				8DDB67112BC99E3A00D9A2C8 /* EventsListView.swift in Sources */,
 				8DDB66FF2BC9981D00D9A2C8 /* ContentView.swift in Sources */,
+				8DAECA452C014B240037A601 /* ProfileView.swift in Sources */,
 				8DDB671D2BCD742300D9A2C8 /* CardView.swift in Sources */,
 				8DDB670D2BC99DF900D9A2C8 /* DirectoryListView.swift in Sources */,
+				8D4B959B2BF80F8800A0AF45 /* AddCompanyView.swift in Sources */,
 				8DDB67162BC99FE700D9A2C8 /* Company.swift in Sources */,
 				8DDB67142BC99FD200D9A2C8 /* Entrepreneur.swift in Sources */,
 				8DDB671B2BCADE6200D9A2C8 /* CompanyDetailView.swift in Sources */,
+				8DAECA472C018AF20037A601 /* AddProfileView.swift in Sources */,
 				8DDB66FD2BC9981D00D9A2C8 /* WomenBusinessDirectoryApp.swift in Sources */,
+				8D4D7EAF2C091B7800FF7EF5 /* StubData.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -65,7 +65,6 @@ struct CompaniesListView: View {
 }
 
 #Preview {
-    CompaniesListView(category: Category(name: "Breakfasts", image: "breakfast1"))
-        .modelContainer(for: Company.self, inMemory: true)
+  CompaniesListView(category: createStubCompanies()[0].category)
+    .environment(\.modelContext, createPreviewModelContainer().mainContext)
 }
-
