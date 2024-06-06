@@ -6,14 +6,33 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct ProfileView: View {
+  @Environment(\.modelContext) var modelContext
+  
+  var entrepreneur: Entrepreneur
+  
   var body: some View {
-    Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+    NavigationStack {
+      if entrepreneur.fullName.isEmpty && entrepreneur.bioDescr.isEmpty && entrepreneur.companies.isEmpty {
+        Text("Fill out Profile first")
+          .foregroundColor(.red)
+          .font(.headline)
+//        NavigationLink("Edit Profile", destination: EditProfileView(entrepreneur: entrepreneur))
+      } else {
+        Text(entrepreneur.fullName)
+        Text(entrepreneur.bioDescr)
+        List(entrepreneur.companies, id: \.self) { company in
+          Text(company.name)
+        }
+      }
+    }
+    .navigationTitle("Profile View")
   }
 }
 
 #Preview {
-  ProfileView()
+  ProfileView(entrepreneur: createStubEntrepreneurs()[0])
     .environment(\.modelContext, createPreviewModelContainer().mainContext)
 }

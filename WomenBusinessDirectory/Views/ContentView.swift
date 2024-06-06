@@ -9,42 +9,26 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
-    var body: some View {
-        TabView {
-            DirectoryListView()
-                .tabItem {
-                    Label("Directories", systemImage: "newspaper")
-                }
-            
-            EventsListView()
-                .tabItem {
-                    Label("Events", systemImage: "list.bullet.rectangle")
-                }
-            
-            FavoritesListView()
-                .tabItem {
-                    Label("Favourites", systemImage: "star.square")
-                }
+  @State var entrepreneur: Entrepreneur?
+  
+  var body: some View {
+    TabView {
+      DirectoryListView(entrepreneur: entrepreneur)
+        .tabItem {
+          Label("Directories", systemImage: "newspaper")
         }
-//        .onAppear() {
-//            UITabBar.appearance().backgroundColor = UIColor(.lightPink)
-//        }
+      
+      EventsListView()
+        .tabItem {
+          Label("Events", systemImage: "list.bullet.rectangle")
+        }
+      
+      FavoritesListView()
+        .tabItem {
+          Label("Favourites", systemImage: "star.square")
+        }
     }
-
-//    private func addItem() {
-//        withAnimation {
-//            let newItem = Item(timestamp: Date())
-//            modelContext.insert(newItem)
-//        }
-//    }
-//
-//    private func deleteItems(offsets: IndexSet) {
-//        withAnimation {
-//            for index in offsets {
-//                modelContext.delete(items[index])
-//            }
-//        }
-//    }
+  }
 }
 
 #Preview {

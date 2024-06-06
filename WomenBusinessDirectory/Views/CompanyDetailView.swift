@@ -36,14 +36,14 @@ struct CompanyDetailView: View {
             Text("About us")
               .font(.headline)
             Spacer()
-            Button(action: {
-              company.isFavorite.toggle()
-            }) {
-              Image(systemName: company.isFavorite ? "heart.fill" : "heart")
-                .resizable()
-                .tint(Color.red)
-                .frame(width: 30, height: 30)
-            }
+//            Button(action: {
+//              company.isFavorite.toggle()
+//            }) {
+//              Image(systemName: company.isFavorite ? "heart.fill" : "heart")
+//                .resizable()
+//                .tint(Color.red)
+//                .frame(width: 30, height: 30)
+//            }
           }
           Text(company.aboutUs)
             .font(.body)

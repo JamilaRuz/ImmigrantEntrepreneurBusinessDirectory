@@ -10,7 +10,10 @@ import SwiftData
 
 struct DirectoryListView: View {
   @Environment(\.modelContext) var modelContext
+  
   @Query(sort: \Company.name, order: .forward) private var companies: [Company]
+  
+  let entrepreneur: Entrepreneur?
   
   let categories = [
     Category(name: "Media & Digital Services", image: "digital_marketing"),
@@ -44,8 +47,14 @@ struct DirectoryListView: View {
       .toolbar {
         ToolbarItem(placement: .navigationBarTrailing) {
           Menu {
-            NavigationLink(destination: AddProfileView()) {
-              Label("Profile", systemImage: "person")
+            if let entrepreneur = entrepreneur {
+              NavigationLink(destination: EditProfileView(entrepreneur: entrepreneur)) {
+                Label("Profile", systemImage: "person")
+              }
+            } else {
+              NavigationLink(destination: LoginView()) {
+                Label("Sign In / Sign Up", systemImage: "person")
+              }
             }
           } label: {
             Image(systemName: "ellipsis.circle")
@@ -70,6 +79,6 @@ struct DirectoryListView: View {
 }
 
 #Preview {
-  DirectoryListView()
+  DirectoryListView(entrepreneur: nil)
     .environment(\.modelContext, createPreviewModelContainer().mainContext)
 }

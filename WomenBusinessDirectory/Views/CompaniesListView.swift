@@ -39,14 +39,14 @@ struct CompaniesListView: View {
                                     Text(company.name)
                                         .font(.system(size: 18, weight: .medium))
                                     
-                                    HStack {
-                                        if company.isFavorite {
-                                            Image(systemName: "heart.fill")
-                                                .foregroundColor(.accentColor)
-                                        }
-                                        Text(company.address)
-                                            .font(.system(size: 14, weight: .regular))
-                                    }
+//                                    HStack {
+//                                        if company.isFavorite {
+//                                            Image(systemName: "heart.fill")
+//                                                .foregroundColor(.accentColor)
+//                                        }
+//                                        Text(company.address)
+//                                            .font(.system(size: 14, weight: .regular))
+//                                    }
                                 }
                                 .padding(.horizontal, 5)
                             }
