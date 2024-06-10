@@ -8,16 +8,10 @@
 import SwiftUI
 import SwiftData
 
-extension View {
-  func applyTextFieldStyle() -> some View {
-    self.modifier(TextFieldStyleModifier())
-    
-  }
-}
-
 struct LoginView: View {
   @State var email: String = ""
   @State var password: String = ""
+  @EnvironmentObject var viewModel: AuthViewModel
   
   var body: some View {
     NavigationStack {
@@ -49,7 +43,9 @@ struct LoginView: View {
         
         // sign in button
         Button {
-          print("Login button tapped")
+          Task {
+            try await viewModel.signIn(email: email, password: password)
+          }
         } label: {
           HStack {
             Text("Sign in")
@@ -85,5 +81,7 @@ struct LoginView: View {
 }
 
 #Preview {
-  LoginView()
+    LoginView()
+      .environment(\.modelContext, createPreviewModelContainer().mainContext)
 }
+

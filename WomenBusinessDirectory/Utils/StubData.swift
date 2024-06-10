@@ -47,15 +47,19 @@ import SwiftData
 
 func createStubEntrepreneurs() -> [Entrepreneur] {
   let entrepreneur1 = Entrepreneur(
+    id: "1",
     fullName: "Alice Johnson",
+    email: "test@email.com",
 //    profileImage: "alice.jpg",
     bioDescr: "Tech entrepreneur",
     companies: []
   )
   
   let entrepreneur2 = Entrepreneur(
+    id: "2",
     fullName: "Bob Smith",
 //    profileImage: "bob.jpg",
+    email: "test@email.com",
     bioDescr: "Green energy pioneer",
     companies: []
   )
@@ -64,15 +68,19 @@ func createStubEntrepreneurs() -> [Entrepreneur] {
 
 func createStubCompanies() -> [Company] {
   let entrepreneur1 = Entrepreneur(
+    id: "3",
     fullName: "Alice Johnson",
+    email: "test@email.com",
 //    profileImage: "alice.jpg",
     bioDescr: "Tech entrepreneur",
     companies: []
   )
   
   let entrepreneur2 = Entrepreneur(
+    id: "4",
     fullName: "Bob Smith",
 //    profileImage: "bob.jpg",
+    email: "test@email.com",
     bioDescr: "Green energy pioneer",
     companies: []
   )

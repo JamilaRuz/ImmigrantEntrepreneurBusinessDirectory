@@ -6,13 +6,19 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct ProfileView: View {
+  @Environment(\.modelContext) var modelContext
+  
+  var entrepreneur: Entrepreneur
+
     var body: some View {
       List {
         Section() {
           HStack {
-            Text("MJ")
+//            Text(Entrepreneur.MOCK_USER.initials)
+            Text(entrepreneur.initials)
               .font(.title)
               .fontWeight(.semibold)
               .foregroundColor(.white)
@@ -56,5 +62,6 @@ struct ProfileView: View {
 }
 
 #Preview {
-    ProfileView()
+  ProfileView(entrepreneur: createStubEntrepreneurs()[0])
+    .environment(\.modelContext, createPreviewModelContainer().mainContext)
 }

@@ -6,13 +6,15 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct RegisterView: View {
-  @Environment(\.dismiss) var dismiss
   @State var email: String = ""
   @State var fullName: String = ""
   @State var password: String = ""
   @State var confirmPassword: String = ""
+  @Environment(\.dismiss) var dismiss
+  @EnvironmentObject var viewModel: AuthViewModel
   
     var body: some View {
       VStack {
@@ -56,7 +58,13 @@ struct RegisterView: View {
       // sign up button
       
       Button {
-        print("Sign up button tapped")
+        Task {
+          do {
+            try await viewModel.signUp(email: email, password: password, fullName: fullName)
+          } catch {
+            print("Error signing up: \(error)")
+          }
+        }
       } label: {
         HStack {
           Text("Sign up")
@@ -87,5 +95,6 @@ struct RegisterView: View {
 }
 
 #Preview {
-    RegisterView()
+  RegisterView()
+    .environment(\.modelContext, createPreviewModelContainer().mainContext)
 }

@@ -57,9 +57,10 @@ struct DirectoryListView: View {
               }
             }
           } label: {
-            Image(systemName: "ellipsis.circle")
-              .font(.title)
-              .foregroundColor(.black)
+            Image(systemName: "sidebar.left")
+              .resizable()
+              .frame(width: 24, height: 24)
+              .padding(.vertical, 20)
               .accessibilityLabel("Menu")
           }
         }
