@@ -12,6 +12,7 @@
 		8D3BE6172C17457400275033 /* FirebaseFirestoreSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 8D3BE6162C17457400275033 /* FirebaseFirestoreSwift */; };
 		8D3BE6192C17457400275033 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 8D3BE6182C17457400275033 /* FirebaseStorage */; };
 		8D3BE61E2C17474E00275033 /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D3BE61D2C17474E00275033 /* AuthViewModel.swift */; };
+		8D3BE6202C176F0100275033 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 8D3BE61F2C176F0100275033 /* .gitignore */; };
 		8D4B959B2BF80F8800A0AF45 /* AddCompanyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D4B959A2BF80F8800A0AF45 /* AddCompanyView.swift */; };
 		8D4D7EAF2C091B7800FF7EF5 /* StubData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D4D7EAE2C091B7800FF7EF5 /* StubData.swift */; };
 		8DAECA452C014B240037A601 /* EntrepreneurView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DAECA442C014B240037A601 /* EntrepreneurView.swift */; };
@@ -38,6 +39,7 @@
 
 /* Begin PBXFileReference section */
 		8D3BE61D2C17474E00275033 /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
+		8D3BE61F2C176F0100275033 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		8D4B959A2BF80F8800A0AF45 /* AddCompanyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCompanyView.swift; sourceTree = "<group>"; };
 		8D4D7EAE2C091B7800FF7EF5 /* StubData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StubData.swift; sourceTree = "<group>"; };
 		8DAECA442C014B240037A601 /* EntrepreneurView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntrepreneurView.swift; sourceTree = "<group>"; };
@@ -104,6 +106,7 @@
 		8DDB66F02BC9981D00D9A2C8 = {
 			isa = PBXGroup;
 			children = (
+				8D3BE61F2C176F0100275033 /* .gitignore */,
 				8DDB66FB2BC9981D00D9A2C8 /* WomenBusinessDirectory */,
 				8DDB66FA2BC9981D00D9A2C8 /* Products */,
 			);
@@ -272,6 +275,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8DDB67062BC9982000D9A2C8 /* Preview Assets.xcassets in Resources */,
+				8D3BE6202C176F0100275033 /* .gitignore in Resources */,
 				8DDB67032BC9982000D9A2C8 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
