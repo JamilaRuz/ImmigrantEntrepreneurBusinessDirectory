@@ -9,24 +9,35 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
+  @EnvironmentObject var viewModel: AuthViewModel
   @State var entrepreneur: Entrepreneur?
   
   var body: some View {
-    TabView {
-      DirectoryListView(entrepreneur: entrepreneur)
-        .tabItem {
-          Label("Directories", systemImage: "newspaper")
+    Group {
+      if viewModel.userSession != nil {
+        if let entrepreneur = entrepreneur {
+          ProfileView(entrepreneur: entrepreneur)
+          
+          TabView {
+            DirectoryListView(entrepreneur: entrepreneur)
+              .tabItem {
+                Label("Directories", systemImage: "newspaper")
+              }
+            
+            EventsListView()
+              .tabItem {
+                Label("Events", systemImage: "list.bullet.rectangle")
+              }
+            
+            FavoritesListView()
+              .tabItem {
+                Label("Favourites", systemImage: "star.square")
+              }
+          }
         }
-      
-      EventsListView()
-        .tabItem {
-          Label("Events", systemImage: "list.bullet.rectangle")
-        }
-      
-      FavoritesListView()
-        .tabItem {
-          Label("Favourites", systemImage: "star.square")
-        }
+      } else {
+        LoginView()
+      }
     }
   }
 }

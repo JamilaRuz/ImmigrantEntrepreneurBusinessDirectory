@@ -29,6 +29,13 @@ class AuthViewModel: ObservableObject {
   }
   
   func signUp(email: String, password: String, fullName: String) async throws {
+    do {
+      let result = try await Auth.auth().createUser(withEmail: email, password: password)
+      self.userSession = result.user
+      let user = Entrepreneur(id: result.user.uid, fullName: fullName, email: email, bioDescr: nil, companies: [])
+    } catch {
+      print("Error signing up: \(error)")
+    }
 //    isAuthenticating = true
 //    Auth.auth().createUser(withEmail: email, password: password) { [weak self] result, error in
 //      self?.isAuthenticating = false

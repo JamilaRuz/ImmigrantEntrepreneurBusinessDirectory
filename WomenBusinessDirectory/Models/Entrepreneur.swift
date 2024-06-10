@@ -13,7 +13,7 @@ class Entrepreneur: Identifiable {
   let id: String
   var fullName: String
   let email: String
-  let bioDescr: String
+  let bioDescr: String?
   
   @Attribute(.externalStorage)
   var profileImage: Data?
@@ -30,7 +30,7 @@ class Entrepreneur: Identifiable {
   @Relationship(deleteRule: .cascade, inverse: \Company.entrepreneur)
   var companies: [Company]
   
-  init(id: String, fullName: String, email: String, bioDescr: String, companies: [Company]) {
+  init(id: String, fullName: String, email: String, bioDescr: String? = nil, companies: [Company] = []) {
     self.id = id
     self.fullName = fullName
     self.email = email
