@@ -22,7 +22,7 @@ struct EditProfileView: View {
   init(entrepreneur: Entrepreneur) {
     self.entrepreneur = entrepreneur
     _entrepreneurFullName = State(initialValue: entrepreneur.fullName)
-    _bioDescription = State(initialValue: entrepreneur.bioDescr)
+    _bioDescription = State(initialValue: entrepreneur.bioDescr ?? "")
   }
   
   enum sourceType {
@@ -109,7 +109,7 @@ struct EditProfileView: View {
     .onAppear {
       selectedImageData = entrepreneur.profileImage
       entrepreneurFullName = entrepreneur.fullName
-      bioDescription = entrepreneur.bioDescr
+      bioDescription = entrepreneur.bioDescr ?? ""
     }
     .task(id: selectedImage) {
       if let data = try? await selectedImage?.loadTransferable(type: Data.self) {

@@ -9,7 +9,7 @@ import SwiftData
 import Foundation
 
 @Model
-class Entrepreneur: Identifiable {
+class Entrepreneur: Identifiable, Codable {
   let id: String
   var fullName: String
   let email: String
@@ -37,10 +37,36 @@ class Entrepreneur: Identifiable {
     self.bioDescr = bioDescr
     self.companies = companies
   }
-}
+  
+  // Implement the encode(to:) method to conform to Encodable
+  func encode(to encoder: Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encode(id, forKey: .id)
+    try container.encode(fullName, forKey: .fullName)
+    try container.encode(email, forKey: .email)
+    try container.encode(bioDescr, forKey: .bioDescr)
+    try container.encode(profileImage, forKey: .profileImage)
+    try container.encode(companies, forKey: .companies)
+  }
 
-//extension Entrepreneur {
-//  static var MOCK_USER: Entrepreneur {
-//    Entrepreneur(id: UUID().uuidString, fullName: "Jamila Ruzimetova", email: "test@gmail.com", bioDescr: "I am a software engineer",  companies: [])
-//  }
-//}
+  // Implement the init(from:) method to conform to Decodable
+  required init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    id = try container.decode(String.self, forKey: .id)
+    fullName = try container.decode(String.self, forKey: .fullName)
+    email = try container.decode(String.self, forKey: .email)
+    bioDescr = try container.decode(String?.self, forKey: .bioDescr)
+    profileImage = try container.decode(Data?.self, forKey: .profileImage)
+    companies = try container.decode([Company].self, forKey: .companies)
+  }
+
+  // Define the coding keys for the properties
+  private enum CodingKeys: String, CodingKey {
+    case id
+    case fullName
+    case email
+    case bioDescr
+    case profileImage
+    case companies
+  }
+}

@@ -15,26 +15,26 @@ struct ContentView: View {
   var body: some View {
     Group {
       if viewModel.userSession != nil {
-        if let entrepreneur = entrepreneur {
-          ProfileView(entrepreneur: entrepreneur)
+//        if let entrepreneur = entrepreneur {
+          ProfileView()
           
-          TabView {
-            DirectoryListView(entrepreneur: entrepreneur)
-              .tabItem {
-                Label("Directories", systemImage: "newspaper")
-              }
-            
-            EventsListView()
-              .tabItem {
-                Label("Events", systemImage: "list.bullet.rectangle")
-              }
-            
-            FavoritesListView()
-              .tabItem {
-                Label("Favourites", systemImage: "star.square")
-              }
-          }
-        }
+//          TabView {
+//            DirectoryListView(entrepreneur: entrepreneur)
+//              .tabItem {
+//                Label("Directories", systemImage: "newspaper")
+//              }
+//            
+//            EventsListView()
+//              .tabItem {
+//                Label("Events", systemImage: "list.bullet.rectangle")
+//              }
+//            
+//            FavoritesListView()
+//              .tabItem {
+//                Label("Favourites", systemImage: "star.square")
+//              }
+//          }
+//        }
       } else {
         LoginView()
       }

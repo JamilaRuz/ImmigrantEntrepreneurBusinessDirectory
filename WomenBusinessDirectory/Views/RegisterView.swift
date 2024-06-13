@@ -35,20 +35,36 @@ struct RegisterView: View {
           InputView(
             text: $fullName,
             title: "Enter your fullname",
-            placeholder: "name@example.com",
+            placeholder: "John Doe",
             isSecuredField: false)
 
           InputView(
             text: $password,
             title: "Enter password",
-            placeholder: "name@example.com",
+            placeholder: "Enter your password",
             isSecuredField: true)
           
-          InputView(
-            text: $confirmPassword,
-            title: "Confirm password",
-            placeholder: "Confirm your password",
-            isSecuredField: false)
+          ZStack(alignment: .trailing) {
+            InputView(
+              text: $confirmPassword,
+              title: "Confirm password",
+              placeholder: "Confirm your password",
+            isSecuredField: true)
+            
+            if !password.isEmpty && !confirmPassword.isEmpty {
+              if password == confirmPassword {
+                Image(systemName: "checkmark.circle.fill")
+                  .imageScale(.large)
+                  .fontWeight(.bold)
+                  .foregroundColor(Color(.systemGreen))
+              } else {
+                Image(systemName: "xmark.circle.fill")
+                  .imageScale(.large)
+                  .fontWeight(.bold)
+                  .foregroundColor(Color(.systemRed))
+              }
+            }
+          }
         }
       } //vstack
       .padding(.horizontal)
@@ -76,6 +92,8 @@ struct RegisterView: View {
       }
       .padding(.vertical, 10)
       .background(Color.green4)
+      .disabled(!formIsValid)
+      .opacity(formIsValid ? 1 : 0.5)
       .cornerRadius(8)
       .padding(.top, 20)
       
@@ -92,6 +110,18 @@ struct RegisterView: View {
         }
       }
     }
+}
+
+// MARK: - AuthenticationFormProtocol
+extension RegisterView: AuthenticationFormProtocol {
+  var formIsValid: Bool {
+    return !email.isEmpty
+    && !password.isEmpty
+    && password.count >= 6
+    && email.contains("@")
+    && confirmPassword == password
+    && !fullName.isEmpty
+  }
 }
 
 #Preview {

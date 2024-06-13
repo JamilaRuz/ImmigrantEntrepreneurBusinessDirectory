@@ -7,29 +7,17 @@
 
 import SwiftUI
 import SwiftData
-import FirebaseCore
-
-//from Firebase tutorial
-
-class AppDelegate: NSObject, UIApplicationDelegate {
-  func application(_ application: UIApplication,
-                   didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
-    FirebaseApp.configure()
-
-    return true
-  }
-}
+import Firebase
 
 @main
-
-@MainActor
 struct WomenBusinessDirectoryApp: App {
   @StateObject var viewModel = AuthViewModel()
   
-  let container = try! ModelContainer(for: Company.self)
+  init() {
+    FirebaseApp.configure()
+  }
   
-  //from Firebase tutorial
-  @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
+  let container = try! ModelContainer(for: Company.self)
   
   var body: some Scene {
     WindowGroup {
