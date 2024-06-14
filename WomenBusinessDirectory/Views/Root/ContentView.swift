@@ -16,7 +16,8 @@ struct ContentView: View {
     Group {
       if viewModel.userSession != nil {
 //        if let entrepreneur = entrepreneur {
-          ProfileView()
+        ProfileView(viewModel: viewModel)
+          .environmentObject(viewModel)
           
 //          TabView {
 //            DirectoryListView(entrepreneur: entrepreneur)

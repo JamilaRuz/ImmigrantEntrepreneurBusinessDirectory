@@ -19,7 +19,10 @@ struct LoginView: View {
         Image("firebaseLogo")
           .resizable()
           .scaledToFill()
-          .frame(width: 100, height: 120)
+          .overlay {
+            LinearGradient(gradient: Gradient(colors: [.black.opacity(0.5),.clear, Color.green4, Color.green2]), startPoint: .top, endPoint: .bottom)
+          }
+          .frame(width: 100, height: 150)
           .padding(.vertical, 20)
         
         //        form fields

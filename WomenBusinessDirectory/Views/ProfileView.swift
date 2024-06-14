@@ -2,69 +2,103 @@
 //  ProfileView.swift
 //  WomenBusinessDirectory
 //
-//  Created by Jamila Ruzimetova on 6/7/24.
+//  Created by Jamila Ruzimetova on 5/24/24.
 //
 
 import SwiftUI
 import SwiftData
+import FirebaseFirestoreSwift
 
 struct ProfileView: View {
-  @Environment(\.modelContext) var modelContext
-  @EnvironmentObject var viewModel: AuthViewModel
+  //  @Environment(\.modelContext) var modelContext
+  @StateObject var viewModel: AuthViewModel
+  @State private var isSheetPresented = false
   
-//  var entrepreneur: Entrepreneur
-
-    var body: some View {
-      if let user = viewModel.currentUser {
-        List {
-          Section() {
-            HStack {
-              Text(user.initials)
-                .font(.title)
-                .fontWeight(.semibold)
-                .foregroundColor(.white)
-                .frame(width: 72, height: 72)
-                .background(Color(.systemGray3))
-                .clipShape(Circle())
-              
-              VStack(alignment: .leading, spacing: 4) {
-                Text(user.fullName)
-                  .fontWeight(.semibold)
-                  .padding(.top, 4)
-                Text(user.email)
-                  .font(.footnote)
-                  .accentColor(.gray)
-              }
-            }
+  var entrepreneur: Entrepreneur? {
+    viewModel.currentUser
+  }
+  
+  var bioDescr: String {
+    entrepreneur?.bioDescr ?? ""
+  }
+  
+//  var profileImage: String {
+//    entrepreneur?.profileImage
+//  }
+  var image: Image? {
+    Image("person")
+  }
+  
+  var body: some View {
+    VStack {
+      if let entrepreneur = entrepreneur {
+        VStack(alignment: .center) {
+          if let image = image {
+            image
+              .resizable()
+              .scaledToFill()
+              .clipShape(Circle())
+              .frame(width: 150, height: 150)
+              .padding(.top)
+          } else {
+            Circle()
+              .frame(width: 150, height: 150)
+              .foregroundColor(.green1)
+              .background(Circle().strokeBorder(Color.green4, lineWidth: 2))
+              .padding(.top)
           }
-          Section("General") {
-            HStack {
-              SettingsRowView(imageName: "gear", title: "Version", tintColor: .gray)
-              Spacer()
-              Text("Version 1.0.0")
-                .font(.subheadline)
-                .foregroundColor(.gray)
-            }
-          }
-          Section("Account") {
-            Button {
-              viewModel.signOut()
-            } label: {
-              SettingsRowView(imageName: "arrow.left.circle.fill", title: "Sign Out", tintColor: .red)
-            }
-            Button {
-              viewModel.deleteAccount()
-            } label: {
-              SettingsRowView(imageName: "xmark.circle.fill", title: "Delete Account", tintColor: .red)
-            }
+        }
+        Text(entrepreneur.fullName)
+          .font(.title)
+        
+        TextField("Please enter your bio", text:
+                    Binding(
+                      get: { entrepreneur.bioDescr ?? "" },
+                      set: { entrepreneur.bioDescr = $0 }
+                    )
+        )
+        .padding()
+        .frame(width: UIScreen.main.bounds.width - 40, height: 100)
+        .border(Color.green4, width: 2)
+        .onSubmit() {
+          print("Save data to Firestore")
+        }
+        
+        let companies = entrepreneur.companies
+        if companies.isEmpty {
+          Text("No companies to show")
+            .padding()
+            .foregroundColor(.gray)
+            .font(.subheadline)
+        } else {
+          List(companies, id: \.self) { company in
+            Text(company.name)
           }
         }
       }
+      
+      Button("Add Company") {
+        isSheetPresented.toggle()
+      }
+      .sheet(isPresented: $isSheetPresented) {
+        FavoritesListView()
+      }
+      
+      Spacer()
     }
+    .padding()
+    .navigationTitle("Profile View")
+    .onAppear {
+      Task {
+        await viewModel.currentUser?.id
+      }
+    }
+  }
 }
 
 #Preview {
-//  ProfileView(entrepreneur: createStubEntrepreneurs()[0])
-  ProfileView()
-    .environment(\.modelContext, createPreviewModelContainer().mainContext)
+  ProfileView(viewModel: AuthViewModel())
+    .environmentObject(AuthViewModel())
+  //  ProfileView(entrepreneur: createStubEntrepreneurs()[0])
+  //    .environment(\.modelContext, createPreviewModelContainer().mainContext)
 }

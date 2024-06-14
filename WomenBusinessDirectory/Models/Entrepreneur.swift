@@ -13,7 +13,7 @@ class Entrepreneur: Identifiable, Codable {
   let id: String
   var fullName: String
   let email: String
-  let bioDescr: String?
+  var bioDescr: String?
   
   @Attribute(.externalStorage)
   var profileImage: Data?

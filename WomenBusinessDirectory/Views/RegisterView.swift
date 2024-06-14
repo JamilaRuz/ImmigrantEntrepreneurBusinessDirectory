@@ -14,7 +14,7 @@ struct RegisterView: View {
   @State var password: String = ""
   @State var confirmPassword: String = ""
   @Environment(\.dismiss) var dismiss
-  @EnvironmentObject var viewModel: AuthViewModel
+  @StateObject var viewModel = AuthViewModel()
   
     var body: some View {
       VStack {
