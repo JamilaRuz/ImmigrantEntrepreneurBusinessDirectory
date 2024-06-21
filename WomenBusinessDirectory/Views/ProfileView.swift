@@ -9,13 +9,24 @@ import SwiftUI
 import SwiftData
 import FirebaseFirestoreSwift
 
+@MainActor
+final class ProfileViewModel: ObservableObject {
+  @Published private(set) var user: AuthDataResultModel? = nil
+  
+  func loadCurrentUser() throws {
+    self.user = try AuthenticationManager.shared.getAuthenticatedUser()
+  }
+}
+
+
 struct ProfileView: View {
-  //  @Environment(\.modelContext) var modelContext
-  @StateObject var viewModel: AuthViewModel
+  @StateObject private var viewModel = ProfileViewModel()
   @State private var isSheetPresented = false
+  @Binding var showSignInView: Bool
   
   var entrepreneur: Entrepreneur? {
-    viewModel.currentUser
+//    viewModel.user
+    nil
   }
   
   var bioDescr: String {
@@ -25,12 +36,18 @@ struct ProfileView: View {
 //  var profileImage: String {
 //    entrepreneur?.profileImage
 //  }
+  
   var image: Image? {
     Image("person")
   }
   
   var body: some View {
     VStack {
+      List() {
+        if let user = viewModel.user {
+          Text(user.uid)
+        }
+      }
       if let entrepreneur = entrepreneur {
         VStack(alignment: .center) {
           if let image = image {
@@ -86,19 +103,28 @@ struct ProfileView: View {
       
       Spacer()
     }
-    .padding()
-    .navigationTitle("Profile View")
     .onAppear {
       Task {
-        await viewModel.currentUser?.id
+        try viewModel.loadCurrentUser()
       }
     }
+    .padding()
+    .navigationTitle("Profile View")
+    .toolbar {
+      ToolbarItem(placement: .navigationBarTrailing) {
+        NavigationLink {
+          SettingsView(showSignInView: $showSignInView)
+        } label: {
+          Image(systemName: "gear") // gearshape.fill
+            .font(.headline)
+        }
+      }
+    } // toolbar
   }
 }
 
 #Preview {
-  ProfileView(viewModel: AuthViewModel())
-    .environmentObject(AuthViewModel())
-  //  ProfileView(entrepreneur: createStubEntrepreneurs()[0])
-  //    .environment(\.modelContext, createPreviewModelContainer().mainContext)
+  NavigationStack {
+    ProfileView(showSignInView: .constant(true))
+  }
 }

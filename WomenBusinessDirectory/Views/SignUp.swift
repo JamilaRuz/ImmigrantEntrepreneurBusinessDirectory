@@ -8,13 +8,12 @@
 import SwiftUI
 import SwiftData
 
-struct RegisterView: View {
+struct SignUp: View {
   @State var email: String = ""
   @State var fullName: String = ""
   @State var password: String = ""
   @State var confirmPassword: String = ""
   @Environment(\.dismiss) var dismiss
-  @StateObject var viewModel = AuthViewModel()
   
     var body: some View {
       VStack {
@@ -76,7 +75,7 @@ struct RegisterView: View {
       Button {
         Task {
           do {
-            try await viewModel.signUp(email: email, password: password, fullName: fullName)
+//            try await viewModel.signUp(email: email, password: password, fullName: fullName)
           } catch {
             print("Error signing up: \(error)")
           }
@@ -92,8 +91,8 @@ struct RegisterView: View {
       }
       .padding(.vertical, 10)
       .background(Color.green4)
-      .disabled(!formIsValid)
-      .opacity(formIsValid ? 1 : 0.5)
+//      .disabled(!formIsValid)
+//      .opacity(formIsValid ? 1 : 0.5)
       .cornerRadius(8)
       .padding(.top, 20)
       
@@ -113,18 +112,18 @@ struct RegisterView: View {
 }
 
 // MARK: - AuthenticationFormProtocol
-extension RegisterView: AuthenticationFormProtocol {
-  var formIsValid: Bool {
-    return !email.isEmpty
-    && !password.isEmpty
-    && password.count >= 6
-    && email.contains("@")
-    && confirmPassword == password
-    && !fullName.isEmpty
-  }
-}
+//extension RegisterView: AuthenticationFormProtocol {
+//  var formIsValid: Bool {
+//    return !email.isEmpty
+//    && !password.isEmpty
+//    && password.count >= 6
+//    && email.contains("@")
+//    && confirmPassword == password
+//    && !fullName.isEmpty
+//  }
+//}
 
 #Preview {
-  RegisterView()
+  SignUp()
     .environment(\.modelContext, createPreviewModelContainer().mainContext)
 }

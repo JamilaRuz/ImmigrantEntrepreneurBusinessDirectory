@@ -44,27 +44,6 @@ struct DirectoryListView: View {
           }
         }
       }
-      .toolbar {
-        ToolbarItem(placement: .navigationBarTrailing) {
-          Menu {
-            if let entrepreneur = entrepreneur {
-              NavigationLink(destination: EditProfileView(entrepreneur: entrepreneur)) {
-                Label("Profile", systemImage: "person")
-              }
-            } else {
-              NavigationLink(destination: LoginView()) {
-                Label("Sign In / Sign Up", systemImage: "person")
-              }
-            }
-          } label: {
-            Image(systemName: "sidebar.left")
-              .resizable()
-              .frame(width: 24, height: 24)
-              .padding(.vertical, 20)
-              .accessibilityLabel("Menu")
-          }
-        }
-      }
       .padding()
       .navigationTitle("Business Directory")
       .frame(maxWidth: .infinity, maxHeight: .infinity)

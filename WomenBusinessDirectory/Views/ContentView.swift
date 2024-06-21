@@ -9,15 +9,15 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
-  @EnvironmentObject var viewModel: AuthViewModel
+//  @EnvironmentObject var viewModel: AuthViewModel
   @State var entrepreneur: Entrepreneur?
   
   var body: some View {
     Group {
-      if viewModel.userSession != nil {
+//      if viewModel.userSession != nil {
 //        if let entrepreneur = entrepreneur {
-        ProfileView(viewModel: viewModel)
-          .environmentObject(viewModel)
+//        ProfileView(viewModel: viewModel)
+//          .environmentObject(viewModel)
           
 //          TabView {
 //            DirectoryListView(entrepreneur: entrepreneur)
@@ -36,9 +36,9 @@ struct ContentView: View {
 //              }
 //          }
 //        }
-      } else {
-        LoginView()
-      }
+//      } else {
+//        LoginView()
+//      }
     }
   }
 }

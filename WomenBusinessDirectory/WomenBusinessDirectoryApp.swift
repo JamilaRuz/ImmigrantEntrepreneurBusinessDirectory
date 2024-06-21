@@ -6,24 +6,32 @@
 //
 
 import SwiftUI
-import SwiftData
+//import SwiftData
 import Firebase
 
 @main
 struct WomenBusinessDirectoryApp: App {
-  @StateObject var viewModel = AuthViewModel()
+  @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
   
-  init() {
-    FirebaseApp.configure()
-  }
+//  init() {
+//    FirebaseApp.configure()
+//  }
   
-  let container = try! ModelContainer(for: Company.self)
+//  let container = try! ModelContainer(for: Company.self)
   
   var body: some Scene {
     WindowGroup {
-      ContentView()
-        .environmentObject(viewModel)
+      NavigationStack {
+        RootView()
+      }
     }
-    .modelContainer(container)
+//    .modelContainer(container)
+  }
+}
+
+class AppDelegate: NSObject, UIApplicationDelegate {
+  func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+    FirebaseApp.configure()
+    return true
   }
 }
