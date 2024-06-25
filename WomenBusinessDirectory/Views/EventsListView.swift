@@ -16,5 +16,4 @@ struct EventsListView: View {
 
 #Preview {
   EventsListView()
-    .environment(\.modelContext, createPreviewModelContainer().mainContext)
 }

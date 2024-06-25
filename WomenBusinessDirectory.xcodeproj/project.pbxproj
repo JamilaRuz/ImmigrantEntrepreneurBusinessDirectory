@@ -15,6 +15,9 @@
 		8D3BE6222C1797B600275033 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8D3BE6212C1797B600275033 /* GoogleService-Info.plist */; };
 		8D4B959B2BF80F8800A0AF45 /* AddCompanyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D4B959A2BF80F8800A0AF45 /* AddCompanyView.swift */; };
 		8D4D7EAF2C091B7800FF7EF5 /* StubData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D4D7EAE2C091B7800FF7EF5 /* StubData.swift */; };
+		8D68E6CD2C2613F200D10390 /* EntrepreneurManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D68E6CC2C2613F200D10390 /* EntrepreneurManager.swift */; };
+		8D68E6CF2C2A0FD100D10390 /* SignUpEmailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D68E6CE2C2A0FD100D10390 /* SignUpEmailViewModel.swift */; };
+		8D68E6D12C2B60DD00D10390 /* AuthenticationFormProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D68E6D02C2B60DD00D10390 /* AuthenticationFormProtocol.swift */; };
 		8DAECA452C014B240037A601 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DAECA442C014B240037A601 /* ProfileView.swift */; };
 		8DAECA472C018AF20037A601 /* EditProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DAECA462C018AF20037A601 /* EditProfileView.swift */; };
 		8DDB66FD2BC9981D00D9A2C8 /* WomenBusinessDirectoryApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DDB66FC2BC9981D00D9A2C8 /* WomenBusinessDirectoryApp.swift */; };
@@ -30,9 +33,8 @@
 		8DDB671B2BCADE6200D9A2C8 /* CompanyDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DDB671A2BCADE6200D9A2C8 /* CompanyDetailView.swift */; };
 		8DDB671D2BCD742300D9A2C8 /* CardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DDB671C2BCD742300D9A2C8 /* CardView.swift */; };
 		8DDE05832C126F6A00C83EEA /* SignInEmailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DDE05822C126F6A00C83EEA /* SignInEmailView.swift */; };
-		8DDE05852C13A2CD00C83EEA /* TextFieldStyleModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DDE05842C13A2CD00C83EEA /* TextFieldStyleModifier.swift */; };
 		8DDE058D2C13AC5500C83EEA /* InputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DDE058C2C13AC5500C83EEA /* InputView.swift */; };
-		8DDE058F2C13B79000C83EEA /* SignUp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DDE058E2C13B79000C83EEA /* SignUp.swift */; };
+		8DDE058F2C13B79000C83EEA /* SignUpEmailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DDE058E2C13B79000C83EEA /* SignUpEmailView.swift */; };
 		8DDE05912C13C40A00C83EEA /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DDE05902C13C40A00C83EEA /* SettingsView.swift */; };
 		8DDE05932C150F0A00C83EEA /* SettingsRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DDE05922C150F0A00C83EEA /* SettingsRowView.swift */; };
 		8DE69ADF2C22279C00C2D6C9 /* AuthenticationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DE69ADE2C22279C00C2D6C9 /* AuthenticationManager.swift */; };
@@ -48,6 +50,9 @@
 		8D3BE6212C1797B600275033 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		8D4B959A2BF80F8800A0AF45 /* AddCompanyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCompanyView.swift; sourceTree = "<group>"; };
 		8D4D7EAE2C091B7800FF7EF5 /* StubData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StubData.swift; sourceTree = "<group>"; };
+		8D68E6CC2C2613F200D10390 /* EntrepreneurManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntrepreneurManager.swift; sourceTree = "<group>"; };
+		8D68E6CE2C2A0FD100D10390 /* SignUpEmailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpEmailViewModel.swift; sourceTree = "<group>"; };
+		8D68E6D02C2B60DD00D10390 /* AuthenticationFormProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationFormProtocol.swift; sourceTree = "<group>"; };
 		8DAECA442C014B240037A601 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		8DAECA462C018AF20037A601 /* EditProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditProfileView.swift; sourceTree = "<group>"; };
 		8DDB66F92BC9981D00D9A2C8 /* WomenBusinessDirectory.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WomenBusinessDirectory.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -64,9 +69,8 @@
 		8DDB671A2BCADE6200D9A2C8 /* CompanyDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanyDetailView.swift; sourceTree = "<group>"; };
 		8DDB671C2BCD742300D9A2C8 /* CardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardView.swift; sourceTree = "<group>"; };
 		8DDE05822C126F6A00C83EEA /* SignInEmailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInEmailView.swift; sourceTree = "<group>"; };
-		8DDE05842C13A2CD00C83EEA /* TextFieldStyleModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextFieldStyleModifier.swift; sourceTree = "<group>"; };
 		8DDE058C2C13AC5500C83EEA /* InputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputView.swift; sourceTree = "<group>"; };
-		8DDE058E2C13B79000C83EEA /* SignUp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUp.swift; sourceTree = "<group>"; };
+		8DDE058E2C13B79000C83EEA /* SignUpEmailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpEmailView.swift; sourceTree = "<group>"; };
 		8DDE05902C13C40A00C83EEA /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		8DDE05922C150F0A00C83EEA /* SettingsRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsRowView.swift; sourceTree = "<group>"; };
 		8DE69ADE2C22279C00C2D6C9 /* AuthenticationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationManager.swift; sourceTree = "<group>"; };
@@ -92,14 +96,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		8D3BE61C2C17468300275033 /* ViewModel */ = {
-			isa = PBXGroup;
-			children = (
-				8DE69ADE2C22279C00C2D6C9 /* AuthenticationManager.swift */,
-			);
-			path = ViewModel;
-			sourceTree = "<group>";
-		};
 		8D3BE6242C20BF7D00275033 /* Core */ = {
 			isa = PBXGroup;
 			children = (
@@ -109,6 +105,7 @@
 				8DE69AE82C24D9F800C2D6C9 /* Settings */,
 			);
 			name = Core;
+			path = Views;
 			sourceTree = "<group>";
 		};
 		8D4D7EB02C091B9500FF7EF5 /* Utils */ = {
@@ -117,6 +114,16 @@
 				8D4D7EAE2C091B7800FF7EF5 /* StubData.swift */,
 			);
 			path = Utils;
+			sourceTree = "<group>";
+		};
+		8D68E6CB2C2612D600D10390 /* Firestore */ = {
+			isa = PBXGroup;
+			children = (
+				8DE69ADE2C22279C00C2D6C9 /* AuthenticationManager.swift */,
+				8D68E6CC2C2613F200D10390 /* EntrepreneurManager.swift */,
+			);
+			name = Firestore;
+			path = Views;
 			sourceTree = "<group>";
 		};
 		8DDB66F02BC9981D00D9A2C8 = {
@@ -141,6 +148,9 @@
 			children = (
 				8DDE05862C13A98D00C83EEA /* App */,
 				8DDB67172BC99FF600D9A2C8 /* Models */,
+				8D3BE6242C20BF7D00275033 /* Core */,
+				8DE69AE92C24DA2F00C2D6C9 /* Authentication */,
+				8D68E6CB2C2612D600D10390 /* Firestore */,
 				8DDB67122BC99F6F00D9A2C8 /* Views */,
 				8D4D7EB02C091B9500FF7EF5 /* Utils */,
 				8DDE05872C13A9B400C83EEA /* Components */,
@@ -162,9 +172,6 @@
 		8DDB67122BC99F6F00D9A2C8 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				8D3BE6242C20BF7D00275033 /* Core */,
-				8DE69AE92C24DA2F00C2D6C9 /* Authentication */,
-				8DDE05882C13AA3C00C83EEA /* SubViews */,
 				8DDB670C2BC99DF900D9A2C8 /* DirectoryListView.swift */,
 				8DDB671C2BCD742300D9A2C8 /* CardView.swift */,
 				8DDB67182BCADBF500D9A2C8 /* CompaniesListView.swift */,
@@ -197,8 +204,8 @@
 		8DDE05872C13A9B400C83EEA /* Components */ = {
 			isa = PBXGroup;
 			children = (
-				8DDE05842C13A2CD00C83EEA /* TextFieldStyleModifier.swift */,
 				8DDE058C2C13AC5500C83EEA /* InputView.swift */,
+				8D68E6D02C2B60DD00D10390 /* AuthenticationFormProtocol.swift */,
 			);
 			name = Components;
 			sourceTree = "<group>";
@@ -208,8 +215,8 @@
 			children = (
 				8DDE05822C126F6A00C83EEA /* SignInEmailView.swift */,
 				8DE69AEC2C24DB2D00C2D6C9 /* SignInEmailViewModel.swift */,
-				8DDE058E2C13B79000C83EEA /* SignUp.swift */,
-				8D3BE61C2C17468300275033 /* ViewModel */,
+				8DDE058E2C13B79000C83EEA /* SignUpEmailView.swift */,
+				8D68E6CE2C2A0FD100D10390 /* SignUpEmailViewModel.swift */,
 			);
 			name = SubViews;
 			sourceTree = "<group>";
@@ -229,8 +236,10 @@
 			children = (
 				8DE69AE02C22364100C2D6C9 /* AuthenticationView.swift */,
 				8DE69AEA2C24DA4900C2D6C9 /* AuthenticationViewModel.swift */,
+				8DDE05882C13AA3C00C83EEA /* SubViews */,
 			);
 			name = Authentication;
+			path = Views;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -314,12 +323,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8DDE05852C13A2CD00C83EEA /* TextFieldStyleModifier.swift in Sources */,
 				8DE69AE52C2368A700C2D6C9 /* RootView.swift in Sources */,
 				8DDB67192BCADBF500D9A2C8 /* CompaniesListView.swift in Sources */,
 				8DDE05932C150F0A00C83EEA /* SettingsRowView.swift in Sources */,
 				8DE69AED2C24DB2D00C2D6C9 /* SignInEmailViewModel.swift in Sources */,
 				8DDB670F2BC99E2500D9A2C8 /* FavoritesListView.swift in Sources */,
+				8D68E6CF2C2A0FD100D10390 /* SignUpEmailViewModel.swift in Sources */,
 				8DDB67112BC99E3A00D9A2C8 /* EventsListView.swift in Sources */,
 				8DDE05832C126F6A00C83EEA /* SignInEmailView.swift in Sources */,
 				8DDB66FF2BC9981D00D9A2C8 /* ContentView.swift in Sources */,
@@ -327,14 +336,16 @@
 				8DDB671D2BCD742300D9A2C8 /* CardView.swift in Sources */,
 				8DDE058D2C13AC5500C83EEA /* InputView.swift in Sources */,
 				8DE69AEB2C24DA4900C2D6C9 /* AuthenticationViewModel.swift in Sources */,
-				8DDE058F2C13B79000C83EEA /* SignUp.swift in Sources */,
+				8DDE058F2C13B79000C83EEA /* SignUpEmailView.swift in Sources */,
 				8DDB670D2BC99DF900D9A2C8 /* DirectoryListView.swift in Sources */,
+				8D68E6D12C2B60DD00D10390 /* AuthenticationFormProtocol.swift in Sources */,
 				8D4B959B2BF80F8800A0AF45 /* AddCompanyView.swift in Sources */,
 				8DE69ADF2C22279C00C2D6C9 /* AuthenticationManager.swift in Sources */,
 				8DDB67162BC99FE700D9A2C8 /* Company.swift in Sources */,
 				8DDB67142BC99FD200D9A2C8 /* Entrepreneur.swift in Sources */,
 				8DDB671B2BCADE6200D9A2C8 /* CompanyDetailView.swift in Sources */,
 				8DAECA472C018AF20037A601 /* EditProfileView.swift in Sources */,
+				8D68E6CD2C2613F200D10390 /* EntrepreneurManager.swift in Sources */,
 				8DE69AE12C22364100C2D6C9 /* AuthenticationView.swift in Sources */,
 				8DDE05912C13C40A00C83EEA /* SettingsView.swift in Sources */,
 				8DDB66FD2BC9981D00D9A2C8 /* WomenBusinessDirectoryApp.swift in Sources */,

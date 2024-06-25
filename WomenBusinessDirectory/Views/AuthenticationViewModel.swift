@@ -17,5 +17,4 @@ final class AuthenticationViewModel: ObservableObject {
   func signInApple() async throws {
     //    try await AuthenticationManager.shared.deleteAccount()
   }
-  
 }

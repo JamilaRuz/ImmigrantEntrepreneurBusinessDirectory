@@ -1,19 +1,19 @@
 //
-//  LoginView.swift
+//  SignInEmailView.swift
 //  WomenBusinessDirectory
 //
 //  Created by Jamila Ruzimetova on 6/6/24.
 //
 
 import SwiftUI
-//import SwiftData
 
 struct SignInEmailView: View {
   
   @StateObject private var viewModel = SignInEmailViewModel()
   @Binding var showSignInView: Bool
   
-  @State private var formIsValid = false
+  @State private var showAlert = false
+  @State private var alertMessage = ""
   
   var body: some View {
     VStack {
@@ -26,7 +26,7 @@ struct SignInEmailView: View {
         .frame(width: 100, height: 150)
         .padding(.vertical, 20)
       
-      //        form fields
+      // form fields
       VStack(spacing: 25) {
         InputView(
           text: $viewModel.email,
@@ -48,21 +48,15 @@ struct SignInEmailView: View {
       // sign in button
       Button {
         Task {
-            do {
-              try await viewModel.singUp()
-              showSignInView = false
-              return
-            } catch {
-              print("Failed to sign up: \(error)")
-            }
-          
-            do {
-              try await viewModel.singIn()
-              showSignInView = false
-              return
-            } catch {
-              print("Failed to sign in: \(error)")
-            }
+          do {
+            try await viewModel.singIn()
+            showSignInView = false
+            return
+          } catch {
+            print("Failed to sign in: \(error)")
+            alertMessage = "Failed to sign in: \(error)"
+            showAlert = true
+          }
         }
       } label: {
         HStack {
@@ -75,17 +69,20 @@ struct SignInEmailView: View {
       }
       .cornerRadius(8)
       .background(Color.green4)
-//      .disabled(!formIsValid)
-//      .opacity(formIsValid ? 1 : 0.5)
+      .disabled(!formIsValid)
+      .opacity(formIsValid ? 1 : 0.5)
       .padding(.vertical, 10)
       .padding(.top, 20)
+      .alert(isPresented: $showAlert) {
+        Alert(title: Text("Error"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
+      }
       
       Spacer()
       
       // register button
       
       NavigationLink {
-        SignUp()
+        SignUpEmailView()
           .navigationBarBackButtonHidden(true)
       } label: {
         HStack {
@@ -96,6 +93,16 @@ struct SignInEmailView: View {
         }
       }
     }
+  }
+}
+
+// MARK: - AuthenticationFormProtocol
+extension SignInEmailView: AuthenticationFormProtocol {
+  var formIsValid: Bool {
+    return !viewModel.email.isEmpty
+    && !viewModel.password.isEmpty
+    && viewModel.password.count >= 6
+    && viewModel.email.contains("@")
   }
 }
 

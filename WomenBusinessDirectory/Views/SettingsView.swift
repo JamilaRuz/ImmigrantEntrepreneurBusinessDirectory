@@ -88,7 +88,6 @@ struct SettingsView: View {
 #Preview {
   //  ProfileView(entrepreneur: createStubEntrepreneurs()[0])
   SettingsView(showSignInView: .constant(true))
-    .environment(\.modelContext, createPreviewModelContainer().mainContext)
 }
 
 extension SettingsView {

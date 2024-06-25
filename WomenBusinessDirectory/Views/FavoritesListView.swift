@@ -15,5 +15,4 @@ struct FavoritesListView: View {
 
 #Preview {
   FavoritesListView()
-    .environment(\.modelContext, createPreviewModelContainer().mainContext)
 }
