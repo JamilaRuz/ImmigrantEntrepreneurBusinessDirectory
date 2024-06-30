@@ -21,9 +21,15 @@ final class SignUpEmailViewModel: ObservableObject {
     }
     
     print("Signing up...")
-    let authDataResult = try await AuthenticationManager.shared.createUser(email: email, password: password)
+    var authDataResult = try await AuthenticationManager.shared.createUser(
+      email: email, password: password
+    )
+    authDataResult.fullName = fullName
+    
+    let entrepreneur = Entrepreneur(auth: authDataResult)
     print("Before creating entrepreneur...")
-    try await EntrepreneurManager.shared.createEntrepreneur(auth: authDataResult, fullName: fullName)
+    
+    try await EntrepreneurManager.shared.createEntrepreneur(entrep: entrepreneur)
     print("After creating entrepreneur")
   }
   

@@ -13,7 +13,6 @@ func createStubEntrepreneurs() -> [Entrepreneur] {
     entrepId: "1",
     fullName: "Alice Johnson",
     email: "test@email.com",
-//    profileImage: "alice.jpg",
     bioDescr: "Tech entrepreneur",
     companyIds: []
   )
@@ -21,7 +20,6 @@ func createStubEntrepreneurs() -> [Entrepreneur] {
   let entrepreneur2 = Entrepreneur(
     entrepId: "2",
     fullName: "Bob Smith",
-//    profileImage: "bob.jpg",
     email: "test@email.com",
     bioDescr: "Green energy pioneer",
     companyIds: []

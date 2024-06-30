@@ -19,6 +19,7 @@ final class SignInEmailViewModel: ObservableObject {
     }
     
     print("Signing in...")
+    
     try await AuthenticationManager.shared.signIn(email: email, password: password)
   }
 }
