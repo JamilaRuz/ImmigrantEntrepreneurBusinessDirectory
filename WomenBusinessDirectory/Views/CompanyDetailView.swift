@@ -1,73 +1,72 @@
-////
-////  CompanyDetailView.swift
-////  WomenBusinessDirectory
-////
-////  Created by Jamila Ruzimetova on 4/13/24.
-////
 //
-//import SwiftUI
-//import SwiftData
+//  CompanyDetailView.swift
+//  WomenBusinessDirectory
 //
-//struct CompanyDetailView: View {
-//  @Environment(\.modelContext) var modelContext
-//  @Environment(\.dismiss) var dismiss
-//  var company: Company
-//  
-//  var body: some View {
-//    ScrollView {
-//      VStack {
-//        Image(company.logoImg)
-//          .resizable()
-//          .aspectRatio(contentMode: .fill)
-//          .frame(width: UIScreen.main.bounds.width, height: 300)
-//          .clipped()
-//      } //image
-//      .frame(height: 300)
-//      .background(LinearGradient(gradient: Gradient(colors: [Color(.gray).opacity(0.3), Color(.gray)]), startPoint: .top, endPoint: .bottom))
-//      
-//      VStack(spacing: 15) {
-//        Text(company.name)
-//          .font(.title)
-//          .bold()
-//          .multilineTextAlignment(.center)
-//        
-//        VStack(alignment: .leading, spacing: 5) {
-//          HStack {
-//            Text("About us")
-//              .font(.headline)
-//            Spacer()
-////            Button(action: {
-////              company.isFavorite.toggle()
-////            }) {
-////              Image(systemName: company.isFavorite ? "heart.fill" : "heart")
-////                .resizable()
-////                .tint(Color.red)
-////                .frame(width: 30, height: 30)
-////            }
-//          }
-//          Text(company.aboutUs)
-//            .font(.body)
-//            .foregroundColor(.gray)
-//        }
-//        .frame(maxWidth: .infinity, alignment: .leading)
-//        
-//        VStack(alignment: .leading, spacing: 5) {
-//          HStack {
-//            Text("Address")
-//              .font(.headline)
-//            Spacer()
-//          }
-//          Text(company.address)
-//            .font(.body)
-//            .foregroundColor(.gray)
-//        }
-//      }
-//      .padding(.horizontal, 10)
-//    }
-//    .ignoresSafeArea(.container, edges: .top)
-//  }
-//}
+//  Created by Jamila Ruzimetova on 4/13/24.
 //
-//#Preview {
-//  CompanyDetailView(company: createStubCompanies()[0])
-//}
+
+import SwiftUI
+import SwiftData
+
+struct CompanyDetailView: View {
+  @Environment(\.dismiss) var dismiss
+  var company: Company
+  @State private var selectedSegment = 0
+  
+  var body: some View {
+    ScrollView {
+      VStack {
+        //        Image(company.logoImg)
+        ZStack {
+          Image("logos/comp_logo5")
+            .resizable()
+            .aspectRatio(contentMode: .fill)
+            .frame(width: UIScreen.main.bounds.width, height: 300)
+            .clipped()
+          
+          VStack {
+            Spacer()
+            HStack {
+              Text(company.name)
+                .font(.title)
+                .fontWeight(.semibold)
+                .foregroundColor(.white)
+                .shadow(radius: 10)
+//                .padding(7)
+//                .background(Color.black.opacity(0.3))
+//                .cornerRadius(10)
+              Spacer()
+            }
+            .padding(10)
+          }
+        } //ZStack
+      } //VStack
+      .frame(height: 300)
+      .background(LinearGradient(gradient: Gradient(colors: [Color(.gray).opacity(0.3), Color(.gray)]), startPoint: .top, endPoint: .bottom))
+      
+      VStack {
+        Picker("Segments", selection: $selectedSegment) {
+          Text("Info").tag(0)
+          Text("Products").tag(1)
+          Text("Map").tag(2)
+        }
+        .pickerStyle(SegmentedPickerStyle())
+        .padding()
+        
+        if selectedSegment == 0 {
+          InfoView(company: company)
+        } else if selectedSegment == 1 {
+          ProductsView()
+        } else if selectedSegment == 2 {
+          MapView()
+        }
+      }
+      .padding()
+    }
+    .ignoresSafeArea(.container, edges: .top)
+  }
+}
+
+#Preview {
+  CompanyDetailView(company: createStubCompanies()[0])
+}

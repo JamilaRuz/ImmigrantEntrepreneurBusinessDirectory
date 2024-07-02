@@ -9,7 +9,15 @@ import Foundation
 import FirebaseFirestore
 import FirebaseFirestoreSwift
 
-class Company: Codable {
+class Company: Codable, Hashable, Equatable {
+  static func == (lhs: Company, rhs: Company) -> Bool {
+    return lhs.companyId == rhs.companyId
+  }
+  
+  func hash(into hasher: inout Hasher) {
+    hasher.combine(companyId)
+  }
+    
   var companyId: String
   let entrepId: String
   let categoryIds: [String]
@@ -73,6 +81,9 @@ final class CompanyManager {
   }
   
   func getCompany(companyId: String) async throws -> Company {
-    try await companyDocument(companyId: companyId).getDocument(as: Company.self)
+    print("Getting company with id: \(companyId)...")
+    let company = try await companyDocument(companyId: companyId).getDocument(as: Company.self)
+    print("Company loaded! \(company)")
+    return company
   }
 }

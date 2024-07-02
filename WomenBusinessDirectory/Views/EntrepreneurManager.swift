@@ -9,7 +9,7 @@ import Foundation
 import FirebaseFirestore
 import FirebaseFirestoreSwift
 
-struct Entrepreneur: Codable {
+struct Entrepreneur: Codable, Hashable {
   var entrepId: String
   var fullName: String?
   var dateCreated: Date
@@ -55,5 +55,11 @@ final class EntrepreneurManager {
 
   func getEntrepreneur(entrepId: String) async throws -> Entrepreneur {
     try await entrepDocument(entrepId: entrepId).getDocument(as: Entrepreneur.self)
+  }
+  
+  func addCompany(company: Company) async throws {
+    var entrep = try await getEntrepreneur(entrepId: company.entrepId)
+    entrep.companyIds.append(company.companyId)
+    try entrepDocument(entrepId: entrep.entrepId).setData(from: entrep, merge: false)
   }
 }

@@ -20,8 +20,12 @@
 		8D68E6D12C2B60DD00D10390 /* AuthenticationFormProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D68E6D02C2B60DD00D10390 /* AuthenticationFormProtocol.swift */; };
 		8DAECA452C014B240037A601 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DAECA442C014B240037A601 /* ProfileView.swift */; };
 		8DAECA472C018AF20037A601 /* EditProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DAECA462C018AF20037A601 /* EditProfileView.swift */; };
+		8DB694BB2C34746600DC516E /* InfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DB694BA2C34746600DC516E /* InfoView.swift */; };
+		8DB694BD2C34747500DC516E /* ProductsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DB694BC2C34747500DC516E /* ProductsView.swift */; };
+		8DB694BF2C34748300DC516E /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DB694BE2C34748300DC516E /* MapView.swift */; };
 		8DD6E8F42C30DEBF000F67DD /* CompanyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DD6E8F32C30DEBF000F67DD /* CompanyManager.swift */; };
 		8DD6E8F62C30E291000F67DD /* CategoryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DD6E8F52C30E291000F67DD /* CategoryManager.swift */; };
+		8DD6E8F82C32C79D000F67DD /* AsyncExt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DD6E8F72C32C79C000F67DD /* AsyncExt.swift */; };
 		8DDB66FD2BC9981D00D9A2C8 /* WomenBusinessDirectoryApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DDB66FC2BC9981D00D9A2C8 /* WomenBusinessDirectoryApp.swift */; };
 		8DDB66FF2BC9981D00D9A2C8 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DDB66FE2BC9981D00D9A2C8 /* ContentView.swift */; };
 		8DDB67032BC9982000D9A2C8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8DDB67022BC9982000D9A2C8 /* Assets.xcassets */; };
@@ -55,8 +59,12 @@
 		8D68E6D02C2B60DD00D10390 /* AuthenticationFormProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationFormProtocol.swift; sourceTree = "<group>"; };
 		8DAECA442C014B240037A601 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		8DAECA462C018AF20037A601 /* EditProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditProfileView.swift; sourceTree = "<group>"; };
+		8DB694BA2C34746600DC516E /* InfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfoView.swift; sourceTree = "<group>"; };
+		8DB694BC2C34747500DC516E /* ProductsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductsView.swift; sourceTree = "<group>"; };
+		8DB694BE2C34748300DC516E /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
 		8DD6E8F32C30DEBF000F67DD /* CompanyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanyManager.swift; sourceTree = "<group>"; };
 		8DD6E8F52C30E291000F67DD /* CategoryManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryManager.swift; sourceTree = "<group>"; };
+		8DD6E8F72C32C79C000F67DD /* AsyncExt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncExt.swift; sourceTree = "<group>"; };
 		8DDB66F92BC9981D00D9A2C8 /* WomenBusinessDirectory.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WomenBusinessDirectory.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8DDB66FC2BC9981D00D9A2C8 /* WomenBusinessDirectoryApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WomenBusinessDirectoryApp.swift; sourceTree = "<group>"; };
 		8DDB66FE2BC9981D00D9A2C8 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -112,6 +120,7 @@
 			isa = PBXGroup;
 			children = (
 				8D4D7EAE2C091B7800FF7EF5 /* StubData.swift */,
+				8DD6E8F72C32C79C000F67DD /* AsyncExt.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -135,6 +144,17 @@
 			);
 			name = Profile;
 			path = ..;
+			sourceTree = "<group>";
+		};
+		8DB694C02C34749500DC516E /* Company Detail Views */ = {
+			isa = PBXGroup;
+			children = (
+				8DDB671A2BCADE6200D9A2C8 /* CompanyDetailView.swift */,
+				8DB694BA2C34746600DC516E /* InfoView.swift */,
+				8DB694BC2C34747500DC516E /* ProductsView.swift */,
+				8DB694BE2C34748300DC516E /* MapView.swift */,
+			);
+			name = "Company Detail Views";
 			sourceTree = "<group>";
 		};
 		8DDB66F02BC9981D00D9A2C8 = {
@@ -188,7 +208,7 @@
 				8DDB67182BCADBF500D9A2C8 /* CompaniesListView.swift */,
 				8D4B959A2BF80F8800A0AF45 /* AddCompanyView.swift */,
 				8DAECA462C018AF20037A601 /* EditProfileView.swift */,
-				8DDB671A2BCADE6200D9A2C8 /* CompanyDetailView.swift */,
+				8DB694C02C34749500DC516E /* Company Detail Views */,
 				8DDB67102BC99E3A00D9A2C8 /* EventsListView.swift */,
 				8DDB670E2BC99E2500D9A2C8 /* FavoritesListView.swift */,
 			);
@@ -333,11 +353,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				8DE69AE52C2368A700C2D6C9 /* RootView.swift in Sources */,
+				8DB694BF2C34748300DC516E /* MapView.swift in Sources */,
 				8DD6E8F62C30E291000F67DD /* CategoryManager.swift in Sources */,
 				8DDB67192BCADBF500D9A2C8 /* CompaniesListView.swift in Sources */,
 				8DDE05932C150F0A00C83EEA /* SettingsRowView.swift in Sources */,
 				8DE69AED2C24DB2D00C2D6C9 /* SignInEmailViewModel.swift in Sources */,
 				8DDB670F2BC99E2500D9A2C8 /* FavoritesListView.swift in Sources */,
+				8DB694BD2C34747500DC516E /* ProductsView.swift in Sources */,
 				8D68E6CF2C2A0FD100D10390 /* SignUpEmailViewModel.swift in Sources */,
 				8DDB67112BC99E3A00D9A2C8 /* EventsListView.swift in Sources */,
 				8DDE05832C126F6A00C83EEA /* SignInEmailView.swift in Sources */,
@@ -345,6 +367,7 @@
 				8DAECA452C014B240037A601 /* ProfileView.swift in Sources */,
 				8DD6E8F42C30DEBF000F67DD /* CompanyManager.swift in Sources */,
 				8DDB671D2BCD742300D9A2C8 /* CardView.swift in Sources */,
+				8DD6E8F82C32C79D000F67DD /* AsyncExt.swift in Sources */,
 				8DDE058D2C13AC5500C83EEA /* InputView.swift in Sources */,
 				8DE69AEB2C24DA4900C2D6C9 /* AuthenticationViewModel.swift in Sources */,
 				8DDE058F2C13B79000C83EEA /* SignUpEmailView.swift in Sources */,
@@ -359,6 +382,7 @@
 				8DDE05912C13C40A00C83EEA /* SettingsView.swift in Sources */,
 				8DDB66FD2BC9981D00D9A2C8 /* WomenBusinessDirectoryApp.swift in Sources */,
 				8D4D7EAF2C091B7800FF7EF5 /* StubData.swift in Sources */,
+				8DB694BB2C34746600DC516E /* InfoView.swift in Sources */,
 				8DE69AE72C24D9D400C2D6C9 /* SettingsViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

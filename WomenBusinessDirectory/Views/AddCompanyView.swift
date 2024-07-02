@@ -65,6 +65,7 @@ struct AddCompanyView: View {
                 let newCompany = Company(companyId: "", entrepId: entrepreneur.entrepId, categoryIds: categoryIds, name: companyName, logoImg: logoImg, aboutUs: aboutUs, dateFounded: dateFounded, address: address, phoneNum: phoneNum, email: email, workHours: workHours, directions: directions, socialMediaFacebook: socialMediaFacebook, socialMediaInsta: socialMediaInsta)
                 
                 try await CompanyManager.shared.createCompany(company: newCompany)
+                try await EntrepreneurManager.shared.addCompany(company: newCompany)
                 dismiss()
                 return
               } catch {
