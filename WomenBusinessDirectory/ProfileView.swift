@@ -106,7 +106,7 @@ struct ProfileView: View {
         Spacer()
         
         VStack(alignment: .trailing) {
-          NavigationLink(destination: AddCompanyView(entrepreneur: entrepreneur)) {
+          NavigationLink(destination: AddCompanyView(categoryViewModel: CategoryViewModel(), entrepreneur: entrepreneur)) {
             Text("")
               .frame(width: 50, height: 50)
               .background(Circle().fill(Color.green4))

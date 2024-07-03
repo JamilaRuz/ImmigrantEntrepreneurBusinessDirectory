@@ -86,4 +86,10 @@ final class CompanyManager {
     print("Company loaded! \(company)")
     return company
   }
+  
+  func getCompanies() async throws -> [Company?] {
+    let querySnapshot = try await companiesCollection.getDocuments()
+    return try querySnapshot.documents.map { try $0.data(as: Company.self) }
+  }
+
 }
