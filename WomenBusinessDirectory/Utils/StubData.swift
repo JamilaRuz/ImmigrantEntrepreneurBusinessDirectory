@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import SwiftData
 
 func createStubEntrepreneurs() -> [Entrepreneur] {
   let entrepreneur1 = Entrepreneur(

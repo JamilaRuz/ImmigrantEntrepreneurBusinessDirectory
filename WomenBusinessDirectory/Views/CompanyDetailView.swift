@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import SwiftData
 
 struct CompanyDetailView: View {
   @Environment(\.dismiss) var dismiss

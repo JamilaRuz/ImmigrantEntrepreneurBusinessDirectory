@@ -9,8 +9,7 @@ import Foundation
 import FirebaseFirestore
 import FirebaseFirestoreSwift
 
-//@MainActor
-final class CategoryViewModel: ObservableObject {
+final class AddCompanyViewModel: ObservableObject {
   @Published private(set) var categories: [Category] = []
 
   init() {
@@ -24,6 +23,11 @@ final class CategoryViewModel: ObservableObject {
     }
   }
   
+  func createCompany(company: Company) async throws {
+    try await CompanyManager.shared.createCompany(company: company)
+    try await EntrepreneurManager.shared.addCompany(company: company)
+  }
+
   private func loadCategories() async throws {
     self.categories = try await CategoryManager.shared.getCategories()
   }

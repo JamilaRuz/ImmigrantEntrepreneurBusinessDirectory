@@ -87,9 +87,15 @@ final class CompanyManager {
     return company
   }
   
-  func getCompanies() async throws -> [Company?] {
+  func getCompanies() async throws -> [Company] {
     let querySnapshot = try await companiesCollection.getDocuments()
     return try querySnapshot.documents.map { try $0.data(as: Company.self) }
   }
-
+  
+  func getCompaniesByCategory(categoryId: String) async throws -> [Company] {
+    let querySnapshot = try await companiesCollection
+      .whereField("categoryIds", arrayContains: categoryId)
+      .getDocuments()
+    return try querySnapshot.documents.map { try $0.data(as: Company.self) }
+  }
 }

@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-//import SwiftData
 import Firebase
 
 @main
@@ -17,15 +16,13 @@ struct WomenBusinessDirectoryApp: App {
 //    FirebaseApp.configure()
 //  }
   
-//  let container = try! ModelContainer(for: Company.self)
-  
   var body: some Scene {
     WindowGroup {
       NavigationStack {
-        RootView()
+//        RootView()
+        ContentView()
       }
     }
-//    .modelContainer(container)
   }
 }
 

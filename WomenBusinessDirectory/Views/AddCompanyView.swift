@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct AddCompanyView: View {
-  @StateObject var categoryViewModel: CategoryViewModel
+  @StateObject var viewModel: AddCompanyViewModel
   var entrepreneur: Entrepreneur
   
   @Environment(\.dismiss) var dismiss
@@ -34,11 +34,11 @@ struct AddCompanyView: View {
         Form {
           Section(header: Text("Company info")) {
             TextField("Name", text: $companyName)
-            NavigationLink(destination: MultipleSelectionList(categories: categoryViewModel.categories, selectedCategoryIds: $selectedCategoryIds)) {
+            NavigationLink(destination: MultipleSelectionList(categories: viewModel.categories, selectedCategoryIds: $selectedCategoryIds)) {
                 Text("Choose corresponding categories")
             }
             HStack {
-              let selectedCategories = categoryViewModel.categories.filter { selectedCategoryIds.contains($0.categoryId) }
+              let selectedCategories = viewModel.categories.filter { selectedCategoryIds.contains($0.categoryId) }
               ForEach(selectedCategories, id: \.self) { category in
                 Text(category.name)
                   .font(.caption2)
@@ -75,8 +75,7 @@ struct AddCompanyView: View {
                 
                 let newCompany = Company(companyId: "", entrepId: entrepreneur.entrepId, categoryIds: Array(selectedCategoryIds), name: companyName, logoImg: logoImg, aboutUs: aboutUs, dateFounded: dateFounded, address: address, phoneNum: phoneNum, email: email, workHours: workHours, directions: directions, socialMediaFacebook: socialMediaFacebook, socialMediaInsta: socialMediaInsta)
                 
-                try await CompanyManager.shared.createCompany(company: newCompany)
-                try await EntrepreneurManager.shared.addCompany(company: newCompany)
+                try await viewModel.createCompany(company: newCompany)
                 dismiss()
                 return
               } catch {
@@ -125,5 +124,5 @@ struct MultipleSelectionList: View {
 }
     
 #Preview {
-  AddCompanyView(categoryViewModel: CategoryViewModel(), entrepreneur: createStubEntrepreneurs()[0])
+  AddCompanyView(viewModel: AddCompanyViewModel(), entrepreneur: createStubEntrepreneurs()[0])
 }

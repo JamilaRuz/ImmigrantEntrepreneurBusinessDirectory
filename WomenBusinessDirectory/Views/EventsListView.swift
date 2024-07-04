@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import SwiftData
 
 struct EventsListView: View {
   var body: some View {

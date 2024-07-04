@@ -104,9 +104,10 @@ struct ProfileView: View {
         .padding()
         
         Spacer()
-        
+          
+        // Add company button
         VStack(alignment: .trailing) {
-          NavigationLink(destination: AddCompanyView(categoryViewModel: CategoryViewModel(), entrepreneur: entrepreneur)) {
+          NavigationLink(destination: AddCompanyView(viewModel: AddCompanyViewModel(), entrepreneur: entrepreneur)) {
             Text("")
               .frame(width: 50, height: 50)
               .background(Circle().fill(Color.green4))
