@@ -13,7 +13,7 @@ struct CompanyDetailView: View {
   @State private var selectedSegment = 0
   
   var body: some View {
-    ScrollView {
+//    ScrollView {
       VStack {
         //        Image(company.logoImg)
         ZStack {
@@ -57,12 +57,12 @@ struct CompanyDetailView: View {
         } else if selectedSegment == 1 {
           ProductsView()
         } else if selectedSegment == 2 {
-          MapView()
+          MapView(company: company)
         }
       }
       .padding()
-    }
-    .ignoresSafeArea(.container, edges: .top)
+//    }
+//    .ignoresSafeArea(.container, edges: .top)
   }
 }
 
