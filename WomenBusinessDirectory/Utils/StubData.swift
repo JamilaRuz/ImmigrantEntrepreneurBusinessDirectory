@@ -7,6 +7,24 @@
 
 import Foundation
 
+class StubCompanyManager: CompanyManager {
+  func createCompany(company: Company) async throws {
+    // nothing to do
+  }
+  
+  func getCompany(companyId: String) async throws -> Company {
+    createStubCompanies()[0]
+  }
+  
+  func getCompanies() async throws -> [Company] {
+    createStubCompanies()
+  }
+  
+  func getCompaniesByCategory(categoryId: String) async throws -> [Company] {
+    createStubCompanies()
+  }
+}
+
 func createStubEntrepreneurs() -> [Entrepreneur] {
   let entrepreneur1 = Entrepreneur(
     entrepId: "1",

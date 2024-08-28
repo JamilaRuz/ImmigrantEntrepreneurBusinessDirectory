@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct CardView: View {
+struct RowView: View {
     let category: Category
     
     var body: some View {
@@ -34,5 +34,5 @@ struct CardView: View {
 }
 
 #Preview {
-  CardView(category: Category(categoryId: "1", name: "Category 1"))
+  RowView(category: Category(categoryId: "1", name: "Category 1"))
 }

@@ -24,7 +24,7 @@ final class AddCompanyViewModel: ObservableObject {
   }
   
   func createCompany(company: Company) async throws {
-    try await CompanyManager.shared.createCompany(company: company)
+    try await RealCompanyManager.shared.createCompany(company: company)
     try await EntrepreneurManager.shared.addCompany(company: company)
   }
 

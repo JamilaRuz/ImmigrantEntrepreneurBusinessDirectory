@@ -8,15 +8,19 @@
 import SwiftUI
 
 @MainActor
-final class CompaniesListViewModel: ObservableObject {
-  var category: Category
-  @Published private(set) var companies: [Company] = []
-
-  init(category: Category) {
+class CompaniesListViewModel: ObservableObject {
+  private var companyManager: CompanyManager?
+  private var category: Category?
+  
+  @Published var companies: [Company] = []
+  
+  func setup(companyManager: CompanyManager, category: Category) {
+    self.companyManager = companyManager
     self.category = category
+      
     Task {
       do {
-        try await loadCompanies()
+        self.companies = try await loadCompanies()
       } catch {
         // TODO handle error
         print("Failed to load companies: \(error)")
@@ -24,15 +28,26 @@ final class CompaniesListViewModel: ObservableObject {
     }
   }
   
-  private func loadCompanies() async throws {
-    self.companies = try await CompanyManager.shared.getCompaniesByCategory(categoryId: category.categoryId)
+  private func loadCompanies() async throws -> [Company] {
+    guard let companyManager = companyManager, let category = category else {
+      return []
+    }
+    
+    return try await companyManager.getCompaniesByCategory(categoryId: category.categoryId)
   }
 }
 
 struct CompaniesListView: View {
-  @StateObject var viewModel: CompaniesListViewModel
+  var category: Category
+  
+  @Environment(\.companyManager) var companyManager: CompanyManager
+  @StateObject private var viewModel: CompaniesListViewModel = CompaniesListViewModel() // .setup is called in onAppear
   
   @State private var searchTerm = ""
+  
+  init(category: Category) {
+    self.category = category
+  }
   
   var body: some View {
     NavigationStack {
@@ -41,24 +56,22 @@ struct CompaniesListView: View {
           ForEach(viewModel.companies, id: \.self) { company in
             NavigationLink(destination: CompanyDetailView(company: company)) {
               HStack {
-                Image("placeholder") // TODO company.logoImg
+                Image("logos/comp_logo1") // TODO company.logoImg
                   .resizable()
-                  .scaledToFill()
-                  .frame(width: 100, height: 80)
+                  .scaledToFit()
+                  .frame(width: 100, height: 130)
                   .cornerRadius(5)
+                  .border(Color.green4, width: 1)
                 
-                VStack(alignment: .leading, spacing: 5) {
+                VStack(alignment: .leading, spacing: 10) {
                   Text(company.name)
                     .font(.system(size: 18, weight: .medium))
-                  
-                  //                                    HStack {
-                  //                                        if company.isFavorite {
-                  //                                            Image(systemName: "heart.fill")
-                  //                                                .foregroundColor(.accentColor)
-                  //                                        }
-                  //                                        Text(company.address)
-                  //                                            .font(.system(size: 14, weight: .regular))
-                  //                                    }
+                  Text(company.aboutUs)
+                    .font(.system(size: 14, weight: .regular))
+                    .lineLimit(3)
+                  Text(company.address)
+                    .font(.system(size: 14, weight: .regular))
+                    .foregroundColor(.gray)
                 }
                 .padding(.horizontal, 5)
               }
@@ -72,13 +85,15 @@ struct CompaniesListView: View {
       .cornerRadius(10)
       .navigationTitle("Companies")
       .searchable(text: $searchTerm, prompt: "Company name")
+      .onAppear {
+        viewModel.setup(companyManager: companyManager, category: category)
+      }
     }
   }
 }
 
 #Preview {
   let category = Category(categoryId: "1", name: "Category 1")
-  return CompaniesListView(
-    viewModel: CompaniesListViewModel(category: category)
-  )
+  return CompaniesListView(category: category)
+    .environment(\.companyManager, StubCompanyManager())
 }

@@ -22,7 +22,7 @@ final class ProfileViewModel: ObservableObject {
   func loadCompaniesOfEntrepreneur() async throws {
     self.companies = try await entrepreneur?.companyIds.asyncMap { companyId in
       print("Loading company with id: \(companyId)")
-      return try await CompanyManager.shared.getCompany(companyId: companyId)
+      return try await RealCompanyManager.shared.getCompany(companyId: companyId)
     } ?? []
   }
 }

@@ -10,7 +10,7 @@ import SwiftUI
 @MainActor
 final class DirectoryListViewModel: ObservableObject {
   @Published private(set) var categories: [Category] = []
-
+  
   init() {
     Task {
       do {
@@ -23,43 +23,35 @@ final class DirectoryListViewModel: ObservableObject {
   }
   
   private func loadCategories() async throws {
-    self.categories = try await CategoryManager.shared.getCategories()
+    self.categories = try await CategoryManager.shared.getCategories().sorted { $0.name < $1.name }
   }
 }
 
 struct DirectoryListView: View {
   @StateObject var viewModel: DirectoryListViewModel
-
-  let columns = [
-    GridItem(.adaptive(minimum: 150))
-  ]
+  @State private var selectedCategory: Category? = nil
   
   var body: some View {
     NavigationStack {
-      VStack(alignment: .leading) {
-        Text("Categories")
-          .font(.title2)
-        ScrollView {
-          LazyVGrid(columns: columns, spacing: 20) {
-            ForEach(viewModel.categories, id: \.self) { category in
-              NavigationLink(destination: CompaniesListView(viewModel: CompaniesListViewModel(category: category))) {
-                CardView(category: category)
-              }
+      VStack {
+        List(viewModel.categories, id: \.self) { category in
+          NavigationLink(destination: CompaniesListView(category: category)) {
+            HStack() {
+              Image(systemName: "car.fill") // TODO: Replace with actual image
+                .frame(width: 50, height: 50)
+                .foregroundColor(Color.green4)
+              Text(category.name)
+                .font(.headline)
             }
           }
+          //        .background(selectedCategory == category ? Color.green4.opacity(0.5) : Color.clear)
+          //        .onTapGesture {
+          //          selectedCategory = category
+          //        }
         }
       }
-      .padding()
-      .navigationTitle("Business Directory")
-      .frame(maxWidth: .infinity, maxHeight: .infinity)
-      .background {
-        Color.green1.opacity(0.5)
-          .ignoresSafeArea()
-      }
+      .navigationTitle("Bussiness Directory")
     }
-//    .onAppear {
-//      print("company \(companies[1].name) \(companies[1].entrepreneurs.count)")
-//    }
   }
 }
 

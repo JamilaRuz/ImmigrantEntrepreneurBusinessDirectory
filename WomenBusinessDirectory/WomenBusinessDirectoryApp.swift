@@ -12,15 +12,16 @@ import Firebase
 struct WomenBusinessDirectoryApp: App {
   @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
   
-//  init() {
-//    FirebaseApp.configure()
-//  }
+  //  init() {
+  //    FirebaseApp.configure()
+  //  }
   
   var body: some Scene {
     WindowGroup {
       NavigationStack {
-//        RootView()
+        //        RootView()
         ContentView()
+          .environment(\.companyManager, RealCompanyManager.shared)
       }
     }
   }
@@ -30,5 +31,16 @@ class AppDelegate: NSObject, UIApplicationDelegate {
   func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
     FirebaseApp.configure()
     return true
+  }
+}
+
+struct CompanyManagerKey: EnvironmentKey {
+  static let defaultValue: CompanyManager = RealCompanyManager.shared
+}
+
+extension EnvironmentValues {
+  var companyManager: CompanyManager {
+    get { self[CompanyManagerKey.self] }
+    set { self[CompanyManagerKey.self] = newValue }
   }
 }

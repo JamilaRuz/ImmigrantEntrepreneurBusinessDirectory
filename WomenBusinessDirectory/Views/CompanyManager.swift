@@ -51,9 +51,16 @@ class Company: Codable, Hashable, Equatable {
   }
 }
 
-final class CompanyManager {
+protocol CompanyManager {
+  func createCompany(company: Company) async throws
+  func getCompany(companyId: String) async throws -> Company
+  func getCompanies() async throws -> [Company]
+  func getCompaniesByCategory(categoryId: String) async throws -> [Company]
+}
+
+final class RealCompanyManager: CompanyManager {
   
-  static let shared = CompanyManager()
+  static let shared = RealCompanyManager()
   private init() {}
   
   private let companiesCollection = Firestore.firestore().collection("companies")

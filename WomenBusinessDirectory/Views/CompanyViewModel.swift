@@ -10,7 +10,7 @@ import Foundation
 final class CompanyViewModel: ObservableObject {
   
   func getCompanies() async throws -> [Company?] {
-    let companies = try await CompanyManager.shared.getCompanies()
+    let companies = try await RealCompanyManager.shared.getCompanies()
     return companies
   }
 }
