@@ -17,11 +17,6 @@ struct ContentView: View {
             Label("Directories", systemImage: "newspaper")
           }
         
-        EventsListView()
-          .tabItem {
-            Label("Events", systemImage: "list.bullet.rectangle")
-          }
-        
         FavoritesListView()
           .tabItem {
             Label("Favourites", systemImage: "star.square")
