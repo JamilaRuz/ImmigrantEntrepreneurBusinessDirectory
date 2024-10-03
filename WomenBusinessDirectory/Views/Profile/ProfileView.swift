@@ -47,7 +47,7 @@ struct ProfileView: View {
               Circle()
                 .frame(width: 150, height: 150)
                 .foregroundColor(.green1)
-                .background(Circle().strokeBorder(Color.green4, lineWidth: 2))
+                .background(Circle().strokeBorder(Color.purple1, lineWidth: 2))
             }
             
             Text(entrepreneur.fullName ?? "Sans nom")
@@ -61,7 +61,7 @@ struct ProfileView: View {
             )
             .padding()
             .frame(width: UIScreen.main.bounds.width - 40, height: 70)
-            .border(Color.green4, width: 1)
+            .border(Color.purple1, width: 1)
             .cornerRadius(10)
             .onSubmit() {
               print("Save data to Firestore")
@@ -77,7 +77,7 @@ struct ProfileView: View {
                 ForEach(viewModel.companies, id: \.self) { company in
                   NavigationLink(destination: CompanyDetailView(company: company)) {
                     HStack(spacing: 10) {
-                      Image("logos/comp_logo5")
+                      Image("logos/company_logo5")
                         .resizable()
                         .scaledToFill()
                         .frame(width: 100, height: 120)
@@ -110,7 +110,7 @@ struct ProfileView: View {
           NavigationLink(destination: AddCompanyView(viewModel: AddCompanyViewModel(), entrepreneur: entrepreneur)) {
             Text("")
               .frame(width: 50, height: 50)
-              .background(Circle().fill(Color.green4))
+              .background(Circle().fill(Color.purple1))
               .overlay(
                 Image(systemName: "plus")
                   .foregroundColor(.white)

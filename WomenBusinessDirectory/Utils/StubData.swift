@@ -102,7 +102,7 @@ func createStubCompanies() -> [Company] {
     entrepId: "5",
     categoryIds: [],
     name: "Company name three",
-    logoImg: "comp_logo3", aboutUs: "Our company was fouded 10 years ago. Our software developers are organized in virtual divisions, carrying the domain experience and know-how within the industry to offer exceptional application development solutions.", dateFounded: "10/13/2006", address: "123 Bank street", phoneNum: "123456", email: "test@gmail.com", workHours: "Mon 9 - 5, Tue 9 - 5, Wed 9 - 5, Thu 9 - 5, Fri 9 - 5, ", directions: "Near the pharmacy",
+    logoImg: "company_logo3", aboutUs: "Our company was fouded 10 years ago. Our software developers are organized in virtual divisions, carrying the domain experience and know-how within the industry to offer exceptional application development solutions.", dateFounded: "10/13/2006", address: "123 Bank street", phoneNum: "123456", email: "test@gmail.com", workHours: "Mon 9 - 5, Tue 9 - 5, Wed 9 - 5, Thu 9 - 5, Fri 9 - 5, ", directions: "Near the pharmacy",
     socialMediaFacebook: "facebook link",
     socialMediaInsta: "Insta link" )
   
@@ -110,7 +110,7 @@ func createStubCompanies() -> [Company] {
     companyId: "2",
     entrepId: "4",
     categoryIds: [],
-    name: "Company name four", logoImg: "comp_logo4", aboutUs: "We work with you based on your software development objectives to bring you the most value and the quickest return on investment while defining tactics and a dedicated team to your project.", dateFounded: "10/13/2006", address: "123 Bank street", phoneNum: "123456", email: "test@gmail.com", workHours: "Mon-Fri 9 - 5", directions: "Near the pharmacy", socialMediaFacebook: "facebook link", socialMediaInsta: "Insta link"
+    name: "Company name four", logoImg: "company_logo4", aboutUs: "We work with you based on your software development objectives to bring you the most value and the quickest return on investment while defining tactics and a dedicated team to your project.", dateFounded: "10/13/2006", address: "123 Bank street", phoneNum: "123456", email: "test@gmail.com", workHours: "Mon-Fri 9 - 5", directions: "Near the pharmacy", socialMediaFacebook: "facebook link", socialMediaInsta: "Insta link"
   )
   
   return [company1, company2, company3, company4]

@@ -56,7 +56,7 @@ struct CompaniesListView: View {
           ForEach(viewModel.companies, id: \.self) { company in
             NavigationLink(destination: CompanyDetailView(company: company)) {
               HStack {
-                Image("logos/comp_logo1") // TODO company.logoImg
+                Image("logos/company_logo1") // TODO company.logoImg
                   .resizable()
                   .scaledToFit()
                   .frame(width: 100, height: 130)

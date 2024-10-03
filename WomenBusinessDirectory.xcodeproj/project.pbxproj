@@ -7,6 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8D22CFBA2CAF399800B88837 /* 120.png in Resources */ = {isa = PBXBuildFile; fileRef = 8D22CFB52CAF399800B88837 /* 120.png */; };
+		8D22CFBB2CAF399800B88837 /* Contents.json in Resources */ = {isa = PBXBuildFile; fileRef = 8D22CFB82CAF399800B88837 /* Contents.json */; };
+		8D22CFBC2CAF399800B88837 /* 114.png in Resources */ = {isa = PBXBuildFile; fileRef = 8D22CFB42CAF399800B88837 /* 114.png */; };
+		8D22CFBD2CAF399800B88837 /* 29.png in Resources */ = {isa = PBXBuildFile; fileRef = 8D22CFAD2CAF399800B88837 /* 29.png */; };
+		8D22CFBE2CAF399800B88837 /* 58.png in Resources */ = {isa = PBXBuildFile; fileRef = 8D22CFB02CAF399800B88837 /* 58.png */; };
+		8D22CFBF2CAF399800B88837 /* 60.png in Resources */ = {isa = PBXBuildFile; fileRef = 8D22CFB12CAF399800B88837 /* 60.png */; };
+		8D22CFC02CAF399800B88837 /* 40.png in Resources */ = {isa = PBXBuildFile; fileRef = 8D22CFAE2CAF399800B88837 /* 40.png */; };
+		8D22CFC12CAF399800B88837 /* 1024.png in Resources */ = {isa = PBXBuildFile; fileRef = 8D22CFB72CAF399800B88837 /* 1024.png */; };
+		8D22CFC22CAF399800B88837 /* 87.png in Resources */ = {isa = PBXBuildFile; fileRef = 8D22CFB32CAF399800B88837 /* 87.png */; };
+		8D22CFC32CAF399800B88837 /* 57.png in Resources */ = {isa = PBXBuildFile; fileRef = 8D22CFAF2CAF399800B88837 /* 57.png */; };
+		8D22CFC42CAF399800B88837 /* 80.png in Resources */ = {isa = PBXBuildFile; fileRef = 8D22CFB22CAF399800B88837 /* 80.png */; };
+		8D22CFC52CAF399800B88837 /* 180.png in Resources */ = {isa = PBXBuildFile; fileRef = 8D22CFB62CAF399800B88837 /* 180.png */; };
 		8D3BE6132C17457400275033 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 8D3BE6122C17457400275033 /* FirebaseAuth */; };
 		8D3BE6152C17457400275033 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 8D3BE6142C17457400275033 /* FirebaseFirestore */; };
 		8D3BE6172C17457400275033 /* FirebaseFirestoreSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 8D3BE6162C17457400275033 /* FirebaseFirestoreSwift */; };
@@ -51,6 +63,18 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		8D22CFAD2CAF399800B88837 /* 29.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 29.png; sourceTree = "<group>"; };
+		8D22CFAE2CAF399800B88837 /* 40.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 40.png; sourceTree = "<group>"; };
+		8D22CFAF2CAF399800B88837 /* 57.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 57.png; sourceTree = "<group>"; };
+		8D22CFB02CAF399800B88837 /* 58.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 58.png; sourceTree = "<group>"; };
+		8D22CFB12CAF399800B88837 /* 60.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 60.png; sourceTree = "<group>"; };
+		8D22CFB22CAF399800B88837 /* 80.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 80.png; sourceTree = "<group>"; };
+		8D22CFB32CAF399800B88837 /* 87.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 87.png; sourceTree = "<group>"; };
+		8D22CFB42CAF399800B88837 /* 114.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 114.png; sourceTree = "<group>"; };
+		8D22CFB52CAF399800B88837 /* 120.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 120.png; sourceTree = "<group>"; };
+		8D22CFB62CAF399800B88837 /* 180.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 180.png; sourceTree = "<group>"; };
+		8D22CFB72CAF399800B88837 /* 1024.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 1024.png; sourceTree = "<group>"; };
+		8D22CFB82CAF399800B88837 /* Contents.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = Contents.json; sourceTree = "<group>"; };
 		8D3BE61F2C176F0100275033 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		8D3BE6212C1797B600275033 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		8D4B959A2BF80F8800A0AF45 /* AddCompanyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCompanyView.swift; sourceTree = "<group>"; };
@@ -106,6 +130,25 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		8D22CFB92CAF399800B88837 /* AppIcon.appiconset */ = {
+			isa = PBXGroup;
+			children = (
+				8D22CFAD2CAF399800B88837 /* 29.png */,
+				8D22CFAE2CAF399800B88837 /* 40.png */,
+				8D22CFAF2CAF399800B88837 /* 57.png */,
+				8D22CFB02CAF399800B88837 /* 58.png */,
+				8D22CFB12CAF399800B88837 /* 60.png */,
+				8D22CFB22CAF399800B88837 /* 80.png */,
+				8D22CFB32CAF399800B88837 /* 87.png */,
+				8D22CFB42CAF399800B88837 /* 114.png */,
+				8D22CFB52CAF399800B88837 /* 120.png */,
+				8D22CFB62CAF399800B88837 /* 180.png */,
+				8D22CFB72CAF399800B88837 /* 1024.png */,
+				8D22CFB82CAF399800B88837 /* Contents.json */,
+			);
+			path = AppIcon.appiconset;
+			sourceTree = "<group>";
+		};
 		8D4D7EB02C091B9500FF7EF5 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
@@ -194,6 +237,7 @@
 		8D9424582CAF34B500F19517 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				8D22CFB92CAF399800B88837 /* AppIcon.appiconset */,
 				8DDB67022BC9982000D9A2C8 /* Assets.xcassets */,
 			);
 			path = Resources;
@@ -350,6 +394,18 @@
 				8DDB67062BC9982000D9A2C8 /* Preview Assets.xcassets in Resources */,
 				8D3BE6222C1797B600275033 /* GoogleService-Info.plist in Resources */,
 				8D3BE6202C176F0100275033 /* .gitignore in Resources */,
+				8D22CFBA2CAF399800B88837 /* 120.png in Resources */,
+				8D22CFBB2CAF399800B88837 /* Contents.json in Resources */,
+				8D22CFBC2CAF399800B88837 /* 114.png in Resources */,
+				8D22CFBD2CAF399800B88837 /* 29.png in Resources */,
+				8D22CFBE2CAF399800B88837 /* 58.png in Resources */,
+				8D22CFBF2CAF399800B88837 /* 60.png in Resources */,
+				8D22CFC02CAF399800B88837 /* 40.png in Resources */,
+				8D22CFC12CAF399800B88837 /* 1024.png in Resources */,
+				8D22CFC22CAF399800B88837 /* 87.png in Resources */,
+				8D22CFC32CAF399800B88837 /* 57.png in Resources */,
+				8D22CFC42CAF399800B88837 /* 80.png in Resources */,
+				8D22CFC52CAF399800B88837 /* 180.png in Resources */,
 				8DDB67032BC9982000D9A2C8 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

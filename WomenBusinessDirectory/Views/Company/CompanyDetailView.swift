@@ -17,7 +17,7 @@ struct CompanyDetailView: View {
       VStack {
         //        Image(company.logoImg)
         ZStack {
-          Image("logos/comp_logo5")
+          Image("logos/company_logo5")
             .resizable()
             .aspectRatio(contentMode: .fill)
             .frame(width: UIScreen.main.bounds.width, height: 300)
