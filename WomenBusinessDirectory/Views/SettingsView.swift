@@ -59,7 +59,7 @@ struct SettingsView: View {
               }
             }
           } label: {
-            SettingsRowView(imageName: "arrow.left.circle.fill", title: "Log Out", tintColor: .green4)
+            SettingsRowView(imageName: "arrow.left.circle.fill", title: "Log Out", tintColor: .orange1)
           }
           
           Button(role: .destructive) {
@@ -102,7 +102,7 @@ extension SettingsView {
           }
         }
       } label: {
-        SettingsRowView(imageName: "person.badge.key", title: "Reset password", tintColor: .green4)
+          SettingsRowView(imageName: "person.badge.key", title: "Reset password", tintColor: .orange1)
       }
 
       Button() {
@@ -115,7 +115,7 @@ extension SettingsView {
           }
         }
       } label: {
-        SettingsRowView(imageName: "lock.circle", title: "Update password", tintColor: .green4)
+          SettingsRowView(imageName: "lock.circle", title: "Update password", tintColor: .purple1)
       }
       Button() {
         Task {
@@ -127,7 +127,7 @@ extension SettingsView {
           }
         }
       } label: {
-        SettingsRowView(imageName: "person.badge.key", title: "Update email", tintColor: .green4)
+          SettingsRowView(imageName: "person.badge.key", title: "Update email", tintColor: .orange1)
       }
     } //Section Email
   }

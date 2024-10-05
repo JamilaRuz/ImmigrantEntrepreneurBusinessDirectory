@@ -56,12 +56,12 @@ struct CompaniesListView: View {
           ForEach(viewModel.companies, id: \.self) { company in
             NavigationLink(destination: CompanyDetailView(company: company)) {
               HStack {
-                Image("logos/company_logo1") // TODO company.logoImg
+                Image("company_logo1") // TODO company.logoImg
                   .resizable()
                   .scaledToFit()
                   .frame(width: 100, height: 130)
                   .cornerRadius(5)
-                  .border(Color.green4, width: 1)
+                  .border(Color.gray, width: 1)
                 
                 VStack(alignment: .leading, spacing: 10) {
                   Text(company.name)

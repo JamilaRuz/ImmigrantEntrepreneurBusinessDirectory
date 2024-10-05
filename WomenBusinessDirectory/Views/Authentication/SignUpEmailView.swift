@@ -89,7 +89,7 @@ struct SignUpEmailView: View {
       .frame(width: UIScreen.main.bounds.width - 32, height: 48)
     }
     .padding(.vertical, 10)
-    .background(Color.green4)
+    .background(Color.yellow)
     .disabled(!formIsValid)
     .opacity(formIsValid ? 1 : 0.5)
     .cornerRadius(8)
@@ -104,7 +104,7 @@ struct SignUpEmailView: View {
         Text("Already have an account?")
           .foregroundColor(.gray)
         Text("Sign in")
-          .foregroundColor(.green4)
+              .foregroundColor(.purple1)
       }
     }
   }

@@ -8,27 +8,51 @@
 import SwiftUI
 
 struct ContentView: View {
-  
-  var body: some View {
-    Group {
-      TabView {
-        DirectoryListView(viewModel: DirectoryListViewModel())
-          .tabItem {
-            Label("Directories", systemImage: "newspaper")
-          }
-        
-        FavoritesListView()
-          .tabItem {
-            Label("Favourites", systemImage: "star.square")
-          }
-        
-        RootView()
-          .tabItem {
-            Label("Profile", systemImage: "person.fill")
-          }
-      }
+    @State private var showSignInView = true
+    @StateObject private var directoryListViewModel = DirectoryListViewModel()
+
+    var body: some View {
+        Group {
+            if showSignInView {
+                LoginView(showSignInView: $showSignInView)
+            } else {
+                MainTabView(
+                    showSignInView: $showSignInView,
+                    directoryListViewModel: directoryListViewModel
+                )
+            }
+        }
     }
-  }
+}
+
+struct MainTabView: View {
+    @Binding var showSignInView: Bool
+    @ObservedObject var directoryListViewModel: DirectoryListViewModel
+    
+    var body: some View {
+        TabView {
+            DirectoryListView(viewModel: directoryListViewModel, showSignInView: $showSignInView)
+                .tabItem {
+                    Label("Directories", systemImage: "newspaper")
+                }
+            
+            FavoritesListView()
+                .tabItem {
+                    Label("Favourites", systemImage: "star.square")
+                }
+            
+            ProfileView(showSignInView: $showSignInView)
+                .tabItem {
+                    Label("Profile", systemImage: "person.fill")
+                }
+        }
+    }
+}
+
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+    }
 }
 
 #Preview {

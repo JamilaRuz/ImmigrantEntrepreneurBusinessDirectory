@@ -17,11 +17,11 @@ struct SignInEmailView: View {
   
   var body: some View {
     VStack {
-      Image("firebaseLogo")
+      Image("image_logo")
         .resizable()
         .scaledToFill()
         .overlay {
-          LinearGradient(gradient: Gradient(colors: [.black.opacity(0.5),.clear, Color.green4, Color.green2]), startPoint: .top, endPoint: .bottom)
+            LinearGradient(gradient: Gradient(colors: [.black.opacity(0.5),.clear, Color.purple1, Color.yellow]), startPoint: .top, endPoint: .bottom)
         }
         .frame(width: 100, height: 150)
         .padding(.vertical, 20)
@@ -68,7 +68,7 @@ struct SignInEmailView: View {
         .frame(width: UIScreen.main.bounds.width - 32, height: 48)
       }
       .cornerRadius(8)
-      .background(Color.green4)
+      .background(Color.pink1)
       .disabled(!formIsValid)
       .opacity(formIsValid ? 1 : 0.5)
       .padding(.vertical, 10)
@@ -89,7 +89,7 @@ struct SignInEmailView: View {
           Text("Don't have an account?")
             .foregroundColor(.gray)
           Text("Register")
-            .foregroundColor(.green4)
+            .foregroundColor(.pink1)
         }
       }
     }

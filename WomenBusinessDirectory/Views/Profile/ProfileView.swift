@@ -77,7 +77,7 @@ struct ProfileView: View {
                 ForEach(viewModel.companies, id: \.self) { company in
                   NavigationLink(destination: CompanyDetailView(company: company)) {
                     HStack(spacing: 10) {
-                      Image("logos/company_logo5")
+                      Image("company_logo5")
                         .resizable()
                         .scaledToFill()
                         .frame(width: 100, height: 120)

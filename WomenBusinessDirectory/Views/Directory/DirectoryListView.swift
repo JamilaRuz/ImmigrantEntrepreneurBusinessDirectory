@@ -30,31 +30,34 @@ final class DirectoryListViewModel: ObservableObject {
 struct DirectoryListView: View {
   @StateObject var viewModel: DirectoryListViewModel
   @State private var selectedCategory: Category? = nil
+  @Binding var showSignInView: Bool
   
   var body: some View {
-    NavigationStack {
-      VStack {
-        List(viewModel.categories, id: \.self) { category in
-          NavigationLink(destination: CompaniesListView(category: category)) {
-            HStack() {
-              Image(systemName: "car.fill") // TODO: Replace with actual image
-                .frame(width: 50, height: 50)
-                .foregroundColor(Color.green4)
-              Text(category.name)
-                .font(.headline)
-            }
+      NavigationStack {
+          List(viewModel.categories, id: \.self) { category in
+              NavigationLink(destination: CompaniesListView(category: category)) {
+                  HStack {
+                      Image(systemName: "car.fill")
+                          .frame(width: 50, height: 50)
+                          .foregroundColor(Color.purple1)
+                      Text(category.name)
+                          .font(.headline)
+                  }
+              }
           }
-          //        .background(selectedCategory == category ? Color.green4.opacity(0.5) : Color.clear)
-          //        .onTapGesture {
-          //          selectedCategory = category
-          //        }
-        }
+          .listStyle(PlainListStyle())
+          .padding(.top, -8) // Adjust this value as needed
+          .navigationTitle("Business Directory")
+          .navigationBarTitleDisplayMode(.inline)
       }
-      .navigationTitle("Bussiness Directory")
-    }
+      .customNavigationBar(showSignInView: $showSignInView)
   }
 }
 
-#Preview {
-  DirectoryListView(viewModel: DirectoryListViewModel())
+struct DirectoryListView_Previews: PreviewProvider {
+  static var previews: some View {
+    NavigationView {
+      DirectoryListView(viewModel: DirectoryListViewModel(), showSignInView: .constant(false))
+    }
+  }
 }
