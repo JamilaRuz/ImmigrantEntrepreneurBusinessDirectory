@@ -56,8 +56,7 @@
 		8DDE05912C13C40A00C83EEA /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DDE05902C13C40A00C83EEA /* SettingsView.swift */; };
 		8DDE05932C150F0A00C83EEA /* SettingsRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DDE05922C150F0A00C83EEA /* SettingsRowView.swift */; };
 		8DE69ADF2C22279C00C2D6C9 /* AuthenticationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DE69ADE2C22279C00C2D6C9 /* AuthenticationManager.swift */; };
-		8DE69AE12C22364100C2D6C9 /* AuthenticationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DE69AE02C22364100C2D6C9 /* AuthenticationView.swift */; };
-		8DE69AE52C2368A700C2D6C9 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DE69AE42C2368A700C2D6C9 /* LoginView.swift */; };
+		8DE69AE52C2368A700C2D6C9 /* AuthenticationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DE69AE42C2368A700C2D6C9 /* AuthenticationView.swift */; };
 		8DE69AE72C24D9D400C2D6C9 /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DE69AE62C24D9D400C2D6C9 /* SettingsViewModel.swift */; };
 		8DE69AEB2C24DA4900C2D6C9 /* AuthenticationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DE69AEA2C24DA4900C2D6C9 /* AuthenticationViewModel.swift */; };
 		8DE69AED2C24DB2D00C2D6C9 /* SignInEmailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DE69AEC2C24DB2D00C2D6C9 /* SignInEmailViewModel.swift */; };
@@ -110,8 +109,7 @@
 		8DDE05902C13C40A00C83EEA /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		8DDE05922C150F0A00C83EEA /* SettingsRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsRowView.swift; sourceTree = "<group>"; };
 		8DE69ADE2C22279C00C2D6C9 /* AuthenticationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationManager.swift; sourceTree = "<group>"; };
-		8DE69AE02C22364100C2D6C9 /* AuthenticationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationView.swift; sourceTree = "<group>"; };
-		8DE69AE42C2368A700C2D6C9 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		8DE69AE42C2368A700C2D6C9 /* AuthenticationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationView.swift; sourceTree = "<group>"; };
 		8DE69AE62C24D9D400C2D6C9 /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
 		8DE69AEA2C24DA4900C2D6C9 /* AuthenticationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationViewModel.swift; sourceTree = "<group>"; };
 		8DE69AEC2C24DB2D00C2D6C9 /* SignInEmailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInEmailViewModel.swift; sourceTree = "<group>"; };
@@ -177,7 +175,7 @@
 		8D9424522CAF2FB500F19517 /* Authentication */ = {
 			isa = PBXGroup;
 			children = (
-				8DE69AE02C22364100C2D6C9 /* AuthenticationView.swift */,
+				8DE69AE42C2368A700C2D6C9 /* AuthenticationView.swift */,
 				8DDE05822C126F6A00C83EEA /* SignInEmailView.swift */,
 				8DDE058E2C13B79000C83EEA /* SignUpEmailView.swift */,
 			);
@@ -188,7 +186,6 @@
 			isa = PBXGroup;
 			children = (
 				8DDB66FE2BC9981D00D9A2C8 /* ContentView.swift */,
-				8DE69AE42C2368A700C2D6C9 /* LoginView.swift */,
 			);
 			path = Main;
 			sourceTree = "<group>";
@@ -196,9 +193,9 @@
 		8D9424542CAF318700F19517 /* Directory */ = {
 			isa = PBXGroup;
 			children = (
-				8DDB67182BCADBF500D9A2C8 /* CompaniesListView.swift */,
 				8DDB670C2BC99DF900D9A2C8 /* DirectoryListView.swift */,
 				8DDB670E2BC99E2500D9A2C8 /* FavoritesListView.swift */,
+				8D9424562CAF32AA00F19517 /* Profile */,
 			);
 			path = Directory;
 			sourceTree = "<group>";
@@ -206,6 +203,7 @@
 		8D9424552CAF31CA00F19517 /* Company */ = {
 			isa = PBXGroup;
 			children = (
+				8DDB67182BCADBF500D9A2C8 /* CompaniesListView.swift */,
 				8DDB671A2BCADE6200D9A2C8 /* CompanyDetailView.swift */,
 				8D4B959A2BF80F8800A0AF45 /* AddCompanyView.swift */,
 				8DB694BA2C34746600DC516E /* InfoView.swift */,
@@ -295,7 +293,6 @@
 				8D9424522CAF2FB500F19517 /* Authentication */,
 				8D9424542CAF318700F19517 /* Directory */,
 				8D9424552CAF31CA00F19517 /* Company */,
-				8D9424562CAF32AA00F19517 /* Profile */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -420,7 +417,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8DE69AE52C2368A700C2D6C9 /* LoginView.swift in Sources */,
+				8DE69AE52C2368A700C2D6C9 /* AuthenticationView.swift in Sources */,
 				8DB694BF2C34748300DC516E /* MapView.swift in Sources */,
 				8DD6E8F62C30E291000F67DD /* CategoryManager.swift in Sources */,
 				8DDB67192BCADBF500D9A2C8 /* CompaniesListView.swift in Sources */,
@@ -448,7 +445,6 @@
 				8DAECA472C018AF20037A601 /* EditProfileView.swift in Sources */,
 				8DB694C42C34BA5B00DC516E /* AddCompanyViewModel.swift in Sources */,
 				8D68E6CD2C2613F200D10390 /* EntrepreneurManager.swift in Sources */,
-				8DE69AE12C22364100C2D6C9 /* AuthenticationView.swift in Sources */,
 				8DDE05912C13C40A00C83EEA /* SettingsView.swift in Sources */,
 				8DDB66FD2BC9981D00D9A2C8 /* WomenBusinessDirectoryApp.swift in Sources */,
 				8D4D7EAF2C091B7800FF7EF5 /* StubData.swift in Sources */,

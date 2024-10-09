@@ -14,7 +14,7 @@ struct ContentView: View {
     var body: some View {
         Group {
             if showSignInView {
-                LoginView(showSignInView: $showSignInView)
+                AuthenticationView(showSignInView: $showSignInView)
             } else {
                 MainTabView(
                     showSignInView: $showSignInView,

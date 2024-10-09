@@ -29,6 +29,7 @@ func createStubEntrepreneurs() -> [Entrepreneur] {
   let entrepreneur1 = Entrepreneur(
     entrepId: "1",
     fullName: "Alice Johnson",
+    profileUrl: "avatar.jpg",
     email: "test@email.com",
     bioDescr: "Tech entrepreneur",
     companyIds: []
@@ -37,6 +38,7 @@ func createStubEntrepreneurs() -> [Entrepreneur] {
   let entrepreneur2 = Entrepreneur(
     entrepId: "2",
     fullName: "Bob Smith",
+    profileUrl: "avatar.jpg",
     email: "test@email.com",
     bioDescr: "Green energy pioneer",
     companyIds: []
@@ -48,6 +50,7 @@ func createStubCompanies() -> [Company] {
   let entrepreneur1 = Entrepreneur(
     entrepId: "3",
     fullName: "Alice Johnson",
+    profileUrl: "avatar.jpg",
     email: "test@email.com",
 //    profileImage: "alice.jpg",
     bioDescr: "Tech entrepreneur",
@@ -57,7 +60,7 @@ func createStubCompanies() -> [Company] {
   let entrepreneur2 = Entrepreneur(
     entrepId: "4",
     fullName: "Bob Smith",
-//    profileImage: "bob.jpg",
+    profileUrl: "avatar.jpg",
     email: "test@email.com",
     bioDescr: "Green energy pioneer",
     companyIds: []
