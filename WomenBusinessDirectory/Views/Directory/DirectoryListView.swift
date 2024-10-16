@@ -31,6 +31,7 @@ struct DirectoryListView: View {
   @StateObject var viewModel: DirectoryListViewModel
   @State private var selectedCategory: Category? = nil
   @Binding var showSignInView: Bool
+  @Binding var userIsLoggedIn: Bool
   
   var body: some View {
       NavigationStack {
@@ -50,14 +51,14 @@ struct DirectoryListView: View {
           .navigationTitle("Business Directory")
           .navigationBarTitleDisplayMode(.inline)
       }
-      .customNavigationBar(showSignInView: $showSignInView)
+      .customNavigationBar(showSignInView: $showSignInView, isLoggedIn: userIsLoggedIn)
   }
 }
 
 struct DirectoryListView_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
-      DirectoryListView(viewModel: DirectoryListViewModel(), showSignInView: .constant(false))
+      DirectoryListView(viewModel: DirectoryListViewModel(), showSignInView: .constant(false), userIsLoggedIn: .constant(false))
     }
   }
 }
