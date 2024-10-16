@@ -14,78 +14,152 @@ struct AddCompanyView: View {
   @Environment(\.dismiss) var dismiss
   
   @State private var companyName = ""
-  @State private var category: Category? = nil
-  @State private var logoImg = ""
-  @State private var dateFounded = ""
+  @State private var logoImage: UIImage?
+  @State private var dateFounded = Date()
   @State private var aboutUs = ""
   @State private var workHours = ""
+  @State private var services = ""
+  @State private var businessModel = BusinessModel.offline
   @State private var address = ""
-  @State private var directions = ""
   @State private var phoneNum = ""
   @State private var email = ""
-  @State private var socialMediaFacebook = ""
+  @State private var website = ""
   @State private var socialMediaInsta = ""
+  @State private var socialMediaFacebook = ""
   
   @State private var selectedCategoryIds: Set<String> = []
+  @State private var isImagePickerPresented = false
+  
+  enum BusinessModel: String, CaseIterable {
+    case online, offline, hybrid
+  }
   
   var body: some View {
     NavigationView {
-      VStack {
-        Form {
-          Section(header: Text("Company info")) {
-            TextField("Name", text: $companyName)
-            NavigationLink(destination: MultipleSelectionList(categories: viewModel.categories, selectedCategoryIds: $selectedCategoryIds)) {
-                Text("Choose corresponding categories")
-            }
-            HStack {
-              let selectedCategories = viewModel.categories.filter { selectedCategoryIds.contains($0.categoryId) }
-              ForEach(selectedCategories, id: \.self) { category in
-                Text(category.name)
-                  .font(.caption2)
-              }
-              .padding(5)
-              .background(Color.green1).opacity(0.5)
-              .cornerRadius(10)
-            } // HStack
-            TextField("Founded date", text: $dateFounded)
-            TextField("About us", text: $aboutUs)
-            TextField("Work hours", text: $workHours)
+      Form {
+        Section(header: Text("Company Info")) {
+          logoButton
+          DatePicker("Date Founded", selection: $dateFounded, displayedComponents: .date)
+          TextField("Name", text: $companyName)
+          NavigationLink(destination: MultipleSelectionList(categories: viewModel.categories, selectedCategoryIds: $selectedCategoryIds)) {
+            Text("Choose corresponding categories")
           }
-          
-          Section(header: Text("Company contact info")) {
-            TextField("Phone number", text: $phoneNum)
-            TextField("Email", text: $email)
-            TextField("Address", text: $address)
-            TextField("Facebook", text: $socialMediaFacebook)
-            TextField("Instagram", text: $socialMediaInsta)
+          selectedCategoriesView
+        }
+        
+        Section(header: Text("Details")) {
+          TextEditor(text: $aboutUs)
+            .frame(height: 100)
+          TextField("Working Hours (e.g., Mon-Fri 9-5)", text: $workHours)
+          TextField("Services (comma-separated)", text: $services)
+          Picker("Business Model", selection: $businessModel) {
+            ForEach(BusinessModel.allCases, id: \.self) { model in
+              Text(model.rawValue.capitalized)
+            }
           }
         }
+        
+        Section(header: Text("Contact Info")) {
+          TextField("Phone Number", text: $phoneNum)
+          TextField("Address", text: $address)
+          TextField("Website", text: $website)
+          TextField("Instagram", text: $socialMediaInsta)
+          TextField("Facebook", text: $socialMediaFacebook)
+        }
       }
-      .navigationBarTitle("Add Company")
-      .navigationBarTitleDisplayMode(.inline)
+      .navigationBarTitle("Add Company", displayMode: .inline)
       .toolbar {
         ToolbarItem(placement: .topBarTrailing) {
           Button("Save") {
-            Task {
-              do {
-                guard !selectedCategoryIds.isEmpty else {
-                  print("No categories selected")
-                  return
-                }
-                
-                let newCompany = Company(companyId: "", entrepId: entrepreneur.entrepId, categoryIds: Array(selectedCategoryIds), name: companyName, logoImg: logoImg, aboutUs: aboutUs, dateFounded: dateFounded, address: address, phoneNum: phoneNum, email: email, workHours: workHours, directions: directions, socialMediaFacebook: socialMediaFacebook, socialMediaInsta: socialMediaInsta)
-                
-                try await viewModel.createCompany(company: newCompany)
-                dismiss()
-                return
-              } catch {
-                print("Failed to create company: \(error)")
-              }
-            }
+//            saveCompany()
           }
-        } // toolbar
+        }
+      }
+      .sheet(isPresented: $isImagePickerPresented) {
+        ImagePicker(image: $logoImage)
       }
     }
+  }
+  
+  private var logoButton: some View {
+    HStack {
+      Button(action: { isImagePickerPresented = true }) {
+        Text("Browse Logo")
+      }
+      if let logoImage = logoImage {
+        Image(uiImage: logoImage)
+          .resizable()
+          .scaledToFit()
+          .frame(height: 50)
+      } else {
+        Image(systemName: "photo")
+          .frame(width: 50, height: 50)
+          .background(Color.gray.opacity(0.2))
+          .clipShape(RoundedRectangle(cornerRadius: 8))
+      }
+    }
+  }
+  
+  private var selectedCategoriesView: some View {
+    let selectedCategories = viewModel.categories.filter { selectedCategoryIds.contains($0.categoryId) }
+    return ScrollView(.horizontal, showsIndicators: false) {
+      HStack {
+        ForEach(selectedCategories, id: \.self) { category in
+          Text(category.name)
+            .font(.caption2)
+            .padding(5)
+            .background(Color.green1.opacity(0.5))
+            .cornerRadius(10)
+        }
+      }
+    }
+  }
+  
+//  private func saveCompany() {
+//    Task {
+//      do {
+//        guard !selectedCategoryIds.isEmpty else {
+//          print("No categories selected")
+//          return
+//        }
+//        
+//        var logoUrl = ""
+//        if let logoImage = logoImage {
+//          // Assuming you have a method in your viewModel to upload images
+//          logoUrl = try await viewModel.uploadCompanyLogo(logoImage)
+//        }
+//        
+//        let newCompany = Company(
+//          companyId: "",
+//          entrepId: entrepreneur.entrepId,
+//          categoryIds: Array(selectedCategoryIds),
+//          name: companyName,
+//          logoImg: logoUrl,
+//          aboutUs: aboutUs,
+//          dateFounded: formatDate(dateFounded),
+//          address: address,
+//          phoneNum: phoneNum,
+//          email: "", // You might want to remove this if it's not used
+//          workHours: workHours,
+//          socialMediaFacebook: socialMediaFacebook,
+//          socialMediaInsta: socialMediaInsta,
+//          website: website,
+//          services: services.split(separator: ",").map { String($0.trimmingCharacters(in: .whitespaces)) },
+//          businessModel: businessModel.rawValue
+//        )
+//        
+//        try await viewModel.createCompany(company: newCompany)
+//        dismiss()
+//      } catch {
+//        print("Failed to create company: \(error)")
+//      }
+//    }
+//  }
+  
+  private func formatDate(_ date: Date) -> String {
+    let formatter = DateFormatter()
+    formatter.dateFormat = "yyyy-MM-dd"
+    return formatter.string(from: date)
   }
 }
 

@@ -15,7 +15,7 @@ struct SignUpEmailView: View {
   
   var body: some View {
     VStack {
-      Image("firebaseLogo")
+      Image("main_logo")
         .resizable()
         .scaledToFill()
         .frame(width: 100, height: 120)
