@@ -51,7 +51,7 @@ struct DirectoryListView: View {
           .navigationTitle("Business Directory")
           .navigationBarTitleDisplayMode(.inline)
       }
-      .customNavigationBar(showSignInView: $showSignInView, isLoggedIn: userIsLoggedIn)
+      .customNavigationBar(showSignInView: $showSignInView, isLoggedIn: $userIsLoggedIn)
   }
 }
 
