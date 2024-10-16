@@ -9,6 +9,7 @@ import SwiftUI
 
 struct NavigationBarModifier: ViewModifier {
     @Binding var showSignInView: Bool
+    var isLoggedIn: Bool // Add a property to track login status
     
     func body(content: Content) -> some View {
         content
@@ -24,6 +25,7 @@ struct NavigationBarModifier: ViewModifier {
                     NavigationLink(destination: ProfileView(showSignInView: $showSignInView)) {
                         Image(systemName: "person.crop.circle")
                             .imageScale(.large)
+                            .foregroundColor(isLoggedIn ? Color("pink1") : Color.gray) // Change color based on login status
                     }
                 }
             }
@@ -32,8 +34,7 @@ struct NavigationBarModifier: ViewModifier {
 }
 
 extension View {
-    func customNavigationBar(showSignInView: Binding<Bool>) -> some View {
-        self.modifier(NavigationBarModifier(showSignInView: showSignInView))
+    func customNavigationBar(showSignInView: Binding<Bool>, isLoggedIn: Bool) -> some View {
+        self.modifier(NavigationBarModifier(showSignInView: showSignInView, isLoggedIn: isLoggedIn))
     }
 }
-

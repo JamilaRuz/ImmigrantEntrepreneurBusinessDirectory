@@ -9,15 +9,17 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var showSignInView = true
+    @State private var userIsLoggedIn = false // Track login status
     @StateObject private var directoryListViewModel = DirectoryListViewModel()
 
     var body: some View {
         Group {
             if showSignInView {
-                AuthenticationView(showSignInView: $showSignInView)
+                AuthenticationView(showSignInView: $showSignInView, userIsLoggedIn: $userIsLoggedIn)
             } else {
                 MainTabView(
                     showSignInView: $showSignInView,
+                    userIsLoggedIn: $userIsLoggedIn,
                     directoryListViewModel: directoryListViewModel
                 )
             }
@@ -27,11 +29,12 @@ struct ContentView: View {
 
 struct MainTabView: View {
     @Binding var showSignInView: Bool
+    @Binding var userIsLoggedIn: Bool // Add this binding
     @ObservedObject var directoryListViewModel: DirectoryListViewModel
     
     var body: some View {
         TabView {
-            DirectoryListView(viewModel: directoryListViewModel, showSignInView: $showSignInView)
+            DirectoryListView(viewModel: directoryListViewModel, showSignInView: $showSignInView, userIsLoggedIn: $userIsLoggedIn)
                 .tabItem {
                     Label("Directories", systemImage: "newspaper")
                 }
