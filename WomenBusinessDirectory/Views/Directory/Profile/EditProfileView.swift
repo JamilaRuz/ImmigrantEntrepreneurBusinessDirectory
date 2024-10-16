@@ -44,44 +44,57 @@ struct EditProfileView: View {
     
     private var profileImageView: some View {
         Group {
-            if let selectedImage = selectedImage {
-                Image(uiImage: selectedImage)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(height: 200)
-            } else if let profileUrl = entrepreneur.profileUrl, let url = URL(string: profileUrl) {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .empty:
-                        ProgressView()
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .scaledToFit()
-                            .frame(height: 200)
-                    case .failure:
-                        Image(systemName: "person.circle.fill")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(height: 200)
-                            .foregroundColor(.gray)
-                    @unknown default:
-                        EmptyView()
+            VStack(alignment: .center) {
+                if let selectedImage = selectedImage {
+                    Image(uiImage: selectedImage)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: 200)
+                } else if let profileUrl = entrepreneur.profileUrl, let url = URL(string: profileUrl) {
+                    AsyncImage(url: url) { phase in
+                        switch phase {
+                        case .empty:
+                            ProgressView()
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .scaledToFit()
+                                .frame(height: 200)
+                        case .failure:
+                            Image(systemName: "person.circle.fill")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(height: 200)
+                                .foregroundColor(.gray)
+                        @unknown default:
+                            EmptyView()
+                        }
                     }
+                } else {
+                    Image(systemName: "person.circle.fill")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: 200)
+                        .foregroundColor(.gray)
                 }
-            } else {
-                Image(systemName: "person.circle.fill")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(height: 200)
-                    .foregroundColor(.gray)
             }
-        }
+            .frame(maxWidth: .infinity)
+        } //Group
     }
     
     private var chooseImageButton: some View {
-        Button("Choose new picture") {
+        Button(action: {
             isImagePickerPresented = true
+        }) {
+            Text("Choose Image")
+                .foregroundColor(.pink1) // Set text color to pink
+                .padding() // Add padding to the text
+                .frame(maxWidth: .infinity) // Make the button take the full width if desired
+                .background(Color.white) // Background color of the button
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.pink1, lineWidth: 2) // Pink border
+                )
         }
     }
     
@@ -158,3 +171,8 @@ extension Optional where Wrapped == String {
         set { self = newValue.isEmpty ? nil : newValue }
     }
 }
+
+#Preview {
+  EditProfileView(entrepreneur: Entrepreneur(entrepId: "id", fullName: "Name", profileUrl: nil, email: "email", bioDescr: "bio", companyIds: []))
+}
+

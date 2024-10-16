@@ -7,6 +7,7 @@
 
 import Foundation
 import FirebaseAuth
+import FirebaseFirestore
 
 struct AuthDataResultModel {
   let uid: String
@@ -42,9 +43,24 @@ final class AuthenticationManager {
   }
   
   @discardableResult
-  func signIn(email: String, password: String) async throws -> AuthDataResultModel {
+  func signIn(email: String, password: String) async throws -> AuthDataResultModel? {
+    // Attempt to sign in with Firebase Authentication
     let authDataResult = try await Auth.auth().signIn(withEmail: email, password: password)
-    return AuthDataResultModel(user: authDataResult.user)
+    
+    // Check if the email exists in the Firestore database
+    let db = Firestore.firestore()
+    let querySnapshot = try await db.collection("entrepreneurs")
+        .whereField("email", isEqualTo: email)
+        .getDocuments()
+    
+    // If the email exists, return the authenticated user
+    if !querySnapshot.isEmpty {
+        return AuthDataResultModel(user: authDataResult.user)
+    } else {
+        // Handle the case where the email does not exist in Firestore
+        print("Email does not exist in Firestore.")
+        return nil
+    }
   }
   
   func signOut() throws {

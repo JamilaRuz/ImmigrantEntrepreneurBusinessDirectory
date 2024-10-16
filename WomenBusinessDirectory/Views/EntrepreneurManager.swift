@@ -23,7 +23,6 @@ struct Entrepreneur: Codable, Hashable {
     self.entrepId = auth.uid
     self.fullName = auth.fullName
     self.email = auth.email
-//    self.profileUrl = auth.profileUrl
     self.dateCreated = Date()
   }
   
@@ -48,10 +47,14 @@ final class EntrepreneurManager {
   private let storage = Storage.storage().reference()
   
   private func entrepDocument(entrepId: String) -> DocumentReference {
+    print("Creating document reference for entrepId: \(entrepId)")
     return entrepCollection.document(entrepId)
   }
   
   func createEntrepreneur(entrep: Entrepreneur) async throws {
+    guard !entrep.entrepId.isEmpty else {
+        throw NSError(domain: "EntrepreneurManager", code: 1, userInfo: [NSLocalizedDescriptionKey: "Entrepreneur ID cannot be empty"])
+    }
     print("Creating entrepreneur...")
     try entrepDocument(entrepId: entrep.entrepId).setData(from: entrep, merge: false)
     print("Entrepreneur created!")
@@ -82,6 +85,9 @@ final class EntrepreneurManager {
   }
 
   func updateEntrepreneur(_ entrepreneur: Entrepreneur) async throws {
+    guard !entrepreneur.entrepId.isEmpty else {
+        throw NSError(domain: "EntrepreneurManager", code: 1, userInfo: [NSLocalizedDescriptionKey: "Entrepreneur ID cannot be empty"])
+    }
     try entrepDocument(entrepId: entrepreneur.entrepId).setData(from: entrepreneur, merge: true)
   }
 }

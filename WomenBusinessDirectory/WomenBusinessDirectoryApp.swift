@@ -12,14 +12,10 @@ import Firebase
 struct WomenBusinessDirectoryApp: App {
   @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
   
-  //  init() {
-  //    FirebaseApp.configure()
-  //  }
-  
   var body: some Scene {
     WindowGroup {
       NavigationStack {
-        //        RootView()
+//        AuthenticationView()
         ContentView()
           .environment(\.companyManager, RealCompanyManager.shared)
       }

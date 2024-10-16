@@ -1,5 +1,5 @@
 //
-//  RootView.swift
+//  AuthenticationView.swift
 //  WomenBusinessDirectory
 //
 //  Created by Jamila Ruzimetova on 6/19/24.
@@ -8,19 +8,22 @@
 import SwiftUI
 
 struct AuthenticationView: View {
+    @StateObject private var viewModel = SignInEmailViewModel()
+    @State private var email: String = ""
+    @State private var password: String = ""
+    @State private var isPasswordVisible: Bool = false
     
-    @State private var email = ""
     @Binding var showSignInView: Bool
     @State private var navigateToDirectoryList = false
     
     var body: some View {
         NavigationStack {
-            VStack(spacing: 20) {
+            ScrollView(.vertical) {
                 Text("Immigrant \nEntrepreneur Canada")
-                    .font(.largeTitle)
+                    .font(.title)
                     .fontWeight(.semibold)
                     .multilineTextAlignment(.center)
-
+                
                 Image("main_logo")
                     .resizable()
                     .scaledToFit()
@@ -31,13 +34,48 @@ struct AuthenticationView: View {
                     .fontWeight(.semibold)
                 
                 TextField("Email", text: $email)
+                    .autocapitalization(.none)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .padding(.horizontal)
                 
+                HStack {
+                    if isPasswordVisible {
+                        TextField("Password", text: $password)
+                            .autocapitalization(.none)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .padding(.horizontal)
+                    } else {
+                        SecureField("Password", text: $password)
+                            .autocapitalization(.none)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .padding(.horizontal)
+                    }
+                    
+                    Button(action: {
+                        isPasswordVisible.toggle()
+                    }) {
+                        isPasswordVisible ? Image(systemName: "eye.slash") : Image(systemName: "eye")
+                    }
+                    .foregroundColor(.gray)
+                    .padding(.trailing)
+                }
+                .padding()
+                
                 Button(action: {
-                    // Handle continue action
+                    Task {
+                        do {
+                            let emailExists = try await viewModel.signIn(email: email, password: password)
+                            if emailExists {
+                                navigateToDirectoryList = true
+                            } else {
+                                print("Email does not exist.")
+                            }
+                        } catch {
+                            print("Error: \(error.localizedDescription)")
+                        }
+                    }
                 }) {
-                    Text("Continue")
+                    Text("Sign In")
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding()
@@ -45,9 +83,20 @@ struct AuthenticationView: View {
                         .cornerRadius(10)
                 }
                 .padding(.horizontal)
+                NavigationLink(destination: SignUpEmailView()) {
+                    HStack {
+                        Text("Don't have an account?")
+                            .foregroundColor(.gray)
+                        Text("Sign Up")
+                            .foregroundColor(.blue)
+                    }
+                }
+                .padding(.bottom, 20)
                 
                 Text("or")
                     .foregroundColor(.gray)
+                
+                //Social media buttons
                 
                 Button(action: {
                     // Handle Apple sign in
@@ -112,6 +161,7 @@ struct AuthenticationView: View {
                 }
                 .padding(.horizontal)
                 
+                
                 Spacer()
                 
                 Button("Skip") {
@@ -126,14 +176,12 @@ struct AuthenticationView: View {
                     RoundedRectangle(cornerRadius: 10)
                         .stroke(Color.gray, lineWidth: 1)
                 )
-
-            }
-            .padding()
-            .navigationDestination(isPresented: $navigateToDirectoryList) {
-                DirectoryListView(viewModel: DirectoryListViewModel(), showSignInView: $showSignInView)
-            }
-        }
-    }
+                .navigationDestination(isPresented: $navigateToDirectoryList) {
+                    DirectoryListView(viewModel: DirectoryListViewModel(), showSignInView: $showSignInView)
+                }
+            } //VStack
+        } //navigationStack
+    }//body
 }
 
 struct AuthenticationView_Previews: PreviewProvider {
