@@ -14,25 +14,39 @@ final class SignUpEmailViewModel: ObservableObject {
   @Published var email = ""
   @Published var password = ""
   
-  func singUp() async throws {
+  func signUp() async throws {
+    // Ensure email and password are not empty
     guard !email.isEmpty, !password.isEmpty else {
       print("No email or password found!")
       return
     }
     
     print("Signing up...")
-    var authDataResult = try await AuthenticationManager.shared.createUser(
-      email: email, password: password
-    )
-    authDataResult.fullName = fullName
     
-    let entrepreneur = Entrepreneur(auth: authDataResult)
-    print("Before creating entrepreneur...")
-    
-    try await EntrepreneurManager.shared.createEntrepreneur(entrep: entrepreneur)
-    print("After creating entrepreneur")
+    do {
+      // Step 1: Create the user in Firebase Authentication
+      let authDataResult = try await AuthenticationManager.shared.createUser(
+        email: email, password: password
+      )
+      
+      // Step 2: Create an Entrepreneur record in Firestore
+      var entrepreneur = Entrepreneur(auth: authDataResult)
+      entrepreneur.fullName = fullName // Set the full name
+      
+      print("Before creating entrepreneur...")
+      
+      try await EntrepreneurManager.shared.createEntrepreneur(
+        fullName: entrepreneur.fullName ?? "",
+        email: entrepreneur.email ?? ""
+      )
+      
+      print("After creating entrepreneur")
+    } catch {
+      // Handle errors appropriately
+      print("Error during sign-up: \(error.localizedDescription)")
+      throw error
+    }
   }
-  
 }
 
   
