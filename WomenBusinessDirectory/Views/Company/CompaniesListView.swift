@@ -76,10 +76,14 @@ struct CompaniesListView: View {
             NavigationLink(destination: CompanyDetailView(company: company)) {
               CompanyRowView(company: company, viewModel: viewModel)
             }
+            .buttonStyle(PlainButtonStyle())
+            .listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
           }
         }
-        .listStyle(PlainListStyle())
+        .listStyle(.plain)
       }
+      .background(Color.white)
       .navigationTitle(category.name)
       .navigationBarTitleDisplayMode(.inline)
     }
@@ -115,48 +119,74 @@ struct CompanyRowView: View {
     @ObservedObject var viewModel: CompaniesListViewModel
   
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .top) {
-//                Image(company.logoImg)
-                Image("placeholder")
-                    .resizable()
-                    .scaledToFit()
+        HStack {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(alignment: .top, spacing: 12) {
+                    AsyncImage(url: URL(string: company.logoImg ?? "")) { phase in
+                        switch phase {
+                        case .empty:
+                            ProgressView()
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                        case .failure:
+                            Image(systemName: "building.2")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                        @unknown default:
+                            EmptyView()
+                        }
+                    }
                     .frame(width: 60, height: 60)
-                    .cornerRadius(10)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(company.name)
+                            .font(.headline)
+                        Text(viewModel.getCategoryNames(for: company))
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                        HStack {
+                            Image(systemName: "clock")
+                                .foregroundColor(.green)
+                            Text(company.workHours)
+                                .font(.caption)
+                                .foregroundColor(.green)
+                        }
+                    }
+                }
                 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(company.name)
-                        .font(.headline)
-                    Text(viewModel.getCategoryNames(for: company))
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                Text(company.aboutUs)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .lineLimit(2)
+                
+                // Services
+                ScrollView(.horizontal, showsIndicators: false) {
                     HStack {
-                        Image(systemName: "clock")
-                            .foregroundColor(.green)
-                        Text(company.workHours)
-                            .font(.caption)
-                            .foregroundColor(.green)
+                        ForEach(company.services, id: \.self) { service in
+                            Text(service)
+                                .font(.caption)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color.blue.opacity(0.1))
+                                .foregroundColor(.blue)
+                                .cornerRadius(8)
+                        }
                     }
                 }
             }
             
-            Text(company.aboutUs)
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .lineLimit(2)
+            Spacer()
             
-//            HStack {
-//                ForEach(company.services, id: \.self) { service in
-//                    Text(service)
-//                        .font(.caption)
-//                        .padding(.horizontal, 8)
-//                        .padding(.vertical, 4)
-//                        .background(Color.blue.opacity(0.1))
-//                        .foregroundColor(.blue)
-//                        .cornerRadius(8)
-//                }
-//            }
+            Image(systemName: "chevron.right")
+                .foregroundColor(.gray)
         }
+        .padding()
+        .background(Color.white)
+        .cornerRadius(10)
+        .shadow(color: Color.black.opacity(0.1), radius: 3, x: 0, y: 1)
     }
 }
 
