@@ -11,7 +11,7 @@ struct ContentView: View {
     @State private var showSignInView = true
     @State private var userIsLoggedIn = false // Track login status
     @StateObject private var directoryListViewModel = DirectoryListViewModel()
-
+    
     var body: some View {
         Group {
             if showSignInView {
@@ -44,10 +44,17 @@ struct MainTabView: View {
                     Label("Favourites", systemImage: "star.square")
                 }
             
-            ProfileView(showSignInView: $showSignInView)
-                .tabItem {
-                    Label("Profile", systemImage: "person.fill")
-                }
+            if userIsLoggedIn {
+                ProfileView(showSignInView: $showSignInView)
+                    .tabItem {
+                        Label("Profile", systemImage: "person.fill")
+                    }
+            } else {
+                EmptyProfileView(showSignInView: $showSignInView)
+                    .tabItem {
+                        Label("Profile", systemImage: "person.fill")
+                    }
+            }
         }
     }
 }

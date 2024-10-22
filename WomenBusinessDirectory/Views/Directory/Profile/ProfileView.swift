@@ -236,11 +236,27 @@ struct CompanyEntRowView: View {
     
     var body: some View {
         HStack(spacing: 15) {
-            Image("companyImage")
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .frame(width: 50, height: 50)
-                .clipShape(RoundedRectangle(cornerRadius: 10))
+            AsyncImage(url: URL(string: company.logoImg ?? "")) { phase in
+                switch phase {
+                case .empty:
+                    ProgressView()
+                        .frame(width: 50, height: 50)
+                case .success(let image):
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: 50, height: 50)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                case .failure:
+                    Image(systemName: "building.2")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 50, height: 50)
+                        .foregroundColor(.gray)
+                @unknown default:
+                    EmptyView()
+                }
+            }
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(company.name)
@@ -254,7 +270,7 @@ struct CompanyEntRowView: View {
                     .lineLimit(2)
             }
             
-            Spacer ()
+            Spacer()
             
             Image(systemName: "chevron.right")
                 .foregroundColor(.gray)

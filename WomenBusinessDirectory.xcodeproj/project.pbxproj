@@ -31,6 +31,7 @@
 		8D68E6CD2C2613F200D10390 /* EntrepreneurManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D68E6CC2C2613F200D10390 /* EntrepreneurManager.swift */; };
 		8D68E6CF2C2A0FD100D10390 /* SignUpEmailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D68E6CE2C2A0FD100D10390 /* SignUpEmailViewModel.swift */; };
 		8D68E6D12C2B60DD00D10390 /* AuthenticationFormProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D68E6D02C2B60DD00D10390 /* AuthenticationFormProtocol.swift */; };
+		8D95887D2CC2F977004C0034 /* PortfolioImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D95887C2CC2F977004C0034 /* PortfolioImagePicker.swift */; };
 		8DAECA452C014B240037A601 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DAECA442C014B240037A601 /* ProfileView.swift */; };
 		8DAECA472C018AF20037A601 /* EditProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DAECA462C018AF20037A601 /* EditProfileView.swift */; };
 		8DB694BB2C34746600DC516E /* InfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DB694BA2C34746600DC516E /* InfoView.swift */; };
@@ -39,6 +40,7 @@
 		8DB694C22C34B84300DC516E /* CompanyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DB694C12C34B84300DC516E /* CompanyViewModel.swift */; };
 		8DB694C42C34BA5B00DC516E /* AddCompanyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DB694C32C34BA5A00DC516E /* AddCompanyViewModel.swift */; };
 		8DBC06C12CBF0D98009420C6 /* SignInEmailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DBC06C02CBF0D98009420C6 /* SignInEmailViewModel.swift */; };
+		8DBC06C32CC0627E009420C6 /* EmptyProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DBC06C22CC0627E009420C6 /* EmptyProfileView.swift */; };
 		8DD6E8F42C30DEBF000F67DD /* CompanyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DD6E8F32C30DEBF000F67DD /* CompanyManager.swift */; };
 		8DD6E8F62C30E291000F67DD /* CategoryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DD6E8F52C30E291000F67DD /* CategoryManager.swift */; };
 		8DD6E8F82C32C79D000F67DD /* AsyncExt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DD6E8F72C32C79C000F67DD /* AsyncExt.swift */; };
@@ -82,6 +84,7 @@
 		8D68E6CC2C2613F200D10390 /* EntrepreneurManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntrepreneurManager.swift; sourceTree = "<group>"; };
 		8D68E6CE2C2A0FD100D10390 /* SignUpEmailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpEmailViewModel.swift; sourceTree = "<group>"; };
 		8D68E6D02C2B60DD00D10390 /* AuthenticationFormProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationFormProtocol.swift; sourceTree = "<group>"; };
+		8D95887C2CC2F977004C0034 /* PortfolioImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortfolioImagePicker.swift; sourceTree = "<group>"; };
 		8DAECA442C014B240037A601 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		8DAECA462C018AF20037A601 /* EditProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditProfileView.swift; sourceTree = "<group>"; };
 		8DB694BA2C34746600DC516E /* InfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfoView.swift; sourceTree = "<group>"; };
@@ -90,6 +93,7 @@
 		8DB694C12C34B84300DC516E /* CompanyViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanyViewModel.swift; sourceTree = "<group>"; };
 		8DB694C32C34BA5A00DC516E /* AddCompanyViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCompanyViewModel.swift; sourceTree = "<group>"; };
 		8DBC06C02CBF0D98009420C6 /* SignInEmailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInEmailViewModel.swift; sourceTree = "<group>"; };
+		8DBC06C22CC0627E009420C6 /* EmptyProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyProfileView.swift; sourceTree = "<group>"; };
 		8DD6E8F32C30DEBF000F67DD /* CompanyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanyManager.swift; sourceTree = "<group>"; };
 		8DD6E8F52C30E291000F67DD /* CategoryManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryManager.swift; sourceTree = "<group>"; };
 		8DD6E8F72C32C79C000F67DD /* AsyncExt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncExt.swift; sourceTree = "<group>"; };
@@ -215,6 +219,7 @@
 			isa = PBXGroup;
 			children = (
 				8DAECA442C014B240037A601 /* ProfileView.swift */,
+				8DBC06C22CC0627E009420C6 /* EmptyProfileView.swift */,
 				8DAECA462C018AF20037A601 /* EditProfileView.swift */,
 			);
 			path = Profile;
@@ -223,11 +228,11 @@
 		8D9424572CAF343000F19517 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
-				8DBC06C02CBF0D98009420C6 /* SignInEmailViewModel.swift */,
 				8DE69AEA2C24DA4900C2D6C9 /* AuthenticationViewModel.swift */,
+				8DBC06C02CBF0D98009420C6 /* SignInEmailViewModel.swift */,
+				8D68E6CE2C2A0FD100D10390 /* SignUpEmailViewModel.swift */,
 				8DB694C32C34BA5A00DC516E /* AddCompanyViewModel.swift */,
 				8DB694C12C34B84300DC516E /* CompanyViewModel.swift */,
-				8D68E6CE2C2A0FD100D10390 /* SignUpEmailViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -263,8 +268,8 @@
 			children = (
 				8DDE05862C13A98D00C83EEA /* App */,
 				8D9424572CAF343000F19517 /* ViewModels */,
-				8DE69AE82C24D9F800C2D6C9 /* Settings */,
 				8D68E6CB2C2612D600D10390 /* Firestore */,
+				8DE69AE82C24D9F800C2D6C9 /* Settings */,
 				8DDB67122BC99F6F00D9A2C8 /* Views */,
 				8D4D7EB02C091B9500FF7EF5 /* Utils */,
 				8DDE05872C13A9B400C83EEA /* Components */,
@@ -306,6 +311,7 @@
 			isa = PBXGroup;
 			children = (
 				8D68E6D02C2B60DD00D10390 /* AuthenticationFormProtocol.swift */,
+				8D95887C2CC2F977004C0034 /* PortfolioImagePicker.swift */,
 			);
 			name = Components;
 			sourceTree = "<group>";
@@ -427,7 +433,9 @@
 				8DD6E8F42C30DEBF000F67DD /* CompanyManager.swift in Sources */,
 				8DDB671D2BCD742300D9A2C8 /* RowView.swift in Sources */,
 				8D22CFC72CB0559100B88837 /* NavigationBarModifier.swift in Sources */,
+				8DBC06C32CC0627E009420C6 /* EmptyProfileView.swift in Sources */,
 				8DB694C22C34B84300DC516E /* CompanyViewModel.swift in Sources */,
+				8D95887D2CC2F977004C0034 /* PortfolioImagePicker.swift in Sources */,
 				8DD6E8F82C32C79D000F67DD /* AsyncExt.swift in Sources */,
 				8DDE058D2C13AC5500C83EEA /* InputView.swift in Sources */,
 				8DE69AEB2C24DA4900C2D6C9 /* AuthenticationViewModel.swift in Sources */,

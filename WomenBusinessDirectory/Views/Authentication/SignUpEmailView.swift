@@ -73,7 +73,7 @@ struct SignUpEmailView: View {
     Button {
       Task {
         do {
-          try await viewModel.singUp()
+          try await viewModel.signUp()
           return
         } catch {
           print("Failed to sign up: \(error)")

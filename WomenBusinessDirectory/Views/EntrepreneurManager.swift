@@ -9,6 +9,7 @@ import Foundation
 import FirebaseFirestore
 import FirebaseFirestoreSwift
 import FirebaseStorage
+import FirebaseAuth
 
 struct Entrepreneur: Codable, Hashable {
   var entrepId: String
@@ -44,21 +45,23 @@ final class EntrepreneurManager {
   
   private let entrepCollection = Firestore.firestore().collection("entrepreneurs")
   
-  private let storage = Storage.storage().reference()
+  private let storageRef = Storage.storage().reference()
   
   private func entrepDocument(entrepId: String) -> DocumentReference {
     print("Creating document reference for entrepId: \(entrepId)")
     return entrepCollection.document(entrepId)
   }
   
-  func createEntrepreneur(entrep: Entrepreneur) async throws {
-    guard !entrep.entrepId.isEmpty else {
-        throw NSError(domain: "EntrepreneurManager", code: 1, userInfo: [NSLocalizedDescriptionKey: "Entrepreneur ID cannot be empty"])
+func createEntrepreneur(fullName: String, email: String) async throws {
+    guard let uid = Auth.auth().currentUser?.uid else {
+        throw NSError(domain: "AuthError", code: 0, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])
     }
-    print("Creating entrepreneur...")
-    try entrepDocument(entrepId: entrep.entrepId).setData(from: entrep, merge: false)
-    print("Entrepreneur created!")
-  }
+    print("Creating entrepreneur with uid: \(uid)")
+    let entrepreneur = Entrepreneur(entrepId: uid, fullName: fullName, profileUrl: nil, email: email, bioDescr: "", companyIds: [])
+    print("Entrepreneur created: \(entrepreneur)")
+    let encodedEntrepreneur = try Firestore.Encoder().encode(entrepreneur)
+    try await entrepDocument(entrepId: uid).setData(encodedEntrepreneur)
+}
 
   func getEntrepreneur(entrepId: String) async throws -> Entrepreneur {
     try await entrepDocument(entrepId: entrepId).getDocument(as: Entrepreneur.self)
@@ -76,12 +79,22 @@ final class EntrepreneurManager {
     }
 
     let imageName = UUID().uuidString + ".jpg"
-    let imageReference = storage.child("profile_images/\(imageName)")
+    let imageReference = storageRef.child("profile_images/\(imageName)")
 
-    _ = try await imageReference.putDataAsync(imageData)
-    let downloadURL = try await imageReference.downloadURL()
-
-    return downloadURL.absoluteString
+    do {
+      // Attempt to upload the image data
+      _ = try await imageReference.putDataAsync(imageData)
+      
+      // If successful, get the download URL
+      let downloadURL = try await imageReference.downloadURL()
+      
+      // Return the URL as a string
+      return downloadURL.absoluteString
+    } catch {
+      // Handle any errors that occur during upload
+      print("Error uploading image: \(error.localizedDescription)")
+      throw error
+    }
   }
 
   func updateEntrepreneur(_ entrepreneur: Entrepreneur) async throws {

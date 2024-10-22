@@ -6,6 +6,8 @@
 //
 
 import SwiftUI
+import Foundation
+import PhotosUI
 
 struct AddCompanyView: View {
   @StateObject var viewModel: AddCompanyViewModel
@@ -15,11 +17,12 @@ struct AddCompanyView: View {
   
   @State private var companyName = ""
   @State private var logoImage: UIImage?
+  @State private var portfolioImages: [UIImage] = []
   @State private var dateFounded = Date()
   @State private var aboutUs = ""
   @State private var workHours = ""
   @State private var services = ""
-  @State private var businessModel = BusinessModel.offline
+    @State private var businessModel = Company.BusinessModel.offline
   @State private var address = ""
   @State private var phoneNum = ""
   @State private var email = ""
@@ -29,73 +32,165 @@ struct AddCompanyView: View {
   
   @State private var selectedCategoryIds: Set<String> = []
   @State private var isImagePickerPresented = false
-  
-  enum BusinessModel: String, CaseIterable {
-    case online, offline, hybrid
-  }
+  @State private var isPortfolioPickerPresented = false
+  @State private var currentPage = 0
   
   var body: some View {
     NavigationView {
-      Form {
-        Section(header: Text("Company Info")) {
-          logoButton
-          DatePicker("Date Founded", selection: $dateFounded, displayedComponents: .date)
-          TextField("Name", text: $companyName)
-          NavigationLink(destination: MultipleSelectionList(categories: viewModel.categories, selectedCategoryIds: $selectedCategoryIds)) {
-            Text("Choose corresponding categories")
-          }
-          selectedCategoriesView
-        }
-        
-        Section(header: Text("Details")) {
-          TextEditor(text: $aboutUs)
-            .frame(height: 100)
-          TextField("Working Hours (e.g., Mon-Fri 9-5)", text: $workHours)
-          TextField("Services (comma-separated)", text: $services)
-          Picker("Business Model", selection: $businessModel) {
-            ForEach(BusinessModel.allCases, id: \.self) { model in
-              Text(model.rawValue.capitalized)
-            }
+      VStack {
+        // Step Indicator
+        HStack {
+          ForEach(0..<3) { index in
+            Circle()
+              .fill(index == currentPage ? Color.blue : Color.gray)
+              .frame(width: 10, height: 10)
           }
         }
+        .padding(.top)
         
-        Section(header: Text("Contact Info")) {
-          TextField("Phone Number", text: $phoneNum)
-          TextField("Address", text: $address)
-          TextField("Website", text: $website)
-          TextField("Instagram", text: $socialMediaInsta)
-          TextField("Facebook", text: $socialMediaFacebook)
+        TabView(selection: $currentPage) {
+          companyInfoSection
+            .tag(0)
+          
+          detailsSection
+            .tag(1)
+          
+          contactInfoSection
+            .tag(2)
         }
+        .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+        
+        Button(action: {
+          if currentPage < 2 {
+            currentPage += 1
+          } else {
+            saveCompany()
+          }
+        }) {
+          Text(currentPage < 2 ? "Next" : "Save")
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(Color.blue)
+            .foregroundColor(.white)
+            .cornerRadius(8)
+        }
+        .padding()
       }
       .navigationBarTitle("Add Company", displayMode: .inline)
-      .toolbar {
-        ToolbarItem(placement: .topBarTrailing) {
-          Button("Save") {
-//            saveCompany()
-          }
-        }
-      }
       .sheet(isPresented: $isImagePickerPresented) {
         ImagePicker(image: $logoImage)
+      }
+      .sheet(isPresented: $isPortfolioPickerPresented) {
+        PortfolioImagePicker(images: $portfolioImages, maxSelection: 6)
       }
     }
   }
   
-  private var logoButton: some View {
-    HStack {
-      Button(action: { isImagePickerPresented = true }) {
-        Text("Browse Logo")
+  private var companyInfoSection: some View {
+    Form {
+      Section(header: Text("Company Info")) {
+        logoAndAboutUsView
+        DatePicker("Date Founded", selection: $dateFounded, displayedComponents: .date)
+        TextField("Name", text: $companyName)
+          .textFieldStyle(RoundedBorderTextFieldStyle())
+        NavigationLink(destination: MultipleSelectionList(categories: viewModel.categories, selectedCategoryIds: $selectedCategoryIds)) {
+          Text("Choose corresponding categories")
+        }
+        selectedCategoriesView
+        portfolioImagesView
       }
-      if let logoImage = logoImage {
-        Image(uiImage: logoImage)
-          .resizable()
-          .scaledToFit()
-          .frame(height: 50)
-      } else {
-        Image(systemName: "photo")
-          .frame(width: 50, height: 50)
-          .background(Color.gray.opacity(0.2))
-          .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+  }
+  
+  private var logoAndAboutUsView: some View {
+    HStack(alignment: .top) {
+      Button(action: { isImagePickerPresented = true }) {
+        VStack {
+          if let logoImage = logoImage {
+            Image(uiImage: logoImage)
+              .resizable()
+              .scaledToFit()
+              .frame(width: 100, height: 100)
+              .border(Color.gray, width: 1)
+          } else {
+            VStack {
+              Image(systemName: "camera")
+                .font(.largeTitle)
+              Text("Add Company Logo")
+                .font(.caption)
+            }
+            .frame(width: 100, height: 100)
+            .border(Color.gray, width: 1)
+          }
+        }
+      }
+      .buttonStyle(PlainButtonStyle())
+      
+      TextEditor(text: $aboutUs)
+        .frame(height: 100)
+        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray, lineWidth: 1))
+        .padding(.leading)
+    }
+  }
+  
+  private var portfolioImagesView: some View {
+    VStack(alignment: .leading) {
+      Button(action: { isPortfolioPickerPresented = true }) {
+        HStack {
+          Image(systemName: "photo.on.rectangle.angled")
+          Text("Add Portfolio Images")
+        }
+        .padding()
+        .background(Color.gray.opacity(0.2))
+        .cornerRadius(8)
+      }
+      
+      ScrollView(.horizontal, showsIndicators: false) {
+        HStack {
+          ForEach(portfolioImages, id: \.self) { image in
+            Image(uiImage: image)
+              .resizable()
+              .scaledToFit()
+              .frame(width: 100, height: 100)
+              .border(Color.gray, width: 1)
+          }
+        }
+      }
+    }
+  }
+  
+  private var detailsSection: some View {
+    Form {
+      Section(header: Text("Details")) {
+        TextField("Working Hours (e.g., Mon-Fri 9-5)", text: $workHours)
+          .textFieldStyle(RoundedBorderTextFieldStyle())
+        TextField("Services (comma-separated)", text: $services)
+          .textFieldStyle(RoundedBorderTextFieldStyle())
+        Picker("Business Model", selection: $businessModel) {
+            let businessModels = Company.BusinessModel.allCases
+            
+            ForEach(businessModels, id: \.self) { model in
+            Text(model.rawValue.capitalized)
+          }
+        }
+        .pickerStyle(SegmentedPickerStyle())
+      }
+    }
+  }
+  
+  private var contactInfoSection: some View {
+    Form {
+      Section(header: Text("Contact Info")) {
+        TextField("Phone Number", text: $phoneNum)
+          .textFieldStyle(RoundedBorderTextFieldStyle())
+        TextField("Address", text: $address)
+          .textFieldStyle(RoundedBorderTextFieldStyle())
+        TextField("Website", text: $website)
+          .textFieldStyle(RoundedBorderTextFieldStyle())
+        TextField("Instagram", text: $socialMediaInsta)
+          .textFieldStyle(RoundedBorderTextFieldStyle())
+        TextField("Facebook", text: $socialMediaFacebook)
+          .textFieldStyle(RoundedBorderTextFieldStyle())
       }
     }
   }
@@ -115,46 +210,33 @@ struct AddCompanyView: View {
     }
   }
   
-//  private func saveCompany() {
-//    Task {
-//      do {
-//        guard !selectedCategoryIds.isEmpty else {
-//          print("No categories selected")
-//          return
-//        }
-//        
-//        var logoUrl = ""
-//        if let logoImage = logoImage {
-//          // Assuming you have a method in your viewModel to upload images
-//          logoUrl = try await viewModel.uploadCompanyLogo(logoImage)
-//        }
-//        
-//        let newCompany = Company(
-//          companyId: "",
-//          entrepId: entrepreneur.entrepId,
-//          categoryIds: Array(selectedCategoryIds),
-//          name: companyName,
-//          logoImg: logoUrl,
-//          aboutUs: aboutUs,
-//          dateFounded: formatDate(dateFounded),
-//          address: address,
-//          phoneNum: phoneNum,
-//          email: "", // You might want to remove this if it's not used
-//          workHours: workHours,
-//          socialMediaFacebook: socialMediaFacebook,
-//          socialMediaInsta: socialMediaInsta,
-//          website: website,
-//          services: services.split(separator: ",").map { String($0.trimmingCharacters(in: .whitespaces)) },
-//          businessModel: businessModel.rawValue
-//        )
-//        
-//        try await viewModel.createCompany(company: newCompany)
-//        dismiss()
-//      } catch {
-//        print("Failed to create company: \(error)")
-//      }
-//    }
-//  }
+  private func saveCompany() {
+    Task {
+      do {
+        try await viewModel.saveCompany(
+            entrepreneur: entrepreneur,
+            companyName: companyName,
+            logoImage: logoImage,
+            portfolioImages: portfolioImages,
+            aboutUs: aboutUs,
+            dateFounded: dateFounded,
+            workHours: workHours,
+            services: services,
+            businessModel: businessModel,
+            address: address,
+            phoneNum: phoneNum,
+            email: email,
+            website: website,
+            socialMediaInsta: socialMediaInsta,
+            socialMediaFacebook: socialMediaFacebook,
+            selectedCategoryIds: selectedCategoryIds
+        )
+        dismiss()
+      } catch {
+        print("Failed to save company: \(error)")
+      }
+    }
+  }
   
   private func formatDate(_ date: Date) -> String {
     let formatter = DateFormatter()
@@ -186,12 +268,10 @@ struct MultipleSelectionList: View {
               if selectedCategoryIds.contains(category.categoryId) {
                 Image(systemName: "checkmark")
               }
-              
             }
             .buttonStyle(BorderlessButtonStyle())
-            
-          } // HStack
-        }// ForEach
+          }
+        }
       }
     }
   }

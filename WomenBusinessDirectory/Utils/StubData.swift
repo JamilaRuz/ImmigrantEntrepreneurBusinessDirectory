@@ -47,25 +47,6 @@ func createStubEntrepreneurs() -> [Entrepreneur] {
 }
 
 func createStubCompanies() -> [Company] {
-  let entrepreneur1 = Entrepreneur(
-    entrepId: "3",
-    fullName: "Alice Johnson",
-    profileUrl: "avatar.jpg",
-    email: "test@email.com",
-//    profileImage: "alice.jpg",
-    bioDescr: "Tech entrepreneur",
-    companyIds: []
-  )
-  
-  let entrepreneur2 = Entrepreneur(
-    entrepId: "4",
-    fullName: "Bob Smith",
-    profileUrl: "avatar.jpg",
-    email: "test@email.com",
-    bioDescr: "Green energy pioneer",
-    companyIds: []
-  )
-
   let company1 = Company(
     companyId: "1",
     entrepId: "3",
@@ -74,13 +55,16 @@ func createStubCompanies() -> [Company] {
     logoImg: "tech_innovators_logo.png",
     aboutUs: "Tech Innovators is a US-based software development company specializing in providing businesses worldwide with custom technology solutions. We are a mobile and web-based application development company with over 2,800 skilled software developers.",
     dateFounded: "2010-01-15",
+    portfolioImages: ["portfolio1.jpg", "portfolio2.jpg", "portfolio3.jpg"],
     address: "1930 Bank St, Ottawa, ON K1V 7Z8, Canada",
     phoneNum: "123-456-7890",
     email: "contact@techinnovators.com",
     workHours: "Mon-Fri 9am-5pm",
-    directions: "Near Tech Park",
+    services: ["Software Development", "Mobile App Development", "Web Development"],
     socialMediaFacebook: "facebook link",
-    socialMediaInsta: "Insta link"
+    socialMediaInsta: "Insta link",
+    businessModel: .online,// Set the business model
+    website: "www.techinnovators.com"
   )
   
   let company2 = Company(
@@ -91,29 +75,56 @@ func createStubCompanies() -> [Company] {
     logoImg: "green_energy_logo.png",
     aboutUs: "We work with you based on your software development objectives to bring you the most value and the quickest return on investment while defining tactics and a dedicated team to your project.",
     dateFounded: "2015-06-30",
+    portfolioImages: ["portfolio1.jpg", "portfolio2.jpg", "portfolio3.jpg"],
     address: "456 Green Lane, Austin, TX",
     phoneNum: "987-654-3210",
     email: "info@greenenergy.com",
     workHours: "Mon-Fri 8am-6pm",
-    directions: "Next to Solar Park",
+    services: ["Renewable Energy Consulting", "Solar Panel Installation", "Energy Audits"],
     socialMediaFacebook: "facebook link",
-    socialMediaInsta: "Insta link"
+    socialMediaInsta: "Insta link",
+    businessModel: .hybrid, // Set the business model
+    website: "www.greenenergy.com"
   )
   
   let company3 = Company(
-    companyId: "4",
+    companyId: "3",
     entrepId: "5",
     categoryIds: [],
     name: "Company name three",
-    logoImg: "company_logo3", aboutUs: "Our company was fouded 10 years ago. Our software developers are organized in virtual divisions, carrying the domain experience and know-how within the industry to offer exceptional application development solutions.", dateFounded: "10/13/2006", address: "123 Bank street", phoneNum: "123456", email: "test@gmail.com", workHours: "Mon 9 - 5, Tue 9 - 5, Wed 9 - 5, Thu 9 - 5, Fri 9 - 5, ", directions: "Near the pharmacy",
+    logoImg: "company_logo3",
+    aboutUs: "Our company was founded 10 years ago. Our software developers are organized in virtual divisions, carrying the domain experience and know-how within the industry to offer exceptional application development solutions.",
+    dateFounded: "10/13/2006",
+    portfolioImages: [],
+    address: "123 Bank street",
+    phoneNum: "123456",
+    email: "test@gmail.com",
+    workHours: "Mon 9 - 5, Tue 9 - 5, Wed 9 - 5, Thu 9 - 5, Fri 9 - 5",
+    services: ["Custom Software Solutions", "IT Consulting", "Cloud Services"],
     socialMediaFacebook: "facebook link",
-    socialMediaInsta: "Insta link" )
+    socialMediaInsta: "Insta link",
+    businessModel: .offline, // Set the business model
+    website: "www.companythree.com"
+  )
   
   let company4 = Company(
-    companyId: "2",
+    companyId: "4",
     entrepId: "4",
     categoryIds: [],
-    name: "Company name four", logoImg: "company_logo4", aboutUs: "We work with you based on your software development objectives to bring you the most value and the quickest return on investment while defining tactics and a dedicated team to your project.", dateFounded: "10/13/2006", address: "123 Bank street", phoneNum: "123456", email: "test@gmail.com", workHours: "Mon-Fri 9 - 5", directions: "Near the pharmacy", socialMediaFacebook: "facebook link", socialMediaInsta: "Insta link"
+    name: "Company name four",
+    logoImg: "company_logo4",
+    aboutUs: "We work with you based on your software development objectives to bring you the most value and the quickest return on investment while defining tactics and a dedicated team to your project.",
+    dateFounded: "10/13/2006",
+    portfolioImages: [],
+    address: "123 Bank street",
+    phoneNum: "123456",
+    email: "test@gmail.com",
+    workHours: "Mon-Fri 9 - 5",
+    services: ["Project Management", "Business Analysis", "Quality Assurance"],
+    socialMediaFacebook: "facebook link",
+    socialMediaInsta: "Insta link",
+    businessModel: .online, // Set the business model
+    website: "www.companyfour.com"
   )
   
   return [company1, company2, company3, company4]
