@@ -193,7 +193,7 @@ struct ProfileView: View {
     
     private var companiesList: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("My Companies")
+            Text("Companies")
                 .font(.headline)
             
             if viewModel.companies.isEmpty {
@@ -202,13 +202,11 @@ struct ProfileView: View {
                     .padding()
             } else {
                 ForEach(viewModel.companies, id: \.self) { company in
-                    NavigationLink(destination: CompanyDetailView(company: company)) {
-                        CompanyEntRowView(company: company, viewModel: viewModel)
-                    }
+                    CompanyEntRowView(company: company, viewModel: viewModel)
                 }
             }
             addCompanyButton
-                .padding()
+                .padding(.top)
         }
         .padding()
         .background(Color.white)
@@ -228,57 +226,58 @@ struct ProfileView: View {
         }
     }
 }
-        
-    
+
 struct CompanyEntRowView: View {
     let company: Company
     @ObservedObject var viewModel: ProfileViewModel
     
     var body: some View {
-        HStack(spacing: 15) {
-            AsyncImage(url: URL(string: company.logoImg ?? "")) { phase in
-                switch phase {
-                case .empty:
-                    ProgressView()
-                        .frame(width: 50, height: 50)
-                case .success(let image):
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(width: 50, height: 50)
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                case .failure:
-                    Image(systemName: "building.2")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 50, height: 50)
-                        .foregroundColor(.gray)
-                @unknown default:
-                    EmptyView()
+        NavigationLink(destination: CompanyDetailView(company: company)) {
+            HStack(spacing: 15) {
+                AsyncImage(url: URL(string: company.logoImg ?? "")) { phase in
+                    switch phase {
+                    case .empty:
+                        ProgressView()
+                            .frame(width: 50, height: 50)
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 50, height: 50)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                    case .failure:
+                        Image(systemName: "building.2")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 50, height: 50)
+                            .foregroundColor(.gray)
+                    @unknown default:
+                        EmptyView()
+                    }
                 }
-            }
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(company.name)
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                Text(viewModel.getCategoryNames(for: company))
-                    .font(.caption)
+                .frame(width: 50, height: 50)
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(company.name)
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.purple1)
+                    Text(viewModel.getCategoryNames(for: company))
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                }
+                
+                Spacer()
+                
+                Image(systemName: "chevron.right")
                     .foregroundColor(.gray)
-                Text(company.aboutUs)
-                    .font(.caption)
-                    .lineLimit(2)
             }
-            
-            Spacer()
-            
-            Image(systemName: "chevron.right")
-                .foregroundColor(.gray)
+            .padding()
+            .background(Color.white)
+            .cornerRadius(10)
+            .shadow(color: Color.black.opacity(0.1), radius: 3, x: 0, y: 1)
         }
-        .padding()
-        .background(Color.white)
-        .cornerRadius(10)
-        .shadow(color: Color.black.opacity(0.05), radius: 3, x: 0, y: 1)
+        .buttonStyle(PlainButtonStyle())
     }
 }
 

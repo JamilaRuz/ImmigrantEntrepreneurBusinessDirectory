@@ -54,9 +54,11 @@ struct CompanyDetailView: View {
             .padding(10)
           }
         }
+        .padding()
         .frame(height: 300)
         .background(LinearGradient(gradient: Gradient(colors: [Color(.gray).opacity(0.3), Color(.gray)]), startPoint: .top, endPoint: .bottom))
-        
+       
+          //segments
         VStack(spacing: 0) {
           Picker("Segments", selection: $selectedSegment) {
             Text("Info").tag(0)
@@ -64,17 +66,49 @@ struct CompanyDetailView: View {
             Text("Map").tag(2)
           }
           .pickerStyle(SegmentedPickerStyle())
-          .padding()
+          .padding(.horizontal)
+          .padding(.top)
           
-          if selectedSegment == 0 {
-            InfoView(company: company)
-          } else if selectedSegment == 1 {
-            ProductsView()
-          } else if selectedSegment == 2 {
-            MapView(company: company)
+          VStack {
+            if selectedSegment == 0 {
+              InfoView(company: company)
+            } else if selectedSegment == 1 {
+              ProductsView(services: company.services, portfolioImages: company.portfolioImages)
+            } else if selectedSegment == 2 {
+              MapView(company: company)
+            }
+          }
+          .padding()
+        }
+        .padding(.horizontal)
+          
+        Spacer()
+          
+        HStack(spacing: 20) {
+          Button(action: {
+            // Action for "Open Now" button
+          }) {
+            Text("Open Now")
+              .frame(maxWidth: .infinity)
+              .padding()
+              .background(Color.green.opacity(0.2))
+              .foregroundColor(.green)
+              .cornerRadius(10)
+          }
+              
+          Button(action: {
+            // Action for "Make a Call" button
+          }) {
+            Text("Make a Call")
+              .frame(maxWidth: .infinity)
+              .padding()
+              .background(Color.red.opacity(0.2))
+              .foregroundColor(.red)
+              .cornerRadius(10)
           }
         }
-        .padding()
+        .padding(.horizontal)
+        .padding(.bottom)
       }
     }
     .ignoresSafeArea(edges: .top)
