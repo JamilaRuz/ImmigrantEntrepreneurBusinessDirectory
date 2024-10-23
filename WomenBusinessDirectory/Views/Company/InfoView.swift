@@ -25,7 +25,7 @@ struct InfoView: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 .padding()
-                .frame(minWidth: UIScreen.main.bounds.width - 20, minHeight: 70, maxHeight: 150)
+                .frame(minWidth: UIScreen.main.bounds.width - 20, minHeight: 150)
                 .background(Color.gray.opacity(0.1))
                 .cornerRadius(10)
             }
@@ -53,6 +53,7 @@ struct InfoView: View {
                         }
                     }
                     .frame(width: 50, height: 50)
+                    
                     VStack(alignment: .leading) {
                         Text("Founder")
                             .font(.caption)
@@ -63,74 +64,13 @@ struct InfoView: View {
                 }
             }
             
-            VStack(alignment: .leading, spacing: 10) {
-                Text("Services")
-                    .font(.headline)
-                
-                VStack(spacing: 10) {
-                    ForEach(0..<2) { rowIndex in
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 10) {
-                                ForEach(Array(company.services.enumerated().filter { $0.0 % 2 == rowIndex }), id: \.element) { index, service in
-                                    ServiceView(service: service, color: backgroundColors[index % backgroundColors.count])
-                                }
-                            }
-                            .padding(.horizontal)
-                        }
-                    }
-                }
-            }
-            
             Spacer()
-            
-            HStack(spacing: 20) {
-                Button(action: {
-                    // Action for "Open Now" button
-                }) {
-                    Text("Open Now")
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.green.opacity(0.2))
-                        .foregroundColor(.green)
-                        .cornerRadius(10)
-                }
-                
-                Button(action: {
-                    // Action for "Make a Call" button
-                }) {
-                    Text("Make a Call")
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.red.opacity(0.2))
-                        .foregroundColor(.red)
-                        .cornerRadius(10)
-                }
-            }
-            .padding(.top)
         }
-        .padding()
         .onAppear {
             Task {
                 await viewModel.loadEntrepreneur(entrepId: company.entrepId)
             }
         }
-    }
-}
-
-struct ServiceView: View {
-    let service: String
-    let color: Color
-    
-    var body: some View {
-        HStack {
-            Image(systemName: "star.fill") // You can change this to match the service
-                .foregroundColor(color)
-            Text(service)
-        }
-        .padding()
-        .frame(width: UIScreen.main.bounds.width / 2 - 20, height: 50)
-        .background(color.opacity(0.2))
-        .cornerRadius(10)
     }
 }
 

@@ -12,20 +12,27 @@ struct MapView: View {
     let company: Company
     @State private var region = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 0, longitude: 0),
-        span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+        span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
     )
-    @State private var annotations: [CompanyAnnotation] = []
+    @State private var annotation: CompanyAnnotation?
 
     var body: some View {
-      VStack {
-        Map(coordinateRegion: $region, annotationItems: annotations) { annotation in
-          MapMarker(coordinate: annotation.coordinate, tint: .red)
+        VStack(alignment: .leading) {
+            Map(coordinateRegion: $region, annotationItems: annotation.map { [$0] } ?? []) { item in
+                MapMarker(coordinate: item.coordinate, tint: .red)
+            }
+            .frame(height: 300)
+            .cornerRadius(10)
+            .padding(.bottom, 10)
+
+            Text(company.address)
+                .font(.subheadline)
+                .multilineTextAlignment(.leading)
+                .padding(.horizontal)
         }
         .onAppear {
-          geocodeAddress()
+            geocodeAddress()
         }
-      }
-      .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private func geocodeAddress() {
@@ -42,7 +49,7 @@ struct MapView: View {
                 return
             }
 
-            let annotation = CompanyAnnotation(
+            annotation = CompanyAnnotation(
                 coordinate: location.coordinate,
                 title: company.name,
                 subtitle: company.address
@@ -50,9 +57,8 @@ struct MapView: View {
 
             region = MKCoordinateRegion(
                 center: location.coordinate,
-                span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+                span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
             )
-            annotations = [annotation]
         }
     }
 }
@@ -62,8 +68,4 @@ struct CompanyAnnotation: Identifiable {
     let coordinate: CLLocationCoordinate2D
     let title: String
     let subtitle: String
-}
-
-#Preview {
-    MapView(company: createStubCompanies()[0])
 }
