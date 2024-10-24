@@ -11,7 +11,7 @@ import FirebaseFirestoreSwift
 import FirebaseStorage
 
 
-class Company: Codable, Hashable, Equatable {
+class Company: Codable, Hashable, Equatable, Identifiable {
     static func == (lhs: Company, rhs: Company) -> Bool {
         return lhs.companyId == rhs.companyId
     }
@@ -37,8 +37,9 @@ class Company: Codable, Hashable, Equatable {
     let socialMediaInsta: String
     let businessModel: BusinessModel
     let website: String
+    var isBookmarked: Bool
     
-    init(companyId: String, entrepId: String, categoryIds: [String], name: String, logoImg: String?, aboutUs: String, dateFounded: String, portfolioImages: [String], address: String, phoneNum: String, email: String, workHours: String, services: [String], socialMediaFacebook: String, socialMediaInsta: String, businessModel: BusinessModel, website: String) {
+    init(companyId: String, entrepId: String, categoryIds: [String], name: String, logoImg: String?, aboutUs: String, dateFounded: String, portfolioImages: [String], address: String, phoneNum: String, email: String, workHours: String, services: [String], socialMediaFacebook: String, socialMediaInsta: String, businessModel: BusinessModel, website: String, isBookmarked: Bool = false) {
         self.companyId = companyId
         self.entrepId = entrepId
         self.categoryIds = categoryIds
@@ -56,74 +57,13 @@ class Company: Codable, Hashable, Equatable {
         self.socialMediaInsta = socialMediaInsta
         self.businessModel = businessModel
         self.website = website
+        self.isBookmarked = isBookmarked
     }
     
     enum BusinessModel: String, CaseIterable, Codable {
         case online
         case offline
         case hybrid
-    }
-    
-    enum CodingKeys: String, CodingKey {
-        case companyId
-        case entrepId
-        case categoryIds
-        case name
-        case logoImg
-        case aboutUs
-        case dateFounded
-        case portfolioImages
-        case address
-        case phoneNum
-        case email
-        case workHours
-        case services
-        case socialMediaFacebook
-        case socialMediaInsta
-        case businessModel
-        case website
-    }
-
-    required init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        companyId = try container.decode(String.self, forKey: .companyId)
-        entrepId = try container.decode(String.self, forKey: .entrepId)
-        categoryIds = try container.decode([String].self, forKey: .categoryIds)
-        name = try container.decode(String.self, forKey: .name)
-        logoImg = try container.decodeIfPresent(String.self, forKey: .logoImg)
-        aboutUs = try container.decode(String.self, forKey: .aboutUs)
-        dateFounded = try container.decode(String.self, forKey: .dateFounded)
-        portfolioImages = try container.decode([String].self, forKey: .portfolioImages)
-        address = try container.decode(String.self, forKey: .address)
-        phoneNum = try container.decode(String.self, forKey: .phoneNum)
-        email = try container.decode(String.self, forKey: .email)
-        workHours = try container.decode(String.self, forKey: .workHours)
-        services = try container.decode([String].self, forKey: .services)
-        socialMediaFacebook = try container.decode(String.self, forKey: .socialMediaFacebook)
-        socialMediaInsta = try container.decode(String.self, forKey: .socialMediaInsta)
-        businessModel = try container.decode(BusinessModel.self, forKey: .businessModel)
-        website = try container.decode(String.self, forKey: .website)
-    }
-
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(companyId, forKey: .companyId)
-        try container.encode(entrepId, forKey: .entrepId)
-        try container.encode(categoryIds, forKey: .categoryIds)
-        try container.encode(name, forKey: .name)
-        try container.encodeIfPresent(logoImg, forKey: .logoImg)
-        try container.encode(aboutUs, forKey: .aboutUs)
-        try container.encode(dateFounded, forKey: .dateFounded)
-        try container.encode(portfolioImages, forKey: .portfolioImages)
-        try container.encode(address, forKey: .address)
-        try container.encode(phoneNum, forKey: .phoneNum)
-        try container.encode(email, forKey: .email)
-        try container.encode(workHours, forKey: .workHours)
-        try container.encode(services, forKey: .services)
-        try container.encode(socialMediaFacebook, forKey: .socialMediaFacebook)
-        try container.encode(socialMediaInsta, forKey: .socialMediaInsta)
-        try container.encode(businessModel, forKey: .businessModel)
-        try container.encode(website, forKey: .website)
     }
 }
 
@@ -183,6 +123,14 @@ final class RealCompanyManager: CompanyManager {
         return try querySnapshot.documents.map { try $0.data(as: Company.self) }
     }
     
+    func getBookmarkedCompanies() async throws -> [Company] {
+        let querySnapshot = try await companiesCollection
+            .whereField("isBookmarked", isEqualTo: true)
+            .getDocuments()
+        
+        return try querySnapshot.documents.map { try $0.data(as: Company.self) }
+    }
+    
     func uploadLogoImage(_ image: UIImage) async throws -> String {
       guard let imageData = image.jpegData(compressionQuality: 0.5) else {
         throw NSError(domain: "CompanyManager", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to convert image to data"])
@@ -236,5 +184,16 @@ final class RealCompanyManager: CompanyManager {
 
         // Return the list of URLs
         return uploadedImageURLs
+    }
+    
+    func updateBookmarkStatus(for company: Company, isBookmarked: Bool) {
+        let companyRef = companiesCollection.document(company.companyId)
+        companyRef.updateData(["isBookmarked": isBookmarked]) { error in
+            if let error = error {
+                print("Error updating bookmark status: \(error)")
+            } else {
+                print("Bookmark status successfully updated")
+            }
+        }
     }
 }

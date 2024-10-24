@@ -11,6 +11,12 @@ struct CompanyDetailView: View {
   @Environment(\.dismiss) var dismiss
   var company: Company
   @State private var selectedSegment = 0
+  @State private var isBookmarked: Bool
+  
+  init(company: Company) {
+    self.company = company
+    _isBookmarked = State(initialValue: company.isBookmarked)
+  }
   
   var body: some View {
     ScrollView {
@@ -57,8 +63,19 @@ struct CompanyDetailView: View {
         .padding()
         .frame(height: 300)
         .background(LinearGradient(gradient: Gradient(colors: [Color(.gray).opacity(0.3), Color(.gray)]), startPoint: .top, endPoint: .bottom))
-       
-          //segments
+        
+        // Bookmark Button
+        HStack {
+          Button(action: toggleBookmark) {
+            Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
+              .foregroundColor(Color("purple1"))
+              .padding()
+          }
+          Spacer() // This will push the button to the left
+        }
+        .padding(.horizontal)
+        
+        // Segments
         VStack(spacing: 0) {
           Picker("Segments", selection: $selectedSegment) {
             Text("Info").tag(0)
@@ -112,6 +129,11 @@ struct CompanyDetailView: View {
       }
     }
     .ignoresSafeArea(edges: .top)
+  }
+  
+  private func toggleBookmark() {
+    isBookmarked.toggle()
+    RealCompanyManager.shared.updateBookmarkStatus(for: company, isBookmarked: isBookmarked)
   }
 }
 

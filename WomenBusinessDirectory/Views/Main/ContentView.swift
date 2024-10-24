@@ -39,9 +39,9 @@ struct MainTabView: View {
                     Label("Directories", systemImage: "newspaper")
                 }
             
-            FavoritesListView()
+            BookmarkedListView()
                 .tabItem {
-                    Label("Favourites", systemImage: "star.square")
+                    Label("Bookmarked", systemImage: "star.square")
                 }
             
             if userIsLoggedIn {
