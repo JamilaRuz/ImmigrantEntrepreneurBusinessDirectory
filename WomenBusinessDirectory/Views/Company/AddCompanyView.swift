@@ -196,7 +196,7 @@ struct AddCompanyView: View {
   }
   
   private var selectedCategoriesView: some View {
-    let selectedCategories = viewModel.categories.filter { selectedCategoryIds.contains($0.categoryId) }
+    let selectedCategories = viewModel.categories.filter { selectedCategoryIds.contains($0.id) }
     return ScrollView(.horizontal, showsIndicators: false) {
       HStack {
         ForEach(selectedCategories, id: \.self) { category in
@@ -256,16 +256,16 @@ struct MultipleSelectionList: View {
       ForEach(sortedCategories, id: \.self) { category in
         HStack {
           Button(action: {
-            if selectedCategoryIds.contains(category.categoryId) {
-              selectedCategoryIds.remove(category.categoryId)
+            if selectedCategoryIds.contains(category.id) {
+              selectedCategoryIds.remove(category.id)
             } else {
-              selectedCategoryIds.insert(category.categoryId)
+              selectedCategoryIds.insert(category.id)
             }
           }) {
             HStack {
               Text(category.name)
               Spacer()
-              if selectedCategoryIds.contains(category.categoryId) {
+              if selectedCategoryIds.contains(category.id) {
                 Image(systemName: "checkmark")
               }
             }

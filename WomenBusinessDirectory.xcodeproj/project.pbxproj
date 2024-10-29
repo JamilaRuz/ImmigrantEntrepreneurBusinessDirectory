@@ -31,6 +31,8 @@
 		8D68E6CD2C2613F200D10390 /* EntrepreneurManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D68E6CC2C2613F200D10390 /* EntrepreneurManager.swift */; };
 		8D68E6CF2C2A0FD100D10390 /* SignUpEmailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D68E6CE2C2A0FD100D10390 /* SignUpEmailViewModel.swift */; };
 		8D68E6D12C2B60DD00D10390 /* AuthenticationFormProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D68E6D02C2B60DD00D10390 /* AuthenticationFormProtocol.swift */; };
+		8D80F9CE2CD15A910005463F /* EmptyBookmarkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D80F9CD2CD15A910005463F /* EmptyBookmarkView.swift */; };
+		8D80F9D02CD1602D0005463F /* EmptyCompaniesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D80F9CF2CD1602D0005463F /* EmptyCompaniesListView.swift */; };
 		8D95887D2CC2F977004C0034 /* PortfolioImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D95887C2CC2F977004C0034 /* PortfolioImagePicker.swift */; };
 		8DAECA452C014B240037A601 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DAECA442C014B240037A601 /* ProfileView.swift */; };
 		8DAECA472C018AF20037A601 /* EditProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DAECA462C018AF20037A601 /* EditProfileView.swift */; };
@@ -84,6 +86,8 @@
 		8D68E6CC2C2613F200D10390 /* EntrepreneurManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntrepreneurManager.swift; sourceTree = "<group>"; };
 		8D68E6CE2C2A0FD100D10390 /* SignUpEmailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpEmailViewModel.swift; sourceTree = "<group>"; };
 		8D68E6D02C2B60DD00D10390 /* AuthenticationFormProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationFormProtocol.swift; sourceTree = "<group>"; };
+		8D80F9CD2CD15A910005463F /* EmptyBookmarkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyBookmarkView.swift; sourceTree = "<group>"; };
+		8D80F9CF2CD1602D0005463F /* EmptyCompaniesListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyCompaniesListView.swift; sourceTree = "<group>"; };
 		8D95887C2CC2F977004C0034 /* PortfolioImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortfolioImagePicker.swift; sourceTree = "<group>"; };
 		8DAECA442C014B240037A601 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		8DAECA462C018AF20037A601 /* EditProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditProfileView.swift; sourceTree = "<group>"; };
@@ -174,6 +178,15 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
+		8D80F9CC2CD159110005463F /* Bookmarked */ = {
+			isa = PBXGroup;
+			children = (
+				8DDB670E2BC99E2500D9A2C8 /* BookmarkedListView.swift */,
+				8D80F9CD2CD15A910005463F /* EmptyBookmarkView.swift */,
+			);
+			path = Bookmarked;
+			sourceTree = "<group>";
+		};
 		8D9424522CAF2FB500F19517 /* Authentication */ = {
 			isa = PBXGroup;
 			children = (
@@ -195,7 +208,7 @@
 			isa = PBXGroup;
 			children = (
 				8DDB670C2BC99DF900D9A2C8 /* DirectoryListView.swift */,
-				8DDB670E2BC99E2500D9A2C8 /* BookmarkedListView.swift */,
+				8D80F9CC2CD159110005463F /* Bookmarked */,
 				8D9424562CAF32AA00F19517 /* Profile */,
 			);
 			path = Directory;
@@ -205,6 +218,7 @@
 			isa = PBXGroup;
 			children = (
 				8DDB67182BCADBF500D9A2C8 /* CompaniesListView.swift */,
+				8D80F9CF2CD1602D0005463F /* EmptyCompaniesListView.swift */,
 				8DDB671A2BCADE6200D9A2C8 /* CompanyDetailView.swift */,
 				8D4B959A2BF80F8800A0AF45 /* AddCompanyView.swift */,
 				8DB694BA2C34746600DC516E /* InfoView.swift */,
@@ -448,9 +462,11 @@
 				8DAECA472C018AF20037A601 /* EditProfileView.swift in Sources */,
 				8DB694C42C34BA5B00DC516E /* AddCompanyViewModel.swift in Sources */,
 				8D68E6CD2C2613F200D10390 /* EntrepreneurManager.swift in Sources */,
+				8D80F9D02CD1602D0005463F /* EmptyCompaniesListView.swift in Sources */,
 				8DDE05912C13C40A00C83EEA /* SettingsView.swift in Sources */,
 				8DDB66FD2BC9981D00D9A2C8 /* WomenBusinessDirectoryApp.swift in Sources */,
 				8DBC06C12CBF0D98009420C6 /* SignInEmailViewModel.swift in Sources */,
+				8D80F9CE2CD15A910005463F /* EmptyBookmarkView.swift in Sources */,
 				8D4D7EAF2C091B7800FF7EF5 /* StubData.swift in Sources */,
 				8DB694BB2C34746600DC516E /* InfoView.swift in Sources */,
 				8DE69AE72C24D9D400C2D6C9 /* SettingsViewModel.swift in Sources */,

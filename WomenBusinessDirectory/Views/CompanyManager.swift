@@ -80,6 +80,7 @@ final class RealCompanyManager: CompanyManager {
     private init() {}
     
     private let companiesCollection = Firestore.firestore().collection("companies")
+    private let categoriesCollection = Firestore.firestore().collection("categories")
     private let storageRef = Storage.storage().reference()
 
     
@@ -195,5 +196,10 @@ final class RealCompanyManager: CompanyManager {
                 print("Bookmark status successfully updated")
             }
         }
+    }
+    
+    func getCategories() async throws -> [Category] {
+        let querySnapshot = try await categoriesCollection.getDocuments()
+        return try querySnapshot.documents.map { try $0.data(as: Category.self) }
     }
 }

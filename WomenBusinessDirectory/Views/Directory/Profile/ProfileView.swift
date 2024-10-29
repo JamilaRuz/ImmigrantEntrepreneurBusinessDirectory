@@ -44,7 +44,7 @@ final class ProfileViewModel: ObservableObject {
     
     func getCategoryNames(for company: Company) -> String {
         let names = company.categoryIds.compactMap { categoryId in
-            allCategories.first(where: { $0.categoryId == categoryId })?.name
+            allCategories.first(where: { $0.id == categoryId })?.name
         }
         return names.joined(separator: ", ")
     }

@@ -10,9 +10,23 @@ import FirebaseFirestore
 import FirebaseFirestoreSwift
 
 struct Category: Codable, Hashable {
-  let categoryId: String
-  let name: String
-//  var imageUrl: String
+    let id: String
+    let name: String
+    
+    enum CodingKeys: String, CodingKey {
+        case name
+    }
+    
+    init(id: String, name: String) {
+        self.id = id
+        self.name = name
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.name = try container.decode(String.self, forKey: .name)
+        self.id = "" // This will be set from document.documentID
+    }
 }
 
 final class CategoryManager {
@@ -32,6 +46,9 @@ final class CategoryManager {
   
   func getCategories() async throws -> [Category] {
     let querySnapshot = try await categoriesCollection.getDocuments()
-    return try querySnapshot.documents.map { try $0.data(as: Category.self) }
+    return querySnapshot.documents.map { document in
+        let data = try! document.data(as: Category.self)
+        return Category(id: document.documentID, name: data.name)
+    }
   }
 }

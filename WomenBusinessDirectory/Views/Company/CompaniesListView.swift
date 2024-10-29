@@ -37,7 +37,7 @@ class CompaniesListViewModel: ObservableObject {
       return []
     }
     
-    return try await companyManager.getCompaniesByCategory(categoryId: category.categoryId)
+    return try await companyManager.getCompaniesByCategory(categoryId: category.id)
   }
   
   private func loadAllCategories() async throws -> [Category] {
@@ -46,7 +46,7 @@ class CompaniesListViewModel: ObservableObject {
   
   func getCategoryNames(for company: Company) -> String {
     let names = company.categoryIds.compactMap { categoryId in
-      allCategories.first(where: { $0.categoryId == categoryId })?.name
+      allCategories.first(where: { $0.id == categoryId })?.name
     }
     return names.joined(separator: ", ")
   }
@@ -66,24 +66,30 @@ struct CompaniesListView: View {
   
   var body: some View {
     NavigationStack {
-      VStack(spacing: 0) {
-        SearchBar(text: $searchTerm)
-          .padding(.horizontal)
-          .padding(.top)
-        
-        List {
-          ForEach(viewModel.companies, id: \.self) { company in
-            NavigationLink(destination: CompanyDetailView(company: company)) {
-              CompanyRowView(company: company, viewModel: viewModel)
+      Group {
+        if viewModel.companies.isEmpty {
+          EmptyCompaniesListView()
+        } else {
+          VStack(spacing: 0) {
+            SearchBar(text: $searchTerm)
+              .padding(.horizontal)
+              .padding(.top)
+            
+            List {
+              ForEach(viewModel.companies, id: \.self) { company in
+                NavigationLink(destination: CompanyDetailView(company: company)) {
+                  CompanyRowView(company: company, viewModel: viewModel)
+                }
+                .buttonStyle(PlainButtonStyle())
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+              }
             }
-            .buttonStyle(PlainButtonStyle())
-            .listRowSeparator(.hidden)
-            .listRowBackground(Color.clear)
+            .listStyle(.plain)
           }
+          .background(Color.white)
         }
-        .listStyle(.plain)
       }
-      .background(Color.white)
       .navigationTitle(category.name)
       .navigationBarTitleDisplayMode(.inline)
     }
@@ -191,7 +197,7 @@ struct CompanyRowView: View {
 }
 
 #Preview {
-    let category = Category(categoryId: "1", name: "Computers & Electronics")
+    let category = Category(id: "1", name: "Computers & Electronics")
     let viewModel = CompaniesListViewModel()
     viewModel.setup(companyManager: StubCompanyManager(), category: category)
     return NavigationStack {
