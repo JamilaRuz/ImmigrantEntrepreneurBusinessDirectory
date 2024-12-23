@@ -45,7 +45,8 @@ final class AddCompanyViewModel: ObservableObject {
         website: String,
         socialMediaInsta: String,
         socialMediaFacebook: String,
-        selectedCategoryIds: Set<String>
+        selectedCategoryIds: Set<String>,
+        selectedOwnershipTypes: Set<Company.OwnershipType>
     ) async throws {
         
         guard !selectedCategoryIds.isEmpty else {
@@ -78,7 +79,9 @@ final class AddCompanyViewModel: ObservableObject {
             socialMediaFacebook: socialMediaFacebook,
             socialMediaInsta: socialMediaInsta,
             businessModel: Company.BusinessModel(rawValue: businessModel.rawValue) ?? .offline,
-            website: website
+            website: website,
+            ownershipTypes: Array(selectedOwnershipTypes),
+            isBookmarked: false
         )
         
         try await createCompany(company: newCompany)

@@ -11,21 +11,22 @@ struct InfoView: View {
     let company: Company
     @StateObject private var viewModel = InfoViewModel()
     
-    let backgroundColors: [Color] = [.pink1, .purple1, .blue1, .green1, .orange1, .yellow]
-    
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
-            VStack(alignment: .leading) {
+            VStack(alignment: .leading, spacing: 10) {
                 Text("About Us")
                     .font(.headline)
+                    .padding(.top, 15)
+                
                 ScrollView {
                     Text(company.aboutUs)
                         .font(.body)
                         .foregroundColor(.gray)
                         .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 .padding()
-                .frame(minWidth: UIScreen.main.bounds.width - 20, minHeight: 150)
+                .frame(maxWidth: .infinity)
                 .background(Color.gray.opacity(0.1))
                 .cornerRadius(10)
             }

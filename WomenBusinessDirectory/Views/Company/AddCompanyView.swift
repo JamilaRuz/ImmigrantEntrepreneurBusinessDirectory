@@ -34,6 +34,7 @@ struct AddCompanyView: View {
   @State private var isImagePickerPresented = false
   @State private var isPortfolioPickerPresented = false
   @State private var currentPage = 0
+  @State private var selectedOwnershipTypes: Set<Company.OwnershipType> = []
   
   var body: some View {
     NavigationView {
@@ -93,10 +94,28 @@ struct AddCompanyView: View {
         DatePicker("Date Founded", selection: $dateFounded, displayedComponents: .date)
         TextField("Name", text: $companyName)
           .textFieldStyle(RoundedBorderTextFieldStyle())
+        
         NavigationLink(destination: MultipleSelectionList(categories: viewModel.categories, selectedCategoryIds: $selectedCategoryIds)) {
           Text("Choose corresponding categories")
         }
         selectedCategoriesView
+        
+        // Ownership Type Selection
+        Section(header: Text("Choose ownership type")) {
+          ForEach(Company.OwnershipType.allCases, id: \.self) { type in
+            Toggle(type.rawValue, isOn: Binding(
+              get: { selectedOwnershipTypes.contains(type) },
+              set: { isSelected in
+                if isSelected {
+                  selectedOwnershipTypes.insert(type)
+                } else {
+                  selectedOwnershipTypes.remove(type)
+                }
+              }
+            ))
+          }
+        }
+        
         portfolioImagesView
       }
     }
@@ -229,7 +248,8 @@ struct AddCompanyView: View {
             website: website,
             socialMediaInsta: socialMediaInsta,
             socialMediaFacebook: socialMediaFacebook,
-            selectedCategoryIds: selectedCategoryIds
+            selectedCategoryIds: selectedCategoryIds,
+            selectedOwnershipTypes: selectedOwnershipTypes
         )
         dismiss()
       } catch {

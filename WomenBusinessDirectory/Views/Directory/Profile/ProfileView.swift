@@ -93,9 +93,6 @@ struct ProfileView: View {
         .sheet(isPresented: $showingEditProfile) {
             EditProfileView(entrepreneur: viewModel.entrepreneur)
         }
-        .sheet(isPresented: $showSettingsView) {
-            SettingsView(showSignInView: $showSignInView)
-        }
     }
     
     private var profileCard: some View {
@@ -179,8 +176,10 @@ struct ProfileView: View {
                 .font(.custom("Zapfino", size: 24))
                 .foregroundColor(.purple1)
             
-            Text(viewModel.entrepreneur.bioDescr ?? "No story available")
+            Text(viewModel.entrepreneur.bioDescr ?? "Share your entrepreneurial journey here! Tell us about your passion, vision, and what inspired you to start your business. Your story can inspire others...")
                 .italic()
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
         }
         .foregroundColor(.purple1)
     }
