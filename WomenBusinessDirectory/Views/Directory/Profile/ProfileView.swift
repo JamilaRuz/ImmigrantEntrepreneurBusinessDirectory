@@ -53,6 +53,7 @@ final class ProfileViewModel: ObservableObject {
 struct ProfileView: View {
     @StateObject private var viewModel = ProfileViewModel()
     @State private var showingEditProfile = false
+    @State private var showSettingsView = false
     @Binding var showSignInView: Bool
     
     var body: some View {
@@ -81,16 +82,6 @@ struct ProfileView: View {
                 }
             }
             .navigationTitle("Profile")
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    NavigationLink {
-                        SettingsView(showSignInView: $showSignInView)
-                    } label: {
-                        Image(systemName: "gear")
-                            .font(.headline)
-                    }
-                }
-            }
         }
         .task {
             do {
@@ -101,6 +92,9 @@ struct ProfileView: View {
         }
         .sheet(isPresented: $showingEditProfile) {
             EditProfileView(entrepreneur: viewModel.entrepreneur)
+        }
+        .sheet(isPresented: $showSettingsView) {
+            SettingsView(showSignInView: $showSignInView)
         }
     }
     

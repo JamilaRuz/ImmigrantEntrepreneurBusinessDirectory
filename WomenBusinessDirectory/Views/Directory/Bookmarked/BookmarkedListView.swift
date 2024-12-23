@@ -39,7 +39,7 @@ struct BookmarkedListView: View {
         NavigationView {
             Group {
                 if viewModel.bookmarkedCompanies.isEmpty {
-                    EmptyBookmarkView()
+                    EmptyBookmarkedListView()
                 } else {
                     List(viewModel.bookmarkedCompanies, id: \.companyId) { company in
                         NavigationLink(destination: CompanyDetailView(company: company)) {

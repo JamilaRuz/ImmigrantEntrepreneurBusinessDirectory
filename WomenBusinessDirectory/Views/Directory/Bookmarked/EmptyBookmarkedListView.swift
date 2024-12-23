@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct EmptyBookmarkView: View {
+struct EmptyBookmarkedListView: View {
     var body: some View {
         VStack(spacing: 16) {
             Image(systemName: "bookmark.slash")
@@ -30,5 +30,5 @@ struct EmptyBookmarkView: View {
 }
 
 #Preview {
-    EmptyBookmarkView()
+    EmptyBookmarkedListView()
 }

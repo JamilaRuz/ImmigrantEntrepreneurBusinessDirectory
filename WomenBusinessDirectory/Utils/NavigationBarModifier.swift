@@ -8,10 +8,13 @@
 import SwiftUI
 
 struct NavigationBarModifier: ViewModifier {
-    @Binding var showSignInView: Bool
-    @Binding var isLoggedIn: Bool // Use binding to update login status
+    enum RightBarItem {
+        case menu(showSignInView: Binding<Bool>, isLoggedIn: Binding<Bool>)
+    }
+    
+    let rightBarItem: RightBarItem
     @State private var showToast = false
-
+    
     func body(content: Content) -> some View {
         content
             .toolbar {
@@ -23,24 +26,27 @@ struct NavigationBarModifier: ViewModifier {
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Menu {
-                        if isLoggedIn {
-                            Button("Sign Out") {
-                                isLoggedIn = false
-                                showToast = true
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                                    showToast = false
+                    switch rightBarItem {
+                    case .menu(let showSignInView, let isLoggedIn):
+                        Menu {
+                            if isLoggedIn.wrappedValue {
+                                Button("Sign Out") {
+                                    isLoggedIn.wrappedValue = false
+                                    showToast = true
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                        showToast = false
+                                    }
+                                }
+                            } else {
+                                Button("Sign In") {
+                                    showSignInView.wrappedValue = true
                                 }
                             }
-                        } else {
-                            Button("Sign In") {
-                                showSignInView = true
-                            }
+                        } label: {
+                            Image(systemName: "person.crop.circle")
+                                .imageScale(.large)
+                                .foregroundColor(isLoggedIn.wrappedValue ? Color("pink1") : Color.gray)
                         }
-                    } label: {
-                        Image(systemName: "person.crop.circle")
-                            .imageScale(.large)
-                            .foregroundColor(isLoggedIn ? Color("pink1") : Color.gray)
                     }
                 }
             }
@@ -58,13 +64,13 @@ struct NavigationBarModifier: ViewModifier {
                     }
                 }
                 .animation(.easeInOut, value: showToast)
-                .padding(.top, 50) // Adjust based on your layout
+                .padding(.top, 50)
             )
     }
 }
 
 extension View {
     func customNavigationBar(showSignInView: Binding<Bool>, isLoggedIn: Binding<Bool>) -> some View {
-        self.modifier(NavigationBarModifier(showSignInView: showSignInView, isLoggedIn: isLoggedIn))
+        self.modifier(NavigationBarModifier(rightBarItem: .menu(showSignInView: showSignInView, isLoggedIn: isLoggedIn)))
     }
 }
