@@ -11,7 +11,7 @@ import FirebaseFirestoreSwift
 import FirebaseStorage
 
 
-class Company: Codable, Hashable, Equatable {
+class Company: Codable, Hashable, Equatable, Identifiable {
     static func == (lhs: Company, rhs: Company) -> Bool {
         return lhs.companyId == rhs.companyId
     }
@@ -29,6 +29,7 @@ class Company: Codable, Hashable, Equatable {
     let dateFounded: String
     let portfolioImages: [String]
     let address: String
+    let city: String
     let phoneNum: String
     let email: String
     let workHours: String
@@ -37,8 +38,10 @@ class Company: Codable, Hashable, Equatable {
     let socialMediaInsta: String
     let businessModel: BusinessModel
     let website: String
+    var isBookmarked: Bool
+    let ownershipTypes: [OwnershipType]
     
-    init(companyId: String, entrepId: String, categoryIds: [String], name: String, logoImg: String?, aboutUs: String, dateFounded: String, portfolioImages: [String], address: String, phoneNum: String, email: String, workHours: String, services: [String], socialMediaFacebook: String, socialMediaInsta: String, businessModel: BusinessModel, website: String) {
+    init(companyId: String, entrepId: String, categoryIds: [String], name: String, logoImg: String?, aboutUs: String, dateFounded: String, portfolioImages: [String], address: String, city: String, phoneNum: String, email: String, workHours: String, services: [String], socialMediaFacebook: String, socialMediaInsta: String, businessModel: BusinessModel, website: String, ownershipTypes: [OwnershipType], isBookmarked: Bool = false) {
         self.companyId = companyId
         self.entrepId = entrepId
         self.categoryIds = categoryIds
@@ -48,6 +51,7 @@ class Company: Codable, Hashable, Equatable {
         self.dateFounded = dateFounded
         self.portfolioImages = portfolioImages
         self.address = address
+        self.city = city
         self.phoneNum = phoneNum
         self.email = email
         self.workHours = workHours
@@ -56,6 +60,8 @@ class Company: Codable, Hashable, Equatable {
         self.socialMediaInsta = socialMediaInsta
         self.businessModel = businessModel
         self.website = website
+        self.isBookmarked = isBookmarked
+        self.ownershipTypes = ownershipTypes
     }
     
     enum BusinessModel: String, CaseIterable, Codable {
@@ -64,66 +70,11 @@ class Company: Codable, Hashable, Equatable {
         case hybrid
     }
     
-    enum CodingKeys: String, CodingKey {
-        case companyId
-        case entrepId
-        case categoryIds
-        case name
-        case logoImg
-        case aboutUs
-        case dateFounded
-        case portfolioImages
-        case address
-        case phoneNum
-        case email
-        case workHours
-        case services
-        case socialMediaFacebook
-        case socialMediaInsta
-        case businessModel
-        case website
-    }
-
-    required init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        companyId = try container.decode(String.self, forKey: .companyId)
-        entrepId = try container.decode(String.self, forKey: .entrepId)
-        categoryIds = try container.decode([String].self, forKey: .categoryIds)
-        name = try container.decode(String.self, forKey: .name)
-        logoImg = try container.decodeIfPresent(String.self, forKey: .logoImg)
-        aboutUs = try container.decode(String.self, forKey: .aboutUs)
-        dateFounded = try container.decode(String.self, forKey: .dateFounded)
-        portfolioImages = try container.decode([String].self, forKey: .portfolioImages)
-        address = try container.decode(String.self, forKey: .address)
-        phoneNum = try container.decode(String.self, forKey: .phoneNum)
-        email = try container.decode(String.self, forKey: .email)
-        workHours = try container.decode(String.self, forKey: .workHours)
-        services = try container.decode([String].self, forKey: .services)
-        socialMediaFacebook = try container.decode(String.self, forKey: .socialMediaFacebook)
-        socialMediaInsta = try container.decode(String.self, forKey: .socialMediaInsta)
-        businessModel = try container.decode(BusinessModel.self, forKey: .businessModel)
-        website = try container.decode(String.self, forKey: .website)
-    }
-
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(companyId, forKey: .companyId)
-        try container.encode(entrepId, forKey: .entrepId)
-        try container.encode(categoryIds, forKey: .categoryIds)
-        try container.encode(name, forKey: .name)
-        try container.encodeIfPresent(logoImg, forKey: .logoImg)
-        try container.encode(aboutUs, forKey: .aboutUs)
-        try container.encode(dateFounded, forKey: .dateFounded)
-        try container.encode(portfolioImages, forKey: .portfolioImages)
-        try container.encode(address, forKey: .address)
-        try container.encode(phoneNum, forKey: .phoneNum)
-        try container.encode(email, forKey: .email)
-        try container.encode(workHours, forKey: .workHours)
-        try container.encode(services, forKey: .services)
-        try container.encode(socialMediaFacebook, forKey: .socialMediaFacebook)
-        try container.encode(socialMediaInsta, forKey: .socialMediaInsta)
-        try container.encode(businessModel, forKey: .businessModel)
-        try container.encode(website, forKey: .website)
+    enum OwnershipType: String, Codable, CaseIterable {
+        case femaleOwned = "Female Owned"
+        case latinxOwned = "Latinx Owned"
+        case asianOwned = "Asian Owned"
+        case lgbtqOwned = "LGBTQ+ Owned"
     }
 }
 
@@ -140,6 +91,7 @@ final class RealCompanyManager: CompanyManager {
     private init() {}
     
     private let companiesCollection = Firestore.firestore().collection("companies")
+    private let categoriesCollection = Firestore.firestore().collection("categories")
     private let storageRef = Storage.storage().reference()
 
     
@@ -180,6 +132,14 @@ final class RealCompanyManager: CompanyManager {
         let querySnapshot = try await companiesCollection
             .whereField("categoryIds", arrayContains: categoryId)
             .getDocuments()
+        return try querySnapshot.documents.map { try $0.data(as: Company.self) }
+    }
+    
+    func getBookmarkedCompanies() async throws -> [Company] {
+        let querySnapshot = try await companiesCollection
+            .whereField("isBookmarked", isEqualTo: true)
+            .getDocuments()
+        
         return try querySnapshot.documents.map { try $0.data(as: Company.self) }
     }
     
@@ -236,5 +196,21 @@ final class RealCompanyManager: CompanyManager {
 
         // Return the list of URLs
         return uploadedImageURLs
+    }
+    
+    func updateBookmarkStatus(for company: Company, isBookmarked: Bool) {
+        let companyRef = companiesCollection.document(company.companyId)
+        companyRef.updateData(["isBookmarked": isBookmarked]) { error in
+            if let error = error {
+                print("Error updating bookmark status: \(error)")
+            } else {
+                print("Bookmark status successfully updated")
+            }
+        }
+    }
+    
+    func getCategories() async throws -> [Category] {
+        let querySnapshot = try await categoriesCollection.getDocuments()
+        return try querySnapshot.documents.map { try $0.data(as: Category.self) }
     }
 }

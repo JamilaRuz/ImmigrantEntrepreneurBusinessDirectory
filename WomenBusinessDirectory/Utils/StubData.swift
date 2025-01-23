@@ -56,15 +56,18 @@ func createStubCompanies() -> [Company] {
     aboutUs: "Tech Innovators is a US-based software development company specializing in providing businesses worldwide with custom technology solutions. We are a mobile and web-based application development company with over 2,800 skilled software developers.",
     dateFounded: "2010-01-15",
     portfolioImages: ["portfolio1.jpg", "portfolio2.jpg", "portfolio3.jpg"],
-    address: "1930 Bank St, Ottawa, ON K1V 7Z8, Canada",
+    address: "1930 Bank St",
+    city: "Ottawa",
     phoneNum: "123-456-7890",
     email: "contact@techinnovators.com",
     workHours: "Mon-Fri 9am-5pm",
     services: ["Software Development", "Mobile App Development", "Web Development"],
     socialMediaFacebook: "facebook link",
     socialMediaInsta: "Insta link",
-    businessModel: .online,// Set the business model
-    website: "www.techinnovators.com"
+    businessModel: .online,
+    website: "www.techinnovators.com",
+    ownershipTypes: [.femaleOwned],
+    isBookmarked: false
   )
   
   let company2 = Company(
@@ -76,15 +79,18 @@ func createStubCompanies() -> [Company] {
     aboutUs: "We work with you based on your software development objectives to bring you the most value and the quickest return on investment while defining tactics and a dedicated team to your project.",
     dateFounded: "2015-06-30",
     portfolioImages: ["portfolio1.jpg", "portfolio2.jpg", "portfolio3.jpg"],
-    address: "456 Green Lane, Austin, TX",
+    address: "456 Green Lane",
+    city: "Austin",
     phoneNum: "987-654-3210",
     email: "info@greenenergy.com",
     workHours: "Mon-Fri 8am-6pm",
     services: ["Renewable Energy Consulting", "Solar Panel Installation", "Energy Audits"],
     socialMediaFacebook: "facebook link",
     socialMediaInsta: "Insta link",
-    businessModel: .hybrid, // Set the business model
-    website: "www.greenenergy.com"
+    businessModel: .hybrid,
+    website: "www.greenenergy.com",
+    ownershipTypes: [.asianOwned],
+    isBookmarked: false
   )
   
   let company3 = Company(
@@ -97,14 +103,17 @@ func createStubCompanies() -> [Company] {
     dateFounded: "10/13/2006",
     portfolioImages: [],
     address: "123 Bank street",
+    city: "New York",
     phoneNum: "123456",
     email: "test@gmail.com",
     workHours: "Mon 9 - 5, Tue 9 - 5, Wed 9 - 5, Thu 9 - 5, Fri 9 - 5",
     services: ["Custom Software Solutions", "IT Consulting", "Cloud Services"],
     socialMediaFacebook: "facebook link",
     socialMediaInsta: "Insta link",
-    businessModel: .offline, // Set the business model
-    website: "www.companythree.com"
+    businessModel: .offline,
+    website: "www.companythree.com",
+    ownershipTypes: [.latinxOwned],
+    isBookmarked: false
   )
   
   let company4 = Company(
@@ -117,14 +126,17 @@ func createStubCompanies() -> [Company] {
     dateFounded: "10/13/2006",
     portfolioImages: [],
     address: "123 Bank street",
+    city: "Los Angeles",
     phoneNum: "123456",
     email: "test@gmail.com",
     workHours: "Mon-Fri 9 - 5",
     services: ["Project Management", "Business Analysis", "Quality Assurance"],
     socialMediaFacebook: "facebook link",
     socialMediaInsta: "Insta link",
-    businessModel: .online, // Set the business model
-    website: "www.companyfour.com"
+    businessModel: .online,
+    website: "www.companyfour.com",
+    ownershipTypes: [.lgbtqOwned],
+    isBookmarked: false
   )
   
   return [company1, company2, company3, company4]
