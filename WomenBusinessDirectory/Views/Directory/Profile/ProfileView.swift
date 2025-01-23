@@ -44,7 +44,7 @@ final class ProfileViewModel: ObservableObject {
     
     func getCategoryNames(for company: Company) -> String {
         let names = company.categoryIds.compactMap { categoryId in
-            allCategories.first(where: { $0.categoryId == categoryId })?.name
+            allCategories.first(where: { $0.id == categoryId })?.name
         }
         return names.joined(separator: ", ")
     }
@@ -53,6 +53,7 @@ final class ProfileViewModel: ObservableObject {
 struct ProfileView: View {
     @StateObject private var viewModel = ProfileViewModel()
     @State private var showingEditProfile = false
+    @State private var showSettingsView = false
     @Binding var showSignInView: Bool
     
     var body: some View {
@@ -81,16 +82,6 @@ struct ProfileView: View {
                 }
             }
             .navigationTitle("Profile")
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    NavigationLink {
-                        SettingsView(showSignInView: $showSignInView)
-                    } label: {
-                        Image(systemName: "gear")
-                            .font(.headline)
-                    }
-                }
-            }
         }
         .task {
             do {
@@ -185,8 +176,10 @@ struct ProfileView: View {
                 .font(.custom("Zapfino", size: 24))
                 .foregroundColor(.purple1)
             
-            Text(viewModel.entrepreneur.bioDescr ?? "No story available")
+            Text(viewModel.entrepreneur.bioDescr ?? "Share your entrepreneurial journey here! Tell us about your passion, vision, and what inspired you to start your business. Your story can inspire others...")
                 .italic()
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
         }
         .foregroundColor(.purple1)
     }

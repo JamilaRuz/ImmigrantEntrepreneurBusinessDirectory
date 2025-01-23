@@ -11,10 +11,33 @@ import SwiftUI
 class CompaniesListViewModel: ObservableObject {
   private var companyManager: CompanyManager?
   private var category: Category?
+  private let filterManager: FilterManaging
   
   @Published var companies: [Company] = []
   @Published var allCategories: [Category] = []
+  @Published var searchTerm = ""
   
+  init(filterManager: FilterManaging = FilterManager.shared) {
+    self.filterManager = filterManager
+  }
+  
+  var filteredCompanies: [Company] {
+    var filtered = companies
+    
+    // Apply search filter
+    if !searchTerm.isEmpty {
+      filtered = filtered.filter { company in
+        company.name.localizedCaseInsensitiveContains(searchTerm) ||
+        company.aboutUs.localizedCaseInsensitiveContains(searchTerm)
+      }
+    }
+    
+    // Apply filters from FilterManager
+    filtered = filterManager.applyFilters(to: filtered)
+    
+    return filtered
+  }
+
   func setup(companyManager: CompanyManager, category: Category) {
     self.companyManager = companyManager
     self.category = category
@@ -37,7 +60,7 @@ class CompaniesListViewModel: ObservableObject {
       return []
     }
     
-    return try await companyManager.getCompaniesByCategory(categoryId: category.categoryId)
+    return try await companyManager.getCompaniesByCategory(categoryId: category.id)
   }
   
   private func loadAllCategories() async throws -> [Category] {
@@ -46,7 +69,7 @@ class CompaniesListViewModel: ObservableObject {
   
   func getCategoryNames(for company: Company) -> String {
     let names = company.categoryIds.compactMap { categoryId in
-      allCategories.first(where: { $0.categoryId == categoryId })?.name
+      allCategories.first(where: { $0.id == categoryId })?.name
     }
     return names.joined(separator: ", ")
   }
@@ -58,32 +81,51 @@ struct CompaniesListView: View {
   @Environment(\.companyManager) var companyManager: CompanyManager
   @StateObject private var viewModel: CompaniesListViewModel = CompaniesListViewModel()
   
-  @State private var searchTerm = ""
-  
   init(category: Category) {
     self.category = category
   }
   
   var body: some View {
     NavigationStack {
-      VStack(spacing: 0) {
-        SearchBar(text: $searchTerm)
-          .padding(.horizontal)
-          .padding(.top)
-        
-        List {
-          ForEach(viewModel.companies, id: \.self) { company in
-            NavigationLink(destination: CompanyDetailView(company: company)) {
-              CompanyRowView(company: company, viewModel: viewModel)
+      Group {
+        if viewModel.companies.isEmpty {
+          EmptyCompaniesListView()
+        } else {
+          VStack(spacing: 0) {
+            // Search bar
+            SearchBar(text: $viewModel.searchTerm)
+              .padding(.horizontal)
+              .padding(.vertical, 8)
+              .background(Color.white)
+            
+            if viewModel.filteredCompanies.isEmpty {
+              VStack(spacing: 16) {
+                Image(systemName: "magnifyingglass")
+                  .font(.system(size: 40))
+                  .foregroundColor(.gray)
+                Text("No matching companies found")
+                  .font(.headline)
+                Text("Try adjusting your search or filters")
+                  .font(.subheadline)
+                  .foregroundColor(.gray)
+              }
+              .frame(maxWidth: .infinity, maxHeight: .infinity)
+              .background(Color(.systemBackground))
+            } else {
+              List {
+                ForEach(viewModel.filteredCompanies, id: \.self) { company in
+                  NavigationLink(destination: CompanyDetailView(company: company)) {
+                    CompanyRowView(company: company, viewModel: viewModel)
+                  }
+                  .buttonStyle(.plain)
+                }
+              }
+              .listStyle(.plain)
             }
-            .buttonStyle(PlainButtonStyle())
-            .listRowSeparator(.hidden)
-            .listRowBackground(Color.clear)
           }
+          .background(Color.white)
         }
-        .listStyle(.plain)
       }
-      .background(Color.white)
       .navigationTitle(category.name)
       .navigationBarTitleDisplayMode(.inline)
     }
@@ -144,9 +186,35 @@ struct CompanyRowView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(company.name)
                             .font(.headline)
-                        Text(viewModel.getCategoryNames(for: company))
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
+                        
+                        HStack(spacing: 4) {
+                            Image(systemName: company.businessModel == .online ? "globe" :
+                                    company.businessModel == .offline ? "building.2" : "building.2.and.arrow.right")
+                            Text(company.businessModel.rawValue)
+                        }
+                        .font(.caption)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 2)
+                        .background(Color.blue.opacity(0.1))
+                        .foregroundColor(.blue)
+                        .cornerRadius(4)
+                        
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 8) {
+                                ForEach(company.categoryIds, id: \.self) { categoryId in
+                                    if let categoryName = viewModel.allCategories.first(where: { $0.id == categoryId })?.name {
+                                        Text(categoryName)
+                                            .font(.caption)
+                                            .padding(.horizontal, 8)
+                                            .padding(.vertical, 4)
+                                            .background(Color.gray.opacity(0.1))
+                                            .foregroundColor(.secondary)
+                                            .cornerRadius(8)
+                                    }
+                                }
+                            }
+                        }
+                        
                         HStack {
                             Image(systemName: "clock")
                                 .foregroundColor(.green)
@@ -162,7 +230,6 @@ struct CompanyRowView: View {
                     .foregroundColor(.secondary)
                     .lineLimit(2)
                 
-                // Services
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack {
                         ForEach(company.services, id: \.self) { service in
@@ -170,8 +237,8 @@ struct CompanyRowView: View {
                                 .font(.caption)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 4)
-                                .background(Color.blue.opacity(0.1))
-                                .foregroundColor(.blue)
+                                .background(Color.purple.opacity(0.1))
+                                .foregroundColor(.purple)
                                 .cornerRadius(8)
                         }
                     }
@@ -191,7 +258,7 @@ struct CompanyRowView: View {
 }
 
 #Preview {
-    let category = Category(categoryId: "1", name: "Computers & Electronics")
+    let category = Category(id: "1", name: "Computers & Electronics")
     let viewModel = CompaniesListViewModel()
     viewModel.setup(companyManager: StubCompanyManager(), category: category)
     return NavigationStack {
