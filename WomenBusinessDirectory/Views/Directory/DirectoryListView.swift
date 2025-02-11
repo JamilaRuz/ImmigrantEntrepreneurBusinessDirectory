@@ -9,7 +9,8 @@ import SwiftUI
 
 @MainActor
 final class DirectoryListViewModel: ObservableObject {
-  @Published private(set) var categoriesWithCount: [(category: Category, count: Int)] = []
+  @Published private(set) var categories: [Category] = []
+  @Published private(set) var allCompanies: [Company] = []
   @Published var isLoading = true
   
   private let filterManager: FilterManaging
@@ -18,13 +19,13 @@ final class DirectoryListViewModel: ObservableObject {
   init(filterManager: FilterManaging = FilterManager.shared) {
     self.filterManager = filterManager
     
-    // Observe UserDefaults changes
+    // Observe UserDefaults changes for filters
     notificationObserver = NotificationCenter.default.addObserver(
       forName: UserDefaults.didChangeNotification,
       object: nil,
       queue: .main
     ) { [weak self] _ in
-      self?.loadCategories()
+      self?.loadData()
     }
   }
   
@@ -34,22 +35,46 @@ final class DirectoryListViewModel: ObservableObject {
     }
   }
   
-  func loadCategories() {
+  var filteredCompaniesByCategory: [(category: Category, count: Int)] {
+    var filtered = allCompanies
+    
+    // Apply city filter if selected
+    if let selectedCity = filterManager.getSelectedCities().first {
+      filtered = filtered.filter { $0.city == selectedCity }
+    }
+    
+    // Apply ownership types filter if selected
+    let selectedOwnershipTypes = filterManager.getSelectedOwnershipTypes()
+    if !selectedOwnershipTypes.isEmpty {
+      filtered = filtered.filter { company in
+        !Set(company.ownershipTypes).isDisjoint(with: Set(selectedOwnershipTypes))
+      }
+    }
+    
+    // Count companies per category
+    return categories.map { category in
+      let count = filtered.filter { company in
+        company.categoryIds.contains(category.id)
+      }.count
+      return (category: category, count: count)
+    }
+  }
+  
+  func loadData() {
     Task {
       do {
         isLoading = true
-        // Get current filter selections
-        let selectedCity = filterManager.getSelectedCities().first
-        let selectedOwnershipTypes = filterManager.getSelectedOwnershipTypes()
         
-        // Get filtered categories with counts
-        self.categoriesWithCount = try await CategoryManager.shared.getCategoriesWithCompanyCount(
-          selectedCity: selectedCity,
-          selectedOwnershipTypes: selectedOwnershipTypes
-        )
+        // Load all data concurrently
+        async let categoriesTask = CategoryManager.shared.getCategories()
+        async let companiesTask = RealCompanyManager.shared.getCompanies()
+        
+        self.categories = try await categoriesTask
+        self.allCompanies = try await companiesTask
+        
         isLoading = false
       } catch {
-        print("Failed to load categories: \(error)")
+        print("Failed to load data: \(error)")
         isLoading = false
       }
     }
@@ -68,20 +93,19 @@ struct DirectoryListView: View {
           ProgressView()
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
-          // Categories List
-          List(viewModel.categoriesWithCount, id: \.category.id) { categoryWithCount in
-            NavigationLink(destination: CompaniesListView(category: categoryWithCount.category)) {
+          List(viewModel.filteredCompaniesByCategory, id: \.category.id) { categoryData in
+            NavigationLink(destination: CompaniesListView(category: categoryData.category)) {
               HStack {
-                Image(systemName: "car.fill")
+                Image(systemName: "building.2.fill")
                   .frame(width: 50, height: 50)
                   .foregroundColor(Color.purple1)
                 
-                Text(categoryWithCount.category.name)
+                Text(categoryData.category.name)
                   .font(.headline)
                 
                 Spacer()
                 
-                Text("\(categoryWithCount.count)")
+                Text("\(categoryData.count)")
                   .font(.subheadline)
                   .foregroundColor(.gray)
                   .padding(.horizontal, 12)
@@ -89,18 +113,25 @@ struct DirectoryListView: View {
                   .background(Color.gray.opacity(0.1))
                   .cornerRadius(12)
               }
+              .padding()
+              .background(Color.white)
+              .cornerRadius(10)
+              .shadow(color: Color.black.opacity(0.1), radius: 3, x: 0, y: 1)
             }
+            .buttonStyle(PlainButtonStyle())
+            .listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
           }
-          .listStyle(PlainListStyle())
+          .listStyle(.plain)
           .refreshable {
-            viewModel.loadCategories()
+            viewModel.loadData()
           }
         }
       }
       .navigationTitle("Business Directory")
       .navigationBarTitleDisplayMode(.inline)
       .onAppear {
-        viewModel.loadCategories()
+        viewModel.loadData()
       }
     }
     .customNavigationBar(showSignInView: $showSignInView, isLoggedIn: $userIsLoggedIn)

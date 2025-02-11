@@ -102,7 +102,6 @@ struct ProfileView: View {
                     AsyncImage(url: profileUrl) { phase in
                         switch phase {
                         case .empty:
-                            // Placeholder while loading
                             Image("placeholder")
                                 .resizable()
                                 .scaledToFill()
@@ -112,7 +111,6 @@ struct ProfileView: View {
                                 .frame(width: 100, height: 100)
                             
                         case .success(let image):
-                            // Successfully loaded image
                             image
                                 .resizable()
                                 .scaledToFill()
@@ -120,7 +118,6 @@ struct ProfileView: View {
                                 .clipShape(Circle())
                             
                         case .failure:
-                            // Handle error
                             Image("placeholder")
                                 .resizable()
                                 .frame(width: 100, height: 100)
@@ -128,7 +125,6 @@ struct ProfileView: View {
                                 .background(Color.gray.opacity(0.5))
                                 .clipShape(Circle())
                         @unknown default:
-                            // Handle any future cases
                             Image("placeholder")
                                 .resizable()
                                 .scaledToFill()
@@ -142,7 +138,7 @@ struct ProfileView: View {
                         .scaledToFill()
                         .frame(width: 100, height: 100)
                         .clipShape(Circle())
-                } // if
+                }
                 
                 Text(viewModel.entrepreneur.fullName ?? "Entrepreneur Name")
                     .font(.title2)
@@ -151,7 +147,6 @@ struct ProfileView: View {
                 Text(viewModel.entrepreneur.email ?? "email@example.com")
                     .font(.subheadline)
                     .foregroundColor(.gray)
-                
             }
             .padding()
             .frame(maxWidth: .infinity)
@@ -168,7 +163,7 @@ struct ProfileView: View {
             }
             .offset(x: 10, y: -10)
         }
-    } // profileCard
+    }
     
     private var entrepreneurStory: some View {
         VStack(alignment: .center) {
@@ -195,7 +190,10 @@ struct ProfileView: View {
                     .padding()
             } else {
                 ForEach(viewModel.companies, id: \.self) { company in
-                    CompanyEntRowView(company: company, viewModel: viewModel)
+                    NavigationLink(destination: CompanyDetailView(company: company)) {
+                        CompanyRowView(company: company, categories: viewModel.allCategories)
+                    }
+                    .buttonStyle(PlainButtonStyle())
                 }
             }
             addCompanyButton
@@ -220,62 +218,8 @@ struct ProfileView: View {
     }
 }
 
-struct CompanyEntRowView: View {
-    let company: Company
-    @ObservedObject var viewModel: ProfileViewModel
-    
-    var body: some View {
-        NavigationLink(destination: CompanyDetailView(company: company)) {
-            HStack(spacing: 15) {
-                AsyncImage(url: URL(string: company.logoImg ?? "")) { phase in
-                    switch phase {
-                    case .empty:
-                        ProgressView()
-                            .frame(width: 50, height: 50)
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: 50, height: 50)
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
-                    case .failure:
-                        Image(systemName: "building.2")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 50, height: 50)
-                            .foregroundColor(.gray)
-                    @unknown default:
-                        EmptyView()
-                    }
-                }
-                .frame(width: 50, height: 50)
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(company.name)
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.purple1)
-                    Text(viewModel.getCategoryNames(for: company))
-                        .font(.caption)
-                        .foregroundColor(.gray)
-                }
-                
-                Spacer()
-                
-                Image(systemName: "chevron.right")
-                    .foregroundColor(.gray)
-            }
-            .padding()
-            .background(Color.white)
-            .cornerRadius(10)
-            .shadow(color: Color.black.opacity(0.1), radius: 3, x: 0, y: 1)
-        }
-        .buttonStyle(PlainButtonStyle())
-    }
-}
-
 #Preview {
-  NavigationStack {
-    ProfileView(showSignInView: .constant(false))
-  }
+    NavigationStack {
+        ProfileView(showSignInView: .constant(false))
+    }
 }

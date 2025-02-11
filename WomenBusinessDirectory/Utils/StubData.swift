@@ -6,16 +6,9 @@
 //
 
 import Foundation
+import UIKit
 
 class StubCompanyManager: CompanyManager {
-  func createCompany(company: Company) async throws {
-    // nothing to do
-  }
-  
-  func getCompany(companyId: String) async throws -> Company {
-    createStubCompanies()[0]
-  }
-  
   func getCompanies() async throws -> [Company] {
     createStubCompanies()
   }
@@ -23,6 +16,14 @@ class StubCompanyManager: CompanyManager {
   func getCompaniesByCategory(categoryId: String) async throws -> [Company] {
     createStubCompanies()
   }
+  
+  // Stub implementations - do nothing or return empty
+  func getCompany(companyId: String) async throws -> Company { createStubCompanies()[0] }
+  func createCompany(company: Company) async throws {}
+  func updateBookmarkStatus(for company: Company, isBookmarked: Bool) {}
+  func getBookmarkedCompanies() async throws -> [Company] { [] }
+  func uploadLogoImage(_ image: UIImage) async throws -> String { "" }
+  func uploadPortfolioImages(_ images: [UIImage]) async throws -> [String] { [] }
 }
 
 func createStubEntrepreneurs() -> [Entrepreneur] {

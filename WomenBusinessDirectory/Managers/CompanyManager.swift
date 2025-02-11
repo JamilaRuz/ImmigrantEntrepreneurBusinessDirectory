@@ -79,24 +79,48 @@ class Company: Codable, Hashable, Equatable, Identifiable {
 }
 
 protocol CompanyManager {
-    func createCompany(company: Company) async throws
-    func getCompany(companyId: String) async throws -> Company
     func getCompanies() async throws -> [Company]
     func getCompaniesByCategory(categoryId: String) async throws -> [Company]
+    func getCompany(companyId: String) async throws -> Company
+    func createCompany(company: Company) async throws
+    func updateBookmarkStatus(for company: Company, isBookmarked: Bool)
+    func getBookmarkedCompanies() async throws -> [Company]
+    func uploadLogoImage(_ image: UIImage) async throws -> String
+    func uploadPortfolioImages(_ images: [UIImage]) async throws -> [String]
 }
 
 final class RealCompanyManager: CompanyManager {
     
     static let shared = RealCompanyManager()
-    private init() {}
-    
+    private let db = Firestore.firestore()
     private let companiesCollection = Firestore.firestore().collection("companies")
     private let categoriesCollection = Firestore.firestore().collection("categories")
     private let storageRef = Storage.storage().reference()
 
     
+    private init() {}
+    
     private func companyDocument(companyId: String) -> DocumentReference {
         return companiesCollection.document(companyId)
+    }
+    
+    func getCompanies() async throws -> [Company] {
+        let querySnapshot = try await companiesCollection.getDocuments()
+        return try querySnapshot.documents.map { try $0.data(as: Company.self) }
+    }
+    
+    func getCompaniesByCategory(categoryId: String) async throws -> [Company] {
+        let querySnapshot = try await companiesCollection
+            .whereField("categoryIds", arrayContains: categoryId)
+            .getDocuments()
+        return try querySnapshot.documents.map { try $0.data(as: Company.self) }
+    }
+    
+    func getCompany(companyId: String) async throws -> Company {
+        print("Getting company with id: \(companyId)...")
+        let company = try await companyDocument(companyId: companyId).getDocument(as: Company.self)
+        print("Company loaded! \(company)")
+        return company
     }
     
     func createCompany(company: Company) async throws {
@@ -114,25 +138,6 @@ final class RealCompanyManager: CompanyManager {
         }
         
         print("Company created!")
-    }
-    
-    func getCompany(companyId: String) async throws -> Company {
-        print("Getting company with id: \(companyId)...")
-        let company = try await companyDocument(companyId: companyId).getDocument(as: Company.self)
-        print("Company loaded! \(company)")
-        return company
-    }
-    
-    func getCompanies() async throws -> [Company] {
-        let querySnapshot = try await companiesCollection.getDocuments()
-        return try querySnapshot.documents.map { try $0.data(as: Company.self) }
-    }
-    
-    func getCompaniesByCategory(categoryId: String) async throws -> [Company] {
-        let querySnapshot = try await companiesCollection
-            .whereField("categoryIds", arrayContains: categoryId)
-            .getDocuments()
-        return try querySnapshot.documents.map { try $0.data(as: Company.self) }
     }
     
     func getBookmarkedCompanies() async throws -> [Company] {
