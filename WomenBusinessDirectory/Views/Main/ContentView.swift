@@ -29,7 +29,7 @@ struct ContentView: View {
 
 struct MainTabView: View {
     @Binding var showSignInView: Bool
-    @Binding var userIsLoggedIn: Bool // Add this binding
+    @Binding var userIsLoggedIn: Bool
     @ObservedObject var directoryListViewModel: DirectoryListViewModel
     
     var body: some View {
@@ -42,6 +42,11 @@ struct MainTabView: View {
             BookmarkedListView()
                 .tabItem {
                     Label("Bookmarked", systemImage: "star.square")
+                }
+            
+            EntrepreneursListView()
+                .tabItem {
+                    Label("Entrepreneurs", systemImage: "person.2.fill")
                 }
             
             if userIsLoggedIn {

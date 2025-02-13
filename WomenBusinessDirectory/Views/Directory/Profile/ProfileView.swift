@@ -18,7 +18,10 @@ final class ProfileViewModel: ObservableObject {
         self.entrepreneur = Entrepreneur(entrepId: "", fullName: "", profileUrl: " ", email: "", bioDescr: "", companyIds: [])
     }
     
-    func loadData() async throws {
+    func loadData(for entrepreneur: Entrepreneur?) async throws {
+        if let entrepreneur = entrepreneur {
+            self.entrepreneur = entrepreneur
+        }
         try await loadCurrentEntrepreneur()
         async let companiesTask = loadCompaniesOfEntrepreneur()
         async let categoriesTask = loadAllCategories()
@@ -69,6 +72,14 @@ struct ProfileView: View {
     @State private var selectedCompanyToEdit: Company?
     @State private var showingDeleteAlert = false
     @Binding var showSignInView: Bool
+    let isEditable: Bool
+    let entrepreneur: Entrepreneur?
+    
+    init(showSignInView: Binding<Bool>, isEditable: Bool = true, entrepreneur: Entrepreneur? = nil) {
+        self._showSignInView = showSignInView
+        self.isEditable = isEditable
+        self.entrepreneur = entrepreneur
+    }
     
     var body: some View {
         NavigationStack {
@@ -95,11 +106,11 @@ struct ProfileView: View {
                     }
                 }
             }
-            .navigationTitle("Profile")
+            .navigationTitle(isEditable ? "Profile" : "Entrepreneur Profile")
         }
         .task {
             do {
-                try await viewModel.loadData()
+                try await viewModel.loadData(for: entrepreneur)
             } catch {
                 print("Failed to load data: \(error)")
             }
@@ -168,14 +179,16 @@ struct ProfileView: View {
             .cornerRadius(15)
             .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
             
-            Button(action: { showingEditProfile = true }) {
-                Image(systemName: "pencil")
-                    .padding(8)
-                    .background(Color.white)
-                    .clipShape(Circle())
-                    .shadow(radius: 3)
+            if isEditable {
+                Button(action: { showingEditProfile = true }) {
+                    Image(systemName: "pencil")
+                        .padding(8)
+                        .background(Color.white)
+                        .clipShape(Circle())
+                        .shadow(radius: 3)
+                }
+                .offset(x: 10, y: -10)
             }
-            .offset(x: 10, y: -10)
         }
     }
     
@@ -204,7 +217,7 @@ struct ProfileView: View {
                     .padding()
             } else {
                 ForEach(viewModel.companies, id: \.self) { company in
-                    HStack {
+                    ZStack(alignment: .topTrailing) {
                         NavigationLink {
                             CompanyDetailView(company: company)
                         } label: {
@@ -212,29 +225,42 @@ struct ProfileView: View {
                         }
                         .buttonStyle(PlainButtonStyle())
                         
-                        VStack(spacing: 12) {
-                            Button {
-                                selectedCompanyToEdit = company
-                                showingEditCompany = true
-                            } label: {
-                                Image(systemName: "pencil")
-                                    .foregroundColor(.purple1)
+                        if isEditable {
+                            // Action buttons
+                            HStack(spacing: 16) {
+                                Button {
+                                    selectedCompanyToEdit = company
+                                    showingEditCompany = true
+                                } label: {
+                                    Image(systemName: "pencil")
+                                        .foregroundColor(.purple1)
+                                        .padding(8)
+                                        .background(Color.white)
+                                        .clipShape(Circle())
+                                        .shadow(color: Color.black.opacity(0.1), radius: 2)
+                                }
+                                
+                                Button {
+                                    selectedCompanyToEdit = company
+                                    showingDeleteAlert = true
+                                } label: {
+                                    Image(systemName: "trash")
+                                        .foregroundColor(.red)
+                                        .padding(8)
+                                        .background(Color.white)
+                                        .clipShape(Circle())
+                                        .shadow(color: Color.black.opacity(0.1), radius: 2)
+                                }
                             }
-                            
-                            Button {
-                                selectedCompanyToEdit = company
-                                showingDeleteAlert = true
-                            } label: {
-                                Image(systemName: "trash")
-                                    .foregroundColor(.red)
-                            }
+                            .padding(8)
                         }
-                        .padding(.leading, 8)
                     }
                 }
             }
-            addCompanyButton
-                .padding(.top)
+            if isEditable {
+                addCompanyButton
+                    .padding(.top)
+            }
         }
         .padding()
         .background(Color.white)
