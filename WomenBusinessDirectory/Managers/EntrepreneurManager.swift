@@ -129,4 +129,14 @@ func createEntrepreneur(fullName: String, email: String) async throws {
     }
     try entrepDocument(entrepId: entrepreneur.entrepId).setData(from: entrepreneur, merge: true)
   }
+
+  func getAllEntrepreneurs() async throws -> [Entrepreneur] {
+    print("Fetching all entrepreneurs...")
+    let snapshot = try await entrepCollection.getDocuments()
+    let entrepreneurs = try snapshot.documents.compactMap { document in
+        try document.data(as: Entrepreneur.self)
+    }
+    print("Successfully fetched \(entrepreneurs.count) entrepreneurs")
+    return entrepreneurs
+  }
 }
