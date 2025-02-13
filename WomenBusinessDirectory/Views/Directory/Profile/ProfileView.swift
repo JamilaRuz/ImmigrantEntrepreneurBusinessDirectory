@@ -208,9 +208,6 @@ struct ProfileView: View {
     
     private var companiesList: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Companies")
-                .font(.headline)
-            
             if viewModel.companies.isEmpty {
                 Text("No companies to show")
                     .foregroundColor(.secondary)
@@ -237,7 +234,7 @@ struct ProfileView: View {
                                         .padding(8)
                                         .background(Color.white)
                                         .clipShape(Circle())
-                                        .shadow(color: Color.black.opacity(0.1), radius: 2)
+                                        .shadow(radius: 3)
                                 }
                                 
                                 Button {
@@ -249,10 +246,10 @@ struct ProfileView: View {
                                         .padding(8)
                                         .background(Color.white)
                                         .clipShape(Circle())
-                                        .shadow(color: Color.black.opacity(0.1), radius: 2)
+                                        .shadow(radius: 3)
                                 }
                             }
-                            .padding(8)
+                            .offset(x: 10, y: -10)
                         }
                     }
                 }
@@ -262,10 +259,6 @@ struct ProfileView: View {
                     .padding(.top)
             }
         }
-        .padding()
-        .background(Color.white)
-        .cornerRadius(15)
-        .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
         .sheet(isPresented: $showingEditCompany, content: {
             if let company = selectedCompanyToEdit {
                 NavigationStack {
@@ -296,7 +289,7 @@ struct ProfileView: View {
                 .foregroundColor(.white)
                 .frame(height: 50)
                 .frame(maxWidth: .infinity)
-                .background(Color.purple1)
+                .background(Color.pink1)
                 .cornerRadius(10)
         }
     }

@@ -4,6 +4,7 @@ import FirebaseFirestore
 @MainActor
 final class EntrepreneursListViewModel: ObservableObject {
     @Published private(set) var entrepreneurs: [Entrepreneur] = []
+    @Published private(set) var entrepreneurCompanies: [String: [Company]] = [:]
     @Published var searchTerm = ""
     @Published var isLoading = true
     @Published var error: String?
@@ -15,9 +16,12 @@ final class EntrepreneursListViewModel: ObservableObject {
         return entrepreneurs.filter { entrepreneur in
             let name = entrepreneur.fullName?.lowercased() ?? ""
             let bio = entrepreneur.bioDescr?.lowercased() ?? ""
+            let companies = entrepreneurCompanies[entrepreneur.entrepId]?.map { $0.name.lowercased() } ?? []
             let searchLower = searchTerm.lowercased()
             
-            return name.contains(searchLower) || bio.contains(searchLower)
+            return name.contains(searchLower) || 
+                   bio.contains(searchLower) ||
+                   companies.contains { $0.contains(searchLower) }
         }
     }
     
@@ -29,6 +33,14 @@ final class EntrepreneursListViewModel: ObservableObject {
                 
                 self.entrepreneurs = try await EntrepreneurManager.shared.getAllEntrepreneurs()
                 
+                // Load companies for each entrepreneur
+                for entrepreneur in entrepreneurs {
+                    let companies = try await entrepreneur.companyIds.asyncMap { companyId in
+                        try await RealCompanyManager.shared.getCompany(companyId: companyId)
+                    }
+                    entrepreneurCompanies[entrepreneur.entrepId] = companies
+                }
+                
                 isLoading = false
             } catch {
                 self.error = "Failed to load entrepreneurs: \(error.localizedDescription)"
@@ -36,6 +48,10 @@ final class EntrepreneursListViewModel: ObservableObject {
                 print("Error loading entrepreneurs: \(error)")
             }
         }
+    }
+    
+    func getCompanies(for entrepreneur: Entrepreneur) -> [Company] {
+        return entrepreneurCompanies[entrepreneur.entrepId] ?? []
     }
 }
 
@@ -59,7 +75,7 @@ struct EntrepreneursListView: View {
                     VStack(spacing: 16) {
                         Image(systemName: "exclamationmark.triangle")
                             .font(.system(size: 50))
-                            .foregroundColor(.orange)
+                            .foregroundColor(Color.orange1)
                         Text(error)
                             .multilineTextAlignment(.center)
                             .foregroundColor(.secondary)
@@ -69,20 +85,42 @@ struct EntrepreneursListView: View {
                 } else if viewModel.filteredEntrepreneurs.isEmpty {
                     VStack(spacing: 16) {
                         Image(systemName: "person.2.slash")
-                            .font(.system(size: 50))
-                            .foregroundColor(.gray)
+                            .font(.system(size: 70))
+                            .foregroundColor(Color.orange1)
+                            .padding()
+                            .background(
+                                Circle()
+                                    .fill(Color.orange1.opacity(0.1))
+                                    .frame(width: 120, height: 120)
+                            )
                         if viewModel.searchTerm.isEmpty {
                             Text("No entrepreneurs found")
+                                .font(.title2)
+                                .fontWeight(.semibold)
+                                .foregroundColor(Color.orange1)
                         } else {
                             Text("No entrepreneurs match your search")
+                                .font(.title2)
+                                .fontWeight(.semibold)
+                                .foregroundColor(Color.orange1)
                         }
                     }
                     .padding()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(
+                        LinearGradient(
+                            gradient: Gradient(colors: [
+                                Color.orange1.opacity(0.1),
+                                Color.white
+                            ]),
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
                 } else {
                     List(viewModel.filteredEntrepreneurs, id: \.entrepId) { entrepreneur in
                         NavigationLink(destination: ProfileView(showSignInView: .constant(false), isEditable: false, entrepreneur: entrepreneur)) {
-                            EntrepreneurRowView(entrepreneur: entrepreneur)
+                            EntrepreneurRowView(entrepreneur: entrepreneur, viewModel: viewModel)
                         }
                     }
                     .listStyle(.plain)
@@ -91,6 +129,7 @@ struct EntrepreneursListView: View {
             .navigationTitle("Entrepreneurs")
             .navigationBarTitleDisplayMode(.inline)
         }
+        .tint(Color.orange1)
         .task {
             viewModel.loadEntrepreneurs()
         }
@@ -99,6 +138,7 @@ struct EntrepreneursListView: View {
 
 struct EntrepreneurRowView: View {
     let entrepreneur: Entrepreneur
+    @ObservedObject var viewModel: EntrepreneursListViewModel
     
     var body: some View {
         HStack(spacing: 12) {
@@ -110,18 +150,34 @@ struct EntrepreneurRowView: View {
                     case .empty:
                         ProgressView()
                             .frame(width: 50, height: 50)
+                            .background(Color.gray.opacity(0.1))
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.orange1, lineWidth: 2)
+                            )
                     case .success(let image):
                         image
                             .resizable()
                             .aspectRatio(contentMode: .fill)
                             .frame(width: 50, height: 50)
-                            .clipShape(Circle())
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.orange1, lineWidth: 2)
+                            )
                     case .failure:
                         Image(systemName: "person.circle.fill")
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .frame(width: 50, height: 50)
                             .foregroundColor(.gray)
+                            .background(Color.gray.opacity(0.1))
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.orange1, lineWidth: 2)
+                            )
                     @unknown default:
                         EmptyView()
                     }
@@ -132,20 +188,52 @@ struct EntrepreneurRowView: View {
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 50, height: 50)
                     .foregroundColor(.gray)
+                    .background(Color.gray.opacity(0.1))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.orange1, lineWidth: 2)
+                    )
             }
             
-            VStack(alignment: .leading, spacing: 4) {
-                Text(entrepreneur.fullName ?? "Entrepreneur")
-                    .font(.headline)
+            VStack(alignment: .leading, spacing: 6) {
+                // Name and email
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(entrepreneur.fullName ?? "Entrepreneur")
+                        .font(.headline)
+                        .foregroundColor(Color.orange1)
+                    
+                    if let email = entrepreneur.email {
+                        Text(email)
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                    }
+                }
                 
-                if !entrepreneur.companyIds.isEmpty {
-                    Text("\(entrepreneur.companyIds.count) \(entrepreneur.companyIds.count == 1 ? "Company" : "Companies")")
-                        .font(.subheadline)
-                        .foregroundColor(.gray)
+                // Bio preview if available
+                if let bio = entrepreneur.bioDescr, !bio.isEmpty {
+                    Text(bio)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                }
+                
+                // Company names
+                let companies = viewModel.getCompanies(for: entrepreneur)
+                if !companies.isEmpty {
+                    HStack(spacing: 4) {
+                        Text("Companies:")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                        Text(companies.map { $0.name }.joined(separator: ", "))
+                            .font(.caption)
+                            .foregroundColor(Color.orange1)
+                            .lineLimit(1)
+                    }
                 }
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 8)
     }
 }
 

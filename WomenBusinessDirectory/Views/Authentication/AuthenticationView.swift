@@ -83,7 +83,7 @@ struct AuthenticationView: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color.red)
+                            .background(Color.orange1)
                             .cornerRadius(10)
                     }
                     .padding(.horizontal)
@@ -188,7 +188,7 @@ struct AuthenticationView: View {
                     userIsLoggedIn = false // Ensure user is not logged in
                 }
                 .frame(width: 100, height: 40)
-                .foregroundColor(.red)
+                .foregroundColor(.orange1)
                 .background(Color.white)
                 .cornerRadius(10)
                 .overlay(
