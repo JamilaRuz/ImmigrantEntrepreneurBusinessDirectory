@@ -68,9 +68,35 @@ func createEntrepreneur(fullName: String, email: String) async throws {
   }
   
   func addCompany(company: Company) async throws {
+    print("Adding company \(company.companyId) to entrepreneur \(company.entrepId)")
     var entrep = try await getEntrepreneur(entrepId: company.entrepId)
     entrep.companyIds.append(company.companyId)
-    try entrepDocument(entrepId: entrep.entrepId).setData(from: entrep, merge: false)
+    try await entrepDocument(entrepId: entrep.entrepId).setData(from: entrep, merge: true)
+    print("Successfully added company to entrepreneur's list")
+  }
+
+  func removeCompany(companyId: String) async throws {
+    guard let uid = Auth.auth().currentUser?.uid else {
+        throw NSError(domain: "AuthError", code: 0, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])
+    }
+    
+    print("Removing company \(companyId) from entrepreneur \(uid)")
+    
+    // Get the current entrepreneur data
+    var entrep = try await getEntrepreneur(entrepId: uid)
+    
+    // Check if the company ID exists in the list
+    guard entrep.companyIds.contains(companyId) else {
+        print("Company \(companyId) not found in entrepreneur's list")
+        return
+    }
+    
+    // Remove the company ID
+    entrep.companyIds.removeAll { $0 == companyId }
+    
+    // Update the entrepreneur document
+    try await entrepDocument(entrepId: entrep.entrepId).setData(from: entrep, merge: true)
+    print("Successfully removed company \(companyId) from entrepreneur's list")
   }
   
   func uploadProfileImage(_ image: UIImage, for entrepreneur: Entrepreneur) async throws -> String {

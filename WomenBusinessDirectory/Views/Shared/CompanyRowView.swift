@@ -16,76 +16,88 @@ struct CompanyRowView: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .top, spacing: 12) {
-                // Company Logo
-                AsyncImage(url: URL(string: company.logoImg ?? "")) { phase in
-                    switch phase {
-                    case .empty, .failure:
-                        Image(systemName: "photo")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 60, height: 60)
-                            .background(Color.gray.opacity(0.2))
-                            .cornerRadius(12)
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: 60, height: 60)
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
-                    @unknown default:
-                        EmptyView()
-                    }
-                }
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(company.name)
-                        .font(.headline)
-                    
-                    // Categories horizontal scroll
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
-                            ForEach(getCategoryNames(for: company), id: \.self) { categoryName in
-                                Text(categoryName)
-                                    .font(.caption)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(Color.yellow.opacity(0.2))
-                                    .foregroundColor(.orange)
-                                    .cornerRadius(8)
-                            }
+        HStack(spacing: 12) {
+            // Content VStack
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(alignment: .top, spacing: 12) {
+                    // Company Logo
+                    AsyncImage(url: URL(string: company.logoImg ?? "")) { phase in
+                        switch phase {
+                        case .empty, .failure:
+                            Image(systemName: "photo")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 60, height: 60)
+                                .background(Color.gray.opacity(0.2))
+                                .cornerRadius(12)
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: 60, height: 60)
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                        @unknown default:
+                            EmptyView()
                         }
                     }
                     
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(company.name)
+                            .font(.headline)
+                        
+                        // Categories horizontal scroll
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 8) {
+                                ForEach(getCategoryNames(for: company), id: \.self) { categoryName in
+                                    Text(categoryName)
+                                        .font(.caption)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 4)
+                                        .background(Color.yellow.opacity(0.2))
+                                        .foregroundColor(.orange)
+                                        .cornerRadius(8)
+                                }
+                            }
+                        }
+                        
+                        HStack {
+                            Image(systemName: "clock")
+                                .foregroundColor(.green)
+                            Text(company.workHours)
+                                .font(.caption)
+                                .foregroundColor(.green)
+                        }
+                    }
+                }
+                
+                Text(company.aboutUs)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .lineLimit(2)
+                
+                // Services scroll
+                ScrollView(.horizontal, showsIndicators: false) {
                     HStack {
-                        Image(systemName: "clock")
-                            .foregroundColor(.green)
-                        Text(company.workHours)
-                            .font(.caption)
-                            .foregroundColor(.green)
+                        ForEach(company.services, id: \.self) { service in
+                            Text(service)
+                                .font(.caption)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color.blue.opacity(0.1))
+                                .foregroundColor(.blue)
+                                .cornerRadius(8)
+                        }
                     }
                 }
             }
             
-            Text(company.aboutUs)
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .lineLimit(2)
-            
-            // Services scroll
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack {
-                    ForEach(company.services, id: \.self) { service in
-                        Text(service)
-                            .font(.caption)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color.blue.opacity(0.1))
-                            .foregroundColor(.blue)
-                            .cornerRadius(8)
-                    }
-                }
+            // Arrow VStack
+            VStack {
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .foregroundColor(Color.gray.opacity(0.5))
+                    .frame(width: 20)
+                Spacer()
             }
         }
         .padding()
@@ -120,8 +132,8 @@ struct CompanyRowView: View {
             isBookmarked: false
         ),
         categories: [
-            Category(id: "1", name: "Category 1"),
-            Category(id: "2", name: "Category 2")
+            Category(id: "1", name: "Category 1", systemIconName: "star"),
+            Category(id: "2", name: "Category 2", systemIconName: "heart.fill")
         ]
     )
 }

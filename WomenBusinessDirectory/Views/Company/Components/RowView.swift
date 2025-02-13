@@ -34,5 +34,5 @@ struct RowView: View {
 }
 
 #Preview {
-  RowView(category: Category(id: "1", name: "Category 1"))
+    RowView(category: Category(id: "1", name: "Category 1", systemIconName: "star"))
 }

@@ -83,7 +83,9 @@ protocol CompanyManager {
     func getCompaniesByCategory(categoryId: String) async throws -> [Company]
     func getCompany(companyId: String) async throws -> Company
     func createCompany(company: Company) async throws
-    func updateBookmarkStatus(for company: Company, isBookmarked: Bool)
+    func updateCompany(company: Company) async throws
+    func deleteCompany(companyId: String) async throws
+    func updateBookmarkStatus(for company: Company, isBookmarked: Bool) async throws
     func getBookmarkedCompanies() async throws -> [Company]
     func uploadLogoImage(_ image: UIImage) async throws -> String
     func uploadPortfolioImages(_ images: [UIImage]) async throws -> [String]
@@ -127,17 +129,42 @@ final class RealCompanyManager: CompanyManager {
         print("Creating company...")
         
         let companyRef = companiesCollection.document()
-        company.companyId = companyRef.documentID
+        var updatedCompany = company
+        updatedCompany.companyId = companyRef.documentID
         
-        try companyRef.setData(from: company) { error in
-            if let error = error {
-                print("Error adding document: \(error)")
+        try await companyRef.setData(from: updatedCompany)
+        print("Company created with ID: \(updatedCompany.companyId)")
+    }
+
+    func deleteCompany(companyId: String) async throws {
+        print("Deleting company with ID: \(companyId)")
+        
+        do {
+            // First get the company to get the entrepreneur ID
+            let company = try await getCompany(companyId: companyId)
+            
+            // Delete the company document
+            let companyRef = companiesCollection.document(companyId)
+            try await companyRef.delete()
+            
+            // Remove company ID from entrepreneur's list
+            try await EntrepreneurManager.shared.removeCompany(companyId: companyId)
+            
+            // TODO: Consider cleaning up related images from Storage
+            print("Successfully deleted company and removed from entrepreneur's list")
+        } catch let error as NSError {
+            if error.domain == NSURLErrorDomain {
+                print("Network error while deleting company: \(error.localizedDescription)")
+                throw NSError(
+                    domain: "CompanyManager",
+                    code: error.code,
+                    userInfo: [NSLocalizedDescriptionKey: "Network error while deleting company. Please check your internet connection and try again."]
+                )
             } else {
-                print("Document added with ID: \(company.companyId)")
+                print("Error deleting company: \(error.localizedDescription)")
+                throw error
             }
         }
-        
-        print("Company created!")
     }
     
     func getBookmarkedCompanies() async throws -> [Company] {
@@ -203,13 +230,24 @@ final class RealCompanyManager: CompanyManager {
         return uploadedImageURLs
     }
     
-    func updateBookmarkStatus(for company: Company, isBookmarked: Bool) {
-        let companyRef = companiesCollection.document(company.companyId)
-        companyRef.updateData(["isBookmarked": isBookmarked]) { error in
-            if let error = error {
-                print("Error updating bookmark status: \(error)")
+    func updateBookmarkStatus(for company: Company, isBookmarked: Bool) async throws {
+        print("Updating bookmark status for company: \(company.companyId)")
+        
+        do {
+            let companyRef = companiesCollection.document(company.companyId)
+            try await companyRef.updateData(["isBookmarked": isBookmarked])
+            print("Bookmark status successfully updated")
+        } catch let error as NSError {
+            if error.domain == NSURLErrorDomain {
+                print("Network error while updating bookmark status: \(error.localizedDescription)")
+                throw NSError(
+                    domain: "CompanyManager",
+                    code: error.code,
+                    userInfo: [NSLocalizedDescriptionKey: "Network error while updating bookmark. Please check your internet connection and try again."]
+                )
             } else {
-                print("Bookmark status successfully updated")
+                print("Error updating bookmark status: \(error.localizedDescription)")
+                throw error
             }
         }
     }
@@ -217,5 +255,19 @@ final class RealCompanyManager: CompanyManager {
     func getCategories() async throws -> [Category] {
         let querySnapshot = try await categoriesCollection.getDocuments()
         return try querySnapshot.documents.map { try $0.data(as: Category.self) }
+    }
+    
+    func updateCompany(company: Company) async throws {
+        print("Updating company with id: \(company.companyId)...")
+        
+        let companyRef = companiesCollection.document(company.companyId)
+        
+        do {
+            try companyRef.setData(from: company, merge: true)
+            print("Company updated successfully!")
+        } catch {
+            print("Error updating company: \(error)")
+            throw error
+        }
     }
 }

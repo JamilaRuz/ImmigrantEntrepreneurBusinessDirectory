@@ -126,8 +126,17 @@ struct CompanyDetailView: View {
   }
   
   private func toggleBookmark() {
-    isBookmarked.toggle()
-    RealCompanyManager.shared.updateBookmarkStatus(for: company, isBookmarked: isBookmarked)
+    Task {
+      do {
+        isBookmarked.toggle()
+        try await RealCompanyManager.shared.updateBookmarkStatus(for: company, isBookmarked: isBookmarked)
+      } catch {
+        // Revert the toggle if the update fails
+        isBookmarked.toggle()
+        print("Failed to update bookmark status: \(error.localizedDescription)")
+        // TODO: Show error to user
+      }
+    }
   }
 }
 

@@ -32,35 +32,51 @@ struct InfoView: View {
             }
             
             VStack(alignment: .leading) {
-                HStack {
-                    AsyncImage(url: URL(string: viewModel.entrepreneur.profileUrl ?? "")) { phase in
-                        switch phase {
-                        case .empty:
-                            ProgressView()
-                        case .success(let image):
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .frame(width: 50, height: 50)
-                                .clipShape(Circle())
-                        case .failure:
-                            Image(systemName: "person.circle")
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 50, height: 50)
-                                .foregroundColor(.gray)
-                        @unknown default:
-                            EmptyView()
-                        }
-                    }
-                    .frame(width: 50, height: 50)
-                    
-                    VStack(alignment: .leading) {
-                        Text("Founder")
+                if viewModel.isLoading {
+                    HStack {
+                        ProgressView()
+                        Text("Loading entrepreneur info...")
                             .font(.caption)
                             .foregroundColor(.gray)
-                        Text(viewModel.entrepreneur.fullName ?? "Unknown")
-                            .font(.body)
+                    }
+                } else if let error = viewModel.error {
+                    Text(error)
+                        .font(.caption)
+                        .foregroundColor(.red)
+                        .padding()
+                        .background(Color.red.opacity(0.1))
+                        .cornerRadius(8)
+                } else {
+                    HStack {
+                        AsyncImage(url: URL(string: viewModel.entrepreneur.profileUrl ?? "")) { phase in
+                            switch phase {
+                            case .empty:
+                                ProgressView()
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(width: 50, height: 50)
+                                    .clipShape(Circle())
+                            case .failure:
+                                Image(systemName: "person.circle")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 50, height: 50)
+                                    .foregroundColor(.gray)
+                            @unknown default:
+                                EmptyView()
+                            }
+                        }
+                        .frame(width: 50, height: 50)
+                        
+                        VStack(alignment: .leading) {
+                            Text("Founder")
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                            Text(viewModel.entrepreneur.fullName ?? "Unknown")
+                                .font(.body)
+                        }
                     }
                 }
             }
@@ -77,14 +93,22 @@ struct InfoView: View {
 
 class InfoViewModel: ObservableObject {
     @Published var entrepreneur: Entrepreneur = Entrepreneur(entrepId: "", fullName: "", profileUrl: nil, email: "", bioDescr: "", companyIds: [])
+    @Published var isLoading = false
+    @Published var error: String?
     
+    @MainActor
     func loadEntrepreneur(entrepId: String) async {
+        isLoading = true
+        error = nil
+        
         do {
             self.entrepreneur = try await EntrepreneurManager.shared.getEntrepreneur(entrepId: entrepId)
         } catch {
             print("Failed to load entrepreneur: \(error)")
-            // Handle error appropriately, maybe set a default entrepreneur or show an error message
+            self.error = "Failed to load entrepreneur information. Please try again later."
         }
+        
+        isLoading = false
     }
 }
 

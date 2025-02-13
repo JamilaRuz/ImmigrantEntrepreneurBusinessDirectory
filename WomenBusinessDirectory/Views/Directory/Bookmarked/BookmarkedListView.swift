@@ -42,7 +42,9 @@ struct BookmarkedListView: View {
                     EmptyBookmarkedListView()
                 } else {
                     List(viewModel.bookmarkedCompanies, id: \.companyId) { company in
-                        NavigationLink(destination: CompanyDetailView(company: company)) {
+                        NavigationLink {
+                            CompanyDetailView(company: company)
+                        } label: {
                             CompanyRowView(company: company, categories: viewModel.categories)
                         }
                         .buttonStyle(PlainButtonStyle())

@@ -10,10 +10,10 @@ import Foundation
 import PhotosUI
 
 struct AddCompanyView: View {
+  @Environment(\.dismiss) private var dismiss
   @StateObject var viewModel: AddCompanyViewModel
-  var entrepreneur: Entrepreneur
-  
-  @Environment(\.dismiss) var dismiss
+  let entrepreneur: Entrepreneur
+  var editingCompany: Company?
   
   @State private var companyName = ""
   @State private var logoImage: UIImage?
@@ -22,7 +22,7 @@ struct AddCompanyView: View {
   @State private var aboutUs = ""
   @State private var workHours = ""
   @State private var services = ""
-    @State private var businessModel = Company.BusinessModel.offline
+  @State private var businessModel = Company.BusinessModel.offline
   @State private var address = ""
   @State private var city = ""
   @State private var phoneNum = ""
@@ -36,6 +36,37 @@ struct AddCompanyView: View {
   @State private var isPortfolioPickerPresented = false
   @State private var currentPage = 0
   @State private var selectedOwnershipTypes: Set<Company.OwnershipType> = []
+  
+  init(viewModel: AddCompanyViewModel, entrepreneur: Entrepreneur, editingCompany: Company? = nil) {
+    self._viewModel = StateObject(wrappedValue: viewModel)
+    self.entrepreneur = entrepreneur
+    self.editingCompany = editingCompany
+    
+    // Pre-fill form if editing
+    if let company = editingCompany {
+      _companyName = State(initialValue: company.name)
+      _aboutUs = State(initialValue: company.aboutUs)
+      _workHours = State(initialValue: company.workHours)
+      _services = State(initialValue: company.services.joined(separator: ", "))
+      _businessModel = State(initialValue: company.businessModel)
+      _address = State(initialValue: company.address)
+      _city = State(initialValue: company.city)
+      _phoneNum = State(initialValue: company.phoneNum)
+      _email = State(initialValue: company.email)
+      _website = State(initialValue: company.website)
+      _socialMediaInsta = State(initialValue: company.socialMediaInsta)
+      _socialMediaFacebook = State(initialValue: company.socialMediaFacebook)
+      _selectedCategoryIds = State(initialValue: Set(company.categoryIds))
+      _selectedOwnershipTypes = State(initialValue: Set(company.ownershipTypes))
+      
+// Use the non-optional dateFounded directly
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        if let date = formatter.date(from: company.dateFounded) {
+          _dateFounded = State(initialValue: date)
+        }
+     }
+  }
   
   var body: some View {
     NavigationView {
@@ -99,41 +130,135 @@ struct AddCompanyView: View {
         .padding(.horizontal)
         .padding(.bottom)
       }
-      .navigationBarTitle("Add Company", displayMode: .inline)
+      .navigationBarTitle(editingCompany != nil ? "Edit Company" : "Add Company", displayMode: .inline)
       .sheet(isPresented: $isImagePickerPresented) {
         ImagePicker(image: $logoImage)
       }
       .sheet(isPresented: $isPortfolioPickerPresented) {
         PortfolioImagePicker(images: $portfolioImages, maxSelection: 6)
       }
+      .toolbar {
+        ToolbarItem(placement: .navigationBarTrailing) {
+          Button(editingCompany != nil ? "Save" : "Add") {
+            Task {
+              do {
+                if let editingCompany = editingCompany {
+                  try await viewModel.updateCompany(
+                    company: editingCompany,
+                    companyName: companyName,
+                    logoImage: logoImage,
+                    portfolioImages: portfolioImages,
+                    aboutUs: aboutUs,
+                    dateFounded: dateFounded,
+                    workHours: workHours,
+                    services: services,
+                    businessModel: businessModel,
+                    address: address,
+                    city: city,
+                    phoneNum: phoneNum,
+                    email: email,
+                    website: website,
+                    socialMediaInsta: socialMediaInsta,
+                    socialMediaFacebook: socialMediaFacebook,
+                    selectedCategoryIds: selectedCategoryIds,
+                    selectedOwnershipTypes: selectedOwnershipTypes
+                  )
+                } else {
+                  try await viewModel.saveCompany(
+                    entrepreneur: entrepreneur,
+                    companyName: companyName,
+                    logoImage: logoImage,
+                    portfolioImages: portfolioImages,
+                    aboutUs: aboutUs,
+                    dateFounded: dateFounded,
+                    workHours: workHours,
+                    services: services,
+                    businessModel: businessModel,
+                    address: address,
+                    city: city,
+                    phoneNum: phoneNum,
+                    email: email,
+                    website: website,
+                    socialMediaInsta: socialMediaInsta,
+                    socialMediaFacebook: socialMediaFacebook,
+                    selectedCategoryIds: selectedCategoryIds,
+                    selectedOwnershipTypes: selectedOwnershipTypes
+                  )
+                }
+                dismiss()
+              } catch {
+                print("Failed to save company: \(error)")
+              }
+            }
+          }
+          .disabled(!isFormValid)
+        }
+      }
     }
   }
   
   private var companyInfoSection: some View {
     ScrollView {
-      VStack(spacing: 24) {
-        logoAndAboutUsView
+      VStack(spacing: 16) {
+        // Company Name Field
+        CustomTextField(title: "Company Name", text: $companyName)
           .padding(.horizontal)
         
-        VStack(alignment: .leading, spacing: 16) {
-          Text("Company Details")
-            .font(.headline)
-            .padding(.horizontal)
-          
-          VStack(spacing: 16) {
-            CustomTextField(title: "Company Name", text: $companyName)
-            
-            VStack(alignment: .leading, spacing: 8) {
-              Text("Date Founded")
-                .font(.subheadline)
-                .foregroundColor(.gray)
-              DatePicker("", selection: $dateFounded, displayedComponents: .date)
-                .datePickerStyle(WheelDatePickerStyle())
-                .labelsHidden()
+        // Logo and About Section
+        HStack(alignment: .top, spacing: 12) {
+          // Logo Button
+          Button(action: { isImagePickerPresented = true }) {
+            Group {
+              if let logoImage = logoImage {
+                Image(uiImage: logoImage)
+                  .resizable()
+                  .scaledToFill()
+                  .frame(width: 80, height: 80)
+                  .clipShape(RoundedRectangle(cornerRadius: 8))
+              } else {
+                VStack(spacing: 4) {
+                  Image(systemName: "camera.fill")
+                    .font(.system(size: 24))
+                    .foregroundColor(.blue)
+                  Text("Logo")
+                    .font(.caption2)
+                    .foregroundColor(.gray)
+                }
+                .frame(width: 80, height: 80)
+                .background(Color.gray.opacity(0.1))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+              }
             }
-            .padding(.horizontal)
+          }
+          .buttonStyle(PlainButtonStyle())
+          
+          // About Company Field
+          VStack(alignment: .leading, spacing: 4) {
+            Text("About Company")
+              .font(.caption)
+              .foregroundColor(.gray)
+            TextEditor(text: $aboutUs)
+              .frame(height: 80)
+              .padding(4)
+              .background(Color.gray.opacity(0.1))
+              .cornerRadius(8)
           }
         }
+        .padding(.horizontal)
+        
+        // Date Founded - Compact Style
+        VStack(alignment: .leading, spacing: 4) {
+          Text("Date Founded")
+            .font(.caption)
+            .foregroundColor(.gray)
+          DatePicker("", selection: $dateFounded, displayedComponents: .date)
+            .datePickerStyle(CompactDatePickerStyle())
+            .labelsHidden()
+        }
+        .padding(.horizontal)
+        
+        Divider()
+          .padding(.vertical, 8)
         
         categoriesSection
         ownershipSection
@@ -143,52 +268,8 @@ struct AddCompanyView: View {
     }
   }
   
-  private var logoAndAboutUsView: some View {
-    HStack(alignment: .top, spacing: 20) {
-      Button(action: { isImagePickerPresented = true }) {
-        VStack {
-          if let logoImage = logoImage {
-            Image(uiImage: logoImage)
-              .resizable()
-              .scaledToFill()
-              .frame(width: 120, height: 120)
-              .clipShape(RoundedRectangle(cornerRadius: 12))
-              .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                  .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-              )
-          } else {
-            VStack(spacing: 8) {
-              Image(systemName: "camera.fill")
-                .font(.system(size: 30))
-                .foregroundColor(.blue)
-              Text("Add Logo")
-                .font(.caption)
-                .foregroundColor(.gray)
-            }
-            .frame(width: 120, height: 120)
-            .background(Color.gray.opacity(0.1))
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-          }
-        }
-      }
-      .buttonStyle(PlainButtonStyle())
-      
-      VStack(alignment: .leading, spacing: 8) {
-        Text("About Company")
-          .font(.subheadline)
-          .foregroundColor(.gray)
-        TextEditor(text: $aboutUs)
-          .frame(height: 120)
-          .padding(8)
-          .background(Color.gray.opacity(0.1))
-          .cornerRadius(12)
-      }
-    }
-  }
-  
   private var categoriesSection: some View {
-    VStack(alignment: .leading, spacing: 16) {
+    VStack(alignment: .leading, spacing: 8) {
       Text("Business Categories")
         .font(.headline)
         .padding(.horizontal)
@@ -201,26 +282,40 @@ struct AddCompanyView: View {
           Image(systemName: "chevron.right")
             .foregroundColor(.gray)
         }
-        .padding()
+        .padding(8)
         .background(Color.gray.opacity(0.1))
-        .cornerRadius(12)
+        .cornerRadius(8)
         .padding(.horizontal)
       }
       
       if !selectedCategoryIds.isEmpty {
-        selectedCategoriesView
+        ScrollView(.horizontal, showsIndicators: false) {
+          HStack(spacing: 8) {
+            ForEach(viewModel.categories.filter { selectedCategoryIds.contains($0.id) }, id: \.self) { category in
+              Text(category.name)
+                .font(.caption2)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color.green1.opacity(0.2))
+                .cornerRadius(6)
+            }
+          }
           .padding(.horizontal)
+        }
       }
     }
   }
   
   private var ownershipSection: some View {
-    VStack(alignment: .leading, spacing: 16) {
+    VStack(alignment: .leading, spacing: 8) {
       Text("Ownership Type")
         .font(.headline)
         .padding(.horizontal)
       
-      VStack(spacing: 12) {
+      LazyVGrid(columns: [
+        GridItem(.flexible()),
+        GridItem(.flexible())
+      ], spacing: 8) {
         ForEach(Company.OwnershipType.allCases, id: \.self) { type in
           Button(action: {
             if selectedOwnershipTypes.contains(type) {
@@ -233,12 +328,13 @@ struct AddCompanyView: View {
               Image(systemName: selectedOwnershipTypes.contains(type) ? "checkmark.circle.fill" : "circle")
                 .foregroundColor(selectedOwnershipTypes.contains(type) ? .blue : .gray)
               Text(type.rawValue)
+                .font(.caption)
                 .foregroundColor(.primary)
               Spacer()
             }
-            .padding()
+            .padding(8)
             .background(Color.gray.opacity(0.1))
-            .cornerRadius(12)
+            .cornerRadius(8)
           }
         }
       }
@@ -247,7 +343,7 @@ struct AddCompanyView: View {
   }
   
   private var portfolioSection: some View {
-    VStack(alignment: .leading, spacing: 16) {
+    VStack(alignment: .leading, spacing: 12) {
       Text("Portfolio")
         .font(.headline)
         .padding(.horizontal)
@@ -261,21 +357,21 @@ struct AddCompanyView: View {
             .font(.caption)
             .foregroundColor(.gray)
         }
-        .padding()
+        .padding(8)
         .background(Color.gray.opacity(0.1))
-        .cornerRadius(12)
+        .cornerRadius(8)
         .padding(.horizontal)
       }
       
       if !portfolioImages.isEmpty {
         ScrollView(.horizontal, showsIndicators: false) {
-          HStack(spacing: 12) {
+          HStack(spacing: 8) {
             ForEach(portfolioImages.indices, id: \.self) { index in
               Image(uiImage: portfolioImages[index])
                 .resizable()
                 .scaledToFill()
-                .frame(width: 100, height: 100)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .frame(width: 80, height: 80)
+                .clipShape(RoundedRectangle(cornerRadius: 6))
                 .overlay(
                   Button(action: {
                     portfolioImages.remove(at: index)
@@ -349,21 +445,6 @@ struct AddCompanyView: View {
     }
   }
   
-  private var selectedCategoriesView: some View {
-    let selectedCategories = viewModel.categories.filter { selectedCategoryIds.contains($0.id) }
-    return ScrollView(.horizontal, showsIndicators: false) {
-      HStack {
-        ForEach(selectedCategories, id: \.self) { category in
-          Text(category.name)
-            .font(.caption2)
-            .padding(5)
-            .background(Color.green1.opacity(0.5))
-            .cornerRadius(10)
-        }
-      }
-    }
-  }
-  
   private func saveCompany() {
     Task {
       do {
@@ -407,6 +488,11 @@ struct AddCompanyView: View {
     case 2: return "Contact"
     default: return ""
     }
+  }
+  
+  private var isFormValid: Bool {
+    // Implement your validation logic here
+    true
   }
 }
 

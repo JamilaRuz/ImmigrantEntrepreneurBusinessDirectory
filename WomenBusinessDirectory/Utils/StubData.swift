@@ -20,7 +20,9 @@ class StubCompanyManager: CompanyManager {
   // Stub implementations - do nothing or return empty
   func getCompany(companyId: String) async throws -> Company { createStubCompanies()[0] }
   func createCompany(company: Company) async throws {}
-  func updateBookmarkStatus(for company: Company, isBookmarked: Bool) {}
+  func updateCompany(company: Company) async throws {}
+  func deleteCompany(companyId: String) async throws {}
+  func updateBookmarkStatus(for company: Company, isBookmarked: Bool) async throws {}
   func getBookmarkedCompanies() async throws -> [Company] { [] }
   func uploadLogoImage(_ image: UIImage) async throws -> String { "" }
   func uploadPortfolioImages(_ images: [UIImage]) async throws -> [String] { [] }

@@ -48,12 +48,26 @@ final class ProfileViewModel: ObservableObject {
         }
         return names.joined(separator: ", ")
     }
+    
+    func deleteCompany(_ company: Company) async throws {
+        // Delete from CompanyManager
+        try await RealCompanyManager.shared.deleteCompany(companyId: company.companyId)
+        
+        // Remove from entrepreneur's company list
+        try await EntrepreneurManager.shared.removeCompany(companyId: company.companyId)
+        
+        // Reload companies to update the UI
+        self.companies = try await loadCompaniesOfEntrepreneur()
+    }
 }
 
 struct ProfileView: View {
     @StateObject private var viewModel = ProfileViewModel()
     @State private var showingEditProfile = false
     @State private var showSettingsView = false
+    @State private var showingEditCompany = false
+    @State private var selectedCompanyToEdit: Company?
+    @State private var showingDeleteAlert = false
     @Binding var showSignInView: Bool
     
     var body: some View {
@@ -190,10 +204,33 @@ struct ProfileView: View {
                     .padding()
             } else {
                 ForEach(viewModel.companies, id: \.self) { company in
-                    NavigationLink(destination: CompanyDetailView(company: company)) {
-                        CompanyRowView(company: company, categories: viewModel.allCategories)
+                    HStack {
+                        NavigationLink {
+                            CompanyDetailView(company: company)
+                        } label: {
+                            CompanyRowView(company: company, categories: viewModel.allCategories)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                        
+                        VStack(spacing: 12) {
+                            Button {
+                                selectedCompanyToEdit = company
+                                showingEditCompany = true
+                            } label: {
+                                Image(systemName: "pencil")
+                                    .foregroundColor(.purple1)
+                            }
+                            
+                            Button {
+                                selectedCompanyToEdit = company
+                                showingDeleteAlert = true
+                            } label: {
+                                Image(systemName: "trash")
+                                    .foregroundColor(.red)
+                            }
+                        }
+                        .padding(.leading, 8)
                     }
-                    .buttonStyle(PlainButtonStyle())
                 }
             }
             addCompanyButton
@@ -203,6 +240,27 @@ struct ProfileView: View {
         .background(Color.white)
         .cornerRadius(15)
         .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
+        .sheet(isPresented: $showingEditCompany, content: {
+            if let company = selectedCompanyToEdit {
+                NavigationStack {
+                    AddCompanyView(viewModel: AddCompanyViewModel(), 
+                                 entrepreneur: viewModel.entrepreneur,
+                                 editingCompany: company)
+                }
+            }
+        })
+        .alert("Delete Company", isPresented: $showingDeleteAlert) {
+            Button("Cancel", role: .cancel) {}
+            Button("Delete", role: .destructive) {
+                if let company = selectedCompanyToEdit {
+                    Task {
+                        try await viewModel.deleteCompany(company)
+                    }
+                }
+            }
+        } message: {
+            Text("Are you sure you want to delete this company? This action cannot be undone.")
+        }
     }
     
     private var addCompanyButton: some View {

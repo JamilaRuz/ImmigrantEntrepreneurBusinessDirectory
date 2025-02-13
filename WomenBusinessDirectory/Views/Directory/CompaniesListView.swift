@@ -124,10 +124,12 @@ struct CompaniesListView: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                     } else {
                         List(viewModel.filteredCompanies, id: \.companyId) { company in
-                            NavigationLink(destination: CompanyDetailView(company: company)) {
+                            NavigationLink {
+                                CompanyDetailView(company: company)
+                            } label: {
                                 CompanyRowView(company: company, categories: viewModel.categories)
                             }
-                            .buttonStyle(PlainButtonStyle())
+                            .buttonStyle(.plain)
                             .listRowSeparator(.hidden)
                             .listRowBackground(Color.clear)
                         }
@@ -148,6 +150,6 @@ struct CompaniesListView: View {
 
 #Preview {
     NavigationStack {
-        CompaniesListView(category: Category(id: "1", name: "Test Category"))
+        CompaniesListView(category: Category(id: "1", name: "Test Category", systemIconName: "star"))
     }
 } 

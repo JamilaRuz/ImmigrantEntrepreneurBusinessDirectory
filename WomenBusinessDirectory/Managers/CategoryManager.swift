@@ -12,20 +12,24 @@ import FirebaseFirestoreSwift
 struct Category: Codable, Hashable {
     let id: String
     let name: String
+    let systemIconName: String
     
     enum CodingKeys: String, CodingKey {
         case id
         case name
+        case systemIconName
     }
     
-    init(id: String, name: String) {
+    init(id: String, name: String, systemIconName: String) {
         self.id = id
         self.name = name
+        self.systemIconName = systemIconName
     }
     
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.name = try container.decode(String.self, forKey: .name)
+        self.systemIconName = try container.decode(String.self, forKey: .systemIconName)
         // If id is in the data use it, otherwise it will be set from documentID
         self.id = (try? container.decode(String.self, forKey: .id)) ?? ""
     }
@@ -44,7 +48,7 @@ class CategoryManager {
         return try snapshot.documents.compactMap { document in
             let decodedCategory = try document.data(as: Category.self)
             return decodedCategory.id.isEmpty ? 
-                Category(id: document.documentID, name: decodedCategory.name) : 
+                Category(id: document.documentID, name: decodedCategory.name, systemIconName: decodedCategory.systemIconName) : 
                 decodedCategory
         }.sorted { $0.name < $1.name }
     }

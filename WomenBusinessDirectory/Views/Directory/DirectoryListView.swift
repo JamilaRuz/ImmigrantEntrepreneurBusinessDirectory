@@ -95,34 +95,31 @@ struct DirectoryListView: View {
         } else {
           List(viewModel.filteredCompaniesByCategory, id: \.category.id) { categoryData in
             NavigationLink(destination: CompaniesListView(category: categoryData.category)) {
-              HStack {
-                Image(systemName: "building.2.fill")
-                  .frame(width: 50, height: 50)
+              HStack(spacing: 12) {
+                Image(systemName: categoryData.category.systemIconName)
                   .foregroundColor(Color.purple1)
+                  .frame(width: 28, height: 28)
                 
                 Text(categoryData.category.name)
-                  .font(.headline)
+                  .font(.system(size: 15))
                 
                 Spacer()
                 
-                Text("\(categoryData.count)")
-                  .font(.subheadline)
-                  .foregroundColor(.gray)
-                  .padding(.horizontal, 12)
-                  .padding(.vertical, 4)
-                  .background(Color.gray.opacity(0.1))
-                  .cornerRadius(12)
+                if categoryData.count > 0 {
+                  Text("\(categoryData.count)")
+                    .font(.system(size: 15))
+                    .foregroundColor(.gray)
+                    .padding(8)
+                    .background(Color.gray.opacity(0.15))
+                    .clipShape(Circle())
+                }
               }
-              .padding()
-              .background(Color.white)
-              .cornerRadius(10)
-              .shadow(color: Color.black.opacity(0.1), radius: 3, x: 0, y: 1)
+              .padding(.vertical, 12)
             }
-            .buttonStyle(PlainButtonStyle())
-            .listRowSeparator(.hidden)
-            .listRowBackground(Color.clear)
+            .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
           }
-          .listStyle(.plain)
+          .listStyle(.automatic)
+          .background(Color.white)
           .refreshable {
             viewModel.loadData()
           }

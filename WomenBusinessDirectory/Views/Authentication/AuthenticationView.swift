@@ -55,7 +55,7 @@ struct AuthenticationView: View {
                         Button(action: {
                             isPasswordVisible.toggle()
                         }) {
-                            isPasswordVisible ? Image(systemName: "eye.slash") : Image(systemName: "eye")
+                            isPasswordVisible ? Image(systemName: "eye") : Image(systemName: "eye.slash")
                         }
                         .foregroundColor(.gray)
                         .padding(.trailing, 8)
