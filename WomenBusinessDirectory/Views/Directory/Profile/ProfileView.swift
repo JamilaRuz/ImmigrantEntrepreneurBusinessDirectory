@@ -68,9 +68,8 @@ struct ProfileView: View {
     @StateObject private var viewModel = ProfileViewModel()
     @State private var showingEditProfile = false
     @State private var showSettingsView = false
-    @State private var showingEditCompany = false
-    @State private var selectedCompanyToEdit: Company?
     @State private var showingDeleteAlert = false
+    @State private var selectedCompanyToEdit: Company?
     @Binding var showSignInView: Bool
     let isEditable: Bool
     let entrepreneur: Entrepreneur?
@@ -208,7 +207,7 @@ struct ProfileView: View {
     }
     
     private var companiesList: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 16) {
             if viewModel.companies.isEmpty {
                 Text("No companies to show")
                     .foregroundColor(.secondary)
@@ -226,9 +225,10 @@ struct ProfileView: View {
                         if isEditable {
                             // Action buttons
                             HStack(spacing: 16) {
-                                Button {
-                                    selectedCompanyToEdit = company
-                                    showingEditCompany = true
+                                NavigationLink {
+                                    AddCompanyView(viewModel: AddCompanyViewModel(), 
+                                                 entrepreneur: viewModel.entrepreneur,
+                                                 editingCompany: company)
                                 } label: {
                                     Image(systemName: "pencil")
                                         .foregroundColor(.purple1)
@@ -260,15 +260,6 @@ struct ProfileView: View {
                     .padding(.top)
             }
         }
-        .sheet(isPresented: $showingEditCompany, content: {
-            if let company = selectedCompanyToEdit {
-                NavigationStack {
-                    AddCompanyView(viewModel: AddCompanyViewModel(), 
-                                 entrepreneur: viewModel.entrepreneur,
-                                 editingCompany: company)
-                }
-            }
-        })
         .alert("Delete Company", isPresented: $showingDeleteAlert) {
             Button("Cancel", role: .cancel) {}
             Button("Delete", role: .destructive) {

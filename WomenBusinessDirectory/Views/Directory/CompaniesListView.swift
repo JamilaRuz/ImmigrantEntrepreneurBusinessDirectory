@@ -122,23 +122,37 @@ struct CompaniesListView: View {
                             }
                         }
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    Color.purple1.opacity(0.1),
+                                    Color.white
+                                ]),
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
                     } else {
-                        List(viewModel.filteredCompanies, id: \.companyId) { company in
-                            NavigationLink {
-                                CompanyDetailView(company: company)
-                            } label: {
-                                CompanyRowView(company: company, categories: viewModel.categories)
+                        ScrollView {
+                            VStack(spacing: 16) {
+                                ForEach(viewModel.filteredCompanies, id: \.companyId) { company in
+                                    NavigationLink {
+                                        CompanyDetailView(company: company)
+                                    } label: {
+                                        CompanyRowView(company: company, categories: viewModel.categories)
+                                    }
+                                    .buttonStyle(PlainButtonStyle())
+                                }
                             }
-                            .buttonStyle(.plain)
-                            .listRowSeparator(.hidden)
-                            .listRowBackground(Color.clear)
+                            .padding(.horizontal)
+                            .padding(.vertical, 8)
                         }
-                        .listStyle(.plain)
                         .refreshable {
                             viewModel.loadCompanies()
                         }
                     }
                 }
+                .background(Color(.systemGray6))
             }
         }
         .navigationTitle(category.name)

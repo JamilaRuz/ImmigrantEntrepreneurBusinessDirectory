@@ -37,7 +37,7 @@ struct BookmarkedListView: View {
     
     var body: some View {
         NavigationView {
-            Group {
+            ScrollView {
                 if viewModel.bookmarkedCompanies.isEmpty {
                     VStack(spacing: 24) {
                         Image(systemName: "bookmark.slash")
@@ -85,19 +85,21 @@ struct BookmarkedListView: View {
                         )
                     )
                 } else {
-                    List(viewModel.bookmarkedCompanies, id: \.companyId) { company in
-                        NavigationLink {
-                            CompanyDetailView(company: company)
-                        } label: {
-                            CompanyRowView(company: company, categories: viewModel.categories)
+                    VStack(spacing: 16) {
+                        ForEach(viewModel.bookmarkedCompanies, id: \.companyId) { company in
+                            NavigationLink {
+                                CompanyDetailView(company: company)
+                            } label: {
+                                CompanyRowView(company: company, categories: viewModel.categories)
+                            }
+                            .buttonStyle(PlainButtonStyle())
                         }
-                        .buttonStyle(PlainButtonStyle())
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(Color.clear)
                     }
-                    .listStyle(.plain)
+                    .padding(.horizontal)
+                    .padding(.vertical, 8)
                 }
             }
+            .background(Color(.systemGray6))
             .navigationTitle("Bookmarked")
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {

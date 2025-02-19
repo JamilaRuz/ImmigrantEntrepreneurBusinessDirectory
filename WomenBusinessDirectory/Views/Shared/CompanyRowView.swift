@@ -90,15 +90,6 @@ struct CompanyRowView: View {
                     }
                 }
             }
-            
-            // Arrow VStack
-            VStack {
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .foregroundColor(Color.gray.opacity(0.5))
-                    .frame(width: 20)
-                Spacer()
-            }
         }
         .padding()
         .background(Color.white)
