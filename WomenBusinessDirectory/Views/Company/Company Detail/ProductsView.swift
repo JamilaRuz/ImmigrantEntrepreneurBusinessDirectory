@@ -21,9 +21,10 @@ struct ProductsView: View {
     
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: 20) {
                 Text("Services we provide")
                     .font(.headline)
+                    .padding(.top, 15)
                 
                 ForEach(services, id: \.self) { service in
                     HStack(alignment: .top, spacing: 10) {
@@ -31,44 +32,46 @@ struct ProductsView: View {
                             .font(.system(size: 5))
                             .padding(.top, 7)
                         Text(service)
+                            .foregroundColor(.gray)
                     }
-                    .foregroundColor(.gray)
                 }
                 
-                Text("Business portfolio")
-                    .font(.headline)
-                    .padding(.top)
-                
-                LazyVGrid(columns: columns, spacing: 15) {
-                    ForEach(portfolioImages, id: \.self) { imageUrl in
-                        AsyncImage(url: URL(string: imageUrl)) { phase in
-                            switch phase {
-                            case .empty:
-                                ProgressView()
-                            case .success(let image):
-                                image
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                                    .frame(width: 100, height: 100)
-                                    .clipShape(RoundedRectangle(cornerRadius: 10))
-                            case .failure:
-                                Image(systemName: "photo")
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(width: 100, height: 100)
-                                    .foregroundColor(.yellow)
-                            @unknown default:
-                                EmptyView()
+                if !portfolioImages.isEmpty {
+                    Text("Business portfolio")
+                        .font(.headline)
+                        .padding(.top, 10)
+                    
+                    LazyVGrid(columns: columns, spacing: 15) {
+                        ForEach(portfolioImages, id: \.self) { imageUrl in
+                            AsyncImage(url: URL(string: imageUrl)) { phase in
+                                switch phase {
+                                case .empty:
+                                    ProgressView()
+                                case .success(let image):
+                                    image
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .frame(width: 100, height: 100)
+                                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                                case .failure:
+                                    Image(systemName: "photo")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: 100, height: 100)
+                                        .foregroundColor(.yellow)
+                                @unknown default:
+                                    EmptyView()
+                                }
                             }
-                        }
-                        .frame(width: 100, height: 100)
-                        .onTapGesture {
-                            selectedImage = imageUrl
+                            .frame(width: 100, height: 100)
+                            .onTapGesture {
+                                selectedImage = imageUrl
+                            }
                         }
                     }
                 }
             }
-            .padding()
+            .padding(.horizontal, 20)
         }
         .sheet(item: $selectedImage) { imageUrl in
             ZoomableScrollView {

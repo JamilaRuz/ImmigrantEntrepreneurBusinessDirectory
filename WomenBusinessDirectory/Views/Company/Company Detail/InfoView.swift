@@ -85,6 +85,7 @@ struct InfoView: View {
             
             Spacer()
         }
+        .padding()
         .onAppear {
             Task {
                 await viewModel.loadEntrepreneur(entrepId: company.entrepId)

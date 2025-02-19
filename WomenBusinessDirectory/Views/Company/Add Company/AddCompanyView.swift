@@ -159,6 +159,21 @@ struct AddCompanyView: View {
       .sheet(isPresented: $isPortfolioPickerPresented) {
         PortfolioImagePicker(images: $portfolioImages, maxSelection: 6)
       }
+      .overlay {
+        if viewModel.isSaving {
+          Color.black.opacity(0.4)
+            .ignoresSafeArea()
+          VStack(spacing: 16) {
+            ProgressView()
+              .scaleEffect(1.5)
+              .tint(.white)
+            Text(editingCompany != nil ? "Updating company..." : "Saving company...")
+              .font(.headline)
+              .foregroundColor(.white)
+          }
+        }
+      }
+      .disabled(viewModel.isSaving)
     }
   }
   

@@ -12,6 +12,7 @@ import UIKit
 
 final class AddCompanyViewModel: ObservableObject {
     @Published private(set) var categories: [Category] = []
+    @Published var isSaving = false
     
     init() {
         Task {
@@ -25,6 +26,8 @@ final class AddCompanyViewModel: ObservableObject {
     }
     
     func createCompany(company: Company) async throws {
+        isSaving = true
+        defer { isSaving = false }
         try await RealCompanyManager.shared.createCompany(company: company)
         try await EntrepreneurManager.shared.addCompany(company: company)
     }
@@ -50,6 +53,8 @@ final class AddCompanyViewModel: ObservableObject {
         selectedCategoryIds: Set<String>,
         selectedOwnershipTypes: Set<Company.OwnershipType>
     ) async throws {
+        isSaving = true
+        defer { isSaving = false }
         
         guard !selectedCategoryIds.isEmpty else {
             throw NSError(domain: "AddCompanyViewModel", code: 0, userInfo: [NSLocalizedDescriptionKey: "No categories selected"])
