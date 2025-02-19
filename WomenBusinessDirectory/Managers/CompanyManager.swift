@@ -25,6 +25,7 @@ class Company: Codable, Hashable, Equatable, Identifiable {
     let categoryIds: [String]
     let name: String
     let logoImg: String?
+    let headerImg: String?
     let aboutUs: String
     let dateFounded: String
     let portfolioImages: [String]
@@ -64,12 +65,13 @@ class Company: Codable, Hashable, Equatable, Identifiable {
         }
     }
     
-    init(companyId: String, entrepId: String, categoryIds: [String], name: String, logoImg: String?, aboutUs: String, dateFounded: String, portfolioImages: [String], address: String, city: String, phoneNum: String, email: String, workHours: String, services: [String], socialMediaFacebook: String, socialMediaInsta: String, businessModel: BusinessModel, website: String, ownershipTypes: [OwnershipType], isBookmarked: Bool = false) {
+    init(companyId: String, entrepId: String, categoryIds: [String], name: String, logoImg: String?, headerImg: String?, aboutUs: String, dateFounded: String, portfolioImages: [String], address: String, city: String, phoneNum: String, email: String, workHours: String, services: [String], socialMediaFacebook: String, socialMediaInsta: String, businessModel: BusinessModel, website: String, ownershipTypes: [OwnershipType], isBookmarked: Bool = false) {
         self.companyId = companyId
         self.entrepId = entrepId
         self.categoryIds = categoryIds
         self.name = name
         self.logoImg = logoImg
+        self.headerImg = headerImg
         self.aboutUs = aboutUs
         self.dateFounded = dateFounded
         self.portfolioImages = portfolioImages
@@ -98,6 +100,7 @@ protocol CompanyManager {
     func updateBookmarkStatus(for company: Company, isBookmarked: Bool) async throws
     func getBookmarkedCompanies() async throws -> [Company]
     func uploadLogoImage(_ image: UIImage) async throws -> String
+    func uploadHeaderImage(_ image: UIImage) async throws -> String
     func uploadPortfolioImages(_ images: [UIImage]) async throws -> [String]
 }
 
@@ -192,6 +195,30 @@ final class RealCompanyManager: CompanyManager {
 
       let imageName = UUID().uuidString + ".jpg"
       let imageReference = storageRef.child("logo_images/\(imageName)")
+
+      do {
+        // Attempt to upload the image data
+        _ = try await imageReference.putDataAsync(imageData)
+        
+        // If successful, get the download URL
+        let downloadURL = try await imageReference.downloadURL()
+        
+        // Return the URL as a string
+        return downloadURL.absoluteString
+      } catch {
+        // Handle any errors that occur during upload
+        print("Error uploading image: \(error.localizedDescription)")
+        throw error
+      }
+    }
+    
+    func uploadHeaderImage(_ image: UIImage) async throws -> String {
+      guard let imageData = image.jpegData(compressionQuality: 0.5) else {
+        throw NSError(domain: "CompanyManager", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to convert image to data"])
+      }
+
+      let imageName = UUID().uuidString + ".jpg"
+      let imageReference = storageRef.child("header_images/\(imageName)")
 
       do {
         // Attempt to upload the image data

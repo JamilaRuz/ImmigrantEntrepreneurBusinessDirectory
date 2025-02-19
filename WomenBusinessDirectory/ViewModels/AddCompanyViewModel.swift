@@ -33,6 +33,7 @@ final class AddCompanyViewModel: ObservableObject {
         entrepreneur: Entrepreneur,
         companyName: String,
         logoImage: UIImage?,
+        headerImage: UIImage?,
         portfolioImages: [UIImage],
         aboutUs: String,
         dateFounded: Date,
@@ -61,6 +62,13 @@ final class AddCompanyViewModel: ObservableObject {
             logoUrlString = nil
         }
         
+        let headerUrlString: String?
+        if let headerImage = headerImage {
+            headerUrlString = try await RealCompanyManager.shared.uploadHeaderImage(headerImage)
+        } else {
+            headerUrlString = nil
+        }
+        
         let portfolioUrls = try await RealCompanyManager.shared.uploadPortfolioImages(portfolioImages)
         
         let newCompany = Company(
@@ -69,6 +77,7 @@ final class AddCompanyViewModel: ObservableObject {
             categoryIds: Array(selectedCategoryIds),
             name: companyName,
             logoImg: logoUrlString,
+            headerImg: headerUrlString,
             aboutUs: aboutUs,
             dateFounded: formatDate(dateFounded),
             portfolioImages: portfolioUrls,
@@ -93,6 +102,7 @@ final class AddCompanyViewModel: ObservableObject {
         company: Company,
         companyName: String,
         logoImage: UIImage?,
+        headerImage: UIImage?,
         portfolioImages: [UIImage],
         aboutUs: String,
         dateFounded: Date,
@@ -120,6 +130,13 @@ final class AddCompanyViewModel: ObservableObject {
             logoUrlString = company.logoImg // Keep existing logo if no new one provided
         }
         
+        let headerUrlString: String?
+        if let headerImage = headerImage {
+            headerUrlString = try await RealCompanyManager.shared.uploadHeaderImage(headerImage)
+        } else {
+            headerUrlString = company.headerImg // Keep existing header if no new one provided
+        }
+        
         let portfolioUrls = try await RealCompanyManager.shared.uploadPortfolioImages(portfolioImages)
         let allPortfolioUrls = company.portfolioImages + portfolioUrls // Combine existing and new images
         
@@ -129,6 +146,7 @@ final class AddCompanyViewModel: ObservableObject {
             categoryIds: Array(selectedCategoryIds),
             name: companyName,
             logoImg: logoUrlString,
+            headerImg: headerUrlString,
             aboutUs: aboutUs,
             dateFounded: formatDate(dateFounded),
             portfolioImages: allPortfolioUrls,

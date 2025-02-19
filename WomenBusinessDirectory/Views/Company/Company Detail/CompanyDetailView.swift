@@ -22,7 +22,7 @@ struct CompanyDetailView: View {
     VStack(spacing: 0) {
       // Header image and company name overlay
       ZStack {
-        AsyncImage(url: company.portfolioImages.first.flatMap { URL(string: $0) }) { phase in
+        AsyncImage(url: URL(string: company.headerImg ?? "")) { phase in
           switch phase {
           case .empty:
             ProgressView()
@@ -38,6 +38,7 @@ struct CompanyDetailView: View {
               .aspectRatio(contentMode: .fit)
               .frame(height: 300)
               .foregroundColor(.gray)
+              .background(Color.gray.opacity(0.1))
           @unknown default:
             EmptyView()
           }

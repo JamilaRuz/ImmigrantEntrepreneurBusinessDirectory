@@ -25,6 +25,7 @@ class StubCompanyManager: CompanyManager {
   func updateBookmarkStatus(for company: Company, isBookmarked: Bool) async throws {}
   func getBookmarkedCompanies() async throws -> [Company] { [] }
   func uploadLogoImage(_ image: UIImage) async throws -> String { "" }
+  func uploadHeaderImage(_ image: UIImage) async throws -> String { "" }
   func uploadPortfolioImages(_ images: [UIImage]) async throws -> [String] { [] }
 }
 
@@ -56,6 +57,7 @@ func createStubCompanies() -> [Company] {
     categoryIds: [],
     name: "Tech Innovators Inc",
     logoImg: "tech_innovators_logo.png",
+    headerImg: "tech_innovators_header.png",
     aboutUs: "Tech Innovators is a US-based software development company specializing in providing businesses worldwide with custom technology solutions. We are a mobile and web-based application development company with over 2,800 skilled software developers.",
     dateFounded: "2010-01-15",
     portfolioImages: ["portfolio1.jpg", "portfolio2.jpg", "portfolio3.jpg"],
@@ -79,6 +81,7 @@ func createStubCompanies() -> [Company] {
     categoryIds: [],
     name: "Green Energy Solutions",
     logoImg: "green_energy_logo.png",
+    headerImg: "green_energy_header.png",
     aboutUs: "We work with you based on your software development objectives to bring you the most value and the quickest return on investment while defining tactics and a dedicated team to your project.",
     dateFounded: "2015-06-30",
     portfolioImages: ["portfolio1.jpg", "portfolio2.jpg", "portfolio3.jpg"],
@@ -102,8 +105,9 @@ func createStubCompanies() -> [Company] {
     categoryIds: [],
     name: "Company name three",
     logoImg: "company_logo3",
+    headerImg: "company_header3.png",
     aboutUs: "Our company was founded 10 years ago. Our software developers are organized in virtual divisions, carrying the domain experience and know-how within the industry to offer exceptional application development solutions.",
-    dateFounded: "10/13/2006",
+    dateFounded: "2006-10-13",
     portfolioImages: [],
     address: "123 Bank street",
     city: "New York",
@@ -125,8 +129,9 @@ func createStubCompanies() -> [Company] {
     categoryIds: [],
     name: "Company name four",
     logoImg: "company_logo4",
+    headerImg: "company_header4.png",
     aboutUs: "We work with you based on your software development objectives to bring you the most value and the quickest return on investment while defining tactics and a dedicated team to your project.",
-    dateFounded: "10/13/2006",
+    dateFounded: "2006-10-13",
     portfolioImages: [],
     address: "123 Bank street",
     city: "Los Angeles",

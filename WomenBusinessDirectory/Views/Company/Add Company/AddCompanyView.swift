@@ -19,6 +19,7 @@ struct AddCompanyView: View {
   
   @State private var companyName = ""
   @State private var logoImage: UIImage?
+  @State private var headerImage: UIImage?
   @State private var portfolioImages: [UIImage] = []
   @State private var dateFounded = Date()
   @State private var aboutUs = ""
@@ -35,6 +36,7 @@ struct AddCompanyView: View {
   
   @State private var selectedCategoryIds: Set<String> = []
   @State private var isImagePickerPresented = false
+  @State private var isHeaderImagePickerPresented = false
   @State private var isPortfolioPickerPresented = false
   @State private var currentPage = 0
   @State private var selectedOwnershipTypes: Set<Company.OwnershipType> = []
@@ -151,6 +153,9 @@ struct AddCompanyView: View {
       .sheet(isPresented: $isImagePickerPresented) {
         ImagePicker(image: $logoImage)
       }
+      .sheet(isPresented: $isHeaderImagePickerPresented) {
+        ImagePicker(image: $headerImage)
+      }
       .sheet(isPresented: $isPortfolioPickerPresented) {
         PortfolioImagePicker(images: $portfolioImages, maxSelection: 6)
       }
@@ -232,6 +237,48 @@ struct AddCompanyView: View {
                 )
                 .environment(\.calendar, Calendar(identifier: .gregorian))
           }
+        }
+        .padding(.horizontal)
+        
+        // Header Image Section
+        VStack(alignment: .leading, spacing: 4) {
+          Text("Header Image *")
+            .font(.subheadline)
+            .foregroundColor(.gray)
+          
+          Text("This image will be displayed at the top of your company profile")
+            .font(.caption)
+            .foregroundColor(.gray)
+          
+          Button(action: { isHeaderImagePickerPresented = true }) {
+            Group {
+              if let headerImage = headerImage {
+                Image(uiImage: headerImage)
+                  .resizable()
+                  .scaledToFill()
+                  .frame(height: 120)
+                  .frame(maxWidth: .infinity)
+                  .clipShape(RoundedRectangle(cornerRadius: 8))
+              } else {
+                VStack(spacing: 8) {
+                  Image(systemName: "photo.fill")
+                    .font(.system(size: 24))
+                    .foregroundColor(.blue)
+                  Text("Upload Header Image")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                }
+                .frame(height: 120)
+                .frame(maxWidth: .infinity)
+                .background(Color.white)
+                .overlay(
+                  RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                )
+              }
+            }
+          }
+          .buttonStyle(PlainButtonStyle())
         }
         .padding(.horizontal)
         
@@ -657,6 +704,7 @@ struct AddCompanyView: View {
         company: editingCompany,
         companyName: companyName,
         logoImage: logoImage,
+        headerImage: headerImage,
         portfolioImages: portfolioImages,
         aboutUs: aboutUs,
         dateFounded: dateFounded,
@@ -678,6 +726,7 @@ struct AddCompanyView: View {
         entrepreneur: entrepreneur,
         companyName: companyName,
         logoImage: logoImage,
+        headerImage: headerImage,
         portfolioImages: portfolioImages,
         aboutUs: aboutUs,
         dateFounded: dateFounded,

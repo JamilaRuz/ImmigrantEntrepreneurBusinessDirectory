@@ -115,6 +115,7 @@ struct CompanyRowView: View {
             categoryIds: ["1", "2"],
             name: "Test Company",
             logoImg: nil,
+            headerImg: nil,
             aboutUs: "This is a test company description",
             dateFounded: "11.11.2011",
             portfolioImages: [],
