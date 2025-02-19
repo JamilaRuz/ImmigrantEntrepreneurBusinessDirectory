@@ -8,6 +8,8 @@
 import SwiftUI
 import Foundation
 import PhotosUI
+import MapKit
+import Combine
 
 struct AddCompanyView: View {
   @Environment(\.dismiss) private var dismiss
@@ -38,6 +40,10 @@ struct AddCompanyView: View {
   @State private var selectedOwnershipTypes: Set<Company.OwnershipType> = []
   @State private var workHoursType = Company.WorkingHoursType.standard
   @State private var customWorkHours = ""
+  
+  @StateObject private var addressCompleter = AddressCompleter()
+  @State private var showAddressSuggestions = false
+  @State private var showCitySuggestions = false
   
   private let canadianPhonePattern = #"^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$"#
   @State private var isValidPhone = false
@@ -272,6 +278,11 @@ struct AddCompanyView: View {
         .foregroundColor(.gray)
         .padding(.horizontal)
       
+      Text("You can select several categories")
+        .font(.caption)
+        .foregroundColor(.gray)
+        .padding(.horizontal)
+      
       NavigationLink(destination: MultipleSelectionList(categories: viewModel.categories, selectedCategoryIds: $selectedCategoryIds)) {
         HStack {
           Text(selectedCategoryIds.isEmpty ? "Select Categories" : "\(selectedCategoryIds.count) Categories Selected")
@@ -345,6 +356,11 @@ struct AddCompanyView: View {
     VStack(alignment: .leading, spacing: 12) {
       Text("Portfolio")
         .font(.subheadline)
+        .foregroundColor(.gray)
+        .padding(.horizontal)
+      
+      Text("Adding portfolio images is recommended as they help showcase and promote your company's services.")
+        .font(.caption)
         .foregroundColor(.gray)
         .padding(.horizontal)
       
@@ -451,6 +467,11 @@ struct AddCompanyView: View {
           
           CustomTextField(title: "Services Offered *", text: $services, placeholder: "List your services")
           
+          Text("Separate services with comma, e.g.: Web Design, Mobile Apps, UI/UX Design")
+            .font(.caption)
+            .foregroundColor(.gray)
+            .padding(.horizontal)
+          
           VStack(alignment: .leading, spacing: 8) {
             Text("Business Model")
               .font(.subheadline)
@@ -477,7 +498,7 @@ struct AddCompanyView: View {
           
           Group {
             VStack(alignment: .leading) {
-              CustomTextField(title: "Phone Number", text: $phoneNum, placeholder: "123-456-7890")
+              CustomTextField(title: "Phone Number *", text: $phoneNum, placeholder: "123-456-7890")
               if !phoneNum.isEmpty {
                 Text(isValidPhone ? "Valid phone number" : "Please enter a valid Canadian phone number (e.g., 123-456-7890)")
                   .font(.caption)
@@ -489,7 +510,6 @@ struct AddCompanyView: View {
               // Clean the phone number string
               let cleaned = newValue.replacingOccurrences(of: "[^0-9]", with: "", options: .regularExpression)
               if cleaned.count > 10 {
-                  // Trim to 10 digits if more are entered
                   phoneNum = String(cleaned.prefix(10))
               }
               
@@ -503,8 +523,72 @@ struct AddCompanyView: View {
                   .evaluate(with: phoneNum)
             }
             
-            CustomTextField(title: "Address", text: $address)
-            CustomTextField(title: "City", text: $city)
+            VStack(alignment: .leading) {
+              CustomTextField(title: "Address *", text: $address)
+                .onChange(of: address) { newValue in
+                  addressCompleter.searchAddress(newValue)
+                  showAddressSuggestions = !newValue.isEmpty
+                }
+              
+              if showAddressSuggestions && !addressCompleter.suggestions.isEmpty {
+                ScrollView {
+                  VStack(alignment: .leading, spacing: 8) {
+                    ForEach(addressCompleter.suggestions, id: \.self) { suggestion in
+                      Button(action: {
+                        address = suggestion.title
+                        showAddressSuggestions = false
+                        // Extract city from the suggestion if possible
+                        if let cityComponent = suggestion.title.split(separator: ",").dropFirst().first {
+                          city = cityComponent.trimmingCharacters(in: .whitespaces)
+                        }
+                      }) {
+                        Text(suggestion.title)
+                          .foregroundColor(.primary)
+                          .frame(maxWidth: .infinity, alignment: .leading)
+                          .padding(.vertical, 8)
+                      }
+                      Divider()
+                    }
+                  }
+                }
+                .frame(maxHeight: 200)
+                .background(Color.white)
+                .cornerRadius(8)
+                .shadow(radius: 2)
+              }
+            }
+            
+            VStack(alignment: .leading) {
+              CustomTextField(title: "City *", text: $city)
+                .onChange(of: city) { newValue in
+                  addressCompleter.searchCity(newValue)
+                  showCitySuggestions = !newValue.isEmpty
+                }
+              
+              if showCitySuggestions && !addressCompleter.citySuggestions.isEmpty {
+                ScrollView {
+                  VStack(alignment: .leading, spacing: 8) {
+                    ForEach(addressCompleter.citySuggestions, id: \.self) { suggestion in
+                      Button(action: {
+                        city = suggestion
+                        showCitySuggestions = false
+                      }) {
+                        Text(suggestion)
+                          .foregroundColor(.primary)
+                          .frame(maxWidth: .infinity, alignment: .leading)
+                          .padding(.vertical, 8)
+                      }
+                      Divider()
+                    }
+                  }
+                }
+                .frame(maxHeight: 200)
+                .background(Color.white)
+                .cornerRadius(8)
+                .shadow(radius: 2)
+              }
+            }
+            
             CustomTextField(title: "Website", text: $website)
           }
           
@@ -548,11 +632,11 @@ struct AddCompanyView: View {
                !selectedCategoryIds.isEmpty && 
                !aboutUs.isEmpty
     case 1: // Business Details
-        return true // All fields in this section are optional
+        return !services.isEmpty // Services is required
     case 2: // Contact Info
-        return isValidPhone && 
-               !address.isEmpty && 
-               !city.isEmpty
+        return !address.isEmpty && 
+               !city.isEmpty &&
+               isValidPhone
     default:
         return false
     }
@@ -692,6 +776,88 @@ struct MultipleSelectionList: View {
       }
     }
   }
+}
+
+class AddressCompleter: NSObject, ObservableObject {
+    @Published var suggestions: [MKLocalSearchCompletion] = []
+    @Published var citySuggestions: [String] = []
+    private let completer = MKLocalSearchCompleter()
+    
+    @Published private var addressQuery = ""
+    @Published private var cityQuery = ""
+    
+    private var searchTask: Task<Void, Never>?
+    
+    override init() {
+        super.init()
+        completer.delegate = self
+        
+        // Observe address changes
+        Task {
+            for await _ in $addressQuery.values {
+                await debounceAddressSearch()
+            }
+        }
+        
+        // Observe city changes
+        Task {
+            for await _ in $cityQuery.values {
+                await debounceCitySearch()
+            }
+        }
+    }
+    
+    private func debounceAddressSearch() async {
+        searchTask?.cancel()
+        searchTask = Task {
+            try? await Task.sleep(nanoseconds: 300_000_000) // 300ms
+            guard !Task.isCancelled else { return }
+            
+            await MainActor.run {
+                completer.resultTypes = .address
+                completer.queryFragment = addressQuery
+            }
+        }
+    }
+    
+    private func debounceCitySearch() async {
+        searchTask?.cancel()
+        searchTask = Task {
+            try? await Task.sleep(nanoseconds: 300_000_000) // 300ms
+            guard !Task.isCancelled else { return }
+            
+            await MainActor.run {
+                completer.resultTypes = .query
+                completer.queryFragment = cityQuery
+            }
+        }
+    }
+    
+    func searchAddress(_ query: String) {
+        addressQuery = query
+    }
+    
+    func searchCity(_ query: String) {
+        cityQuery = query
+    }
+}
+
+extension AddressCompleter: MKLocalSearchCompleterDelegate {
+    func completerDidUpdateResults(_ completer: MKLocalSearchCompleter) {
+        Task { @MainActor in
+            if completer.resultTypes == .address {
+                self.suggestions = completer.results
+            } else {
+                self.citySuggestions = completer.results
+                    .map { $0.title }
+                    .filter { $0.contains(completer.queryFragment) }
+            }
+        }
+    }
+    
+    func completer(_ completer: MKLocalSearchCompleter, didFailWithError error: Error) {
+        print("Address completion failed with error: \(error.localizedDescription)")
+    }
 }
     
 #Preview {
