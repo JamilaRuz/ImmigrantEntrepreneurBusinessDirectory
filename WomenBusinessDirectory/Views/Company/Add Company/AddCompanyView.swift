@@ -59,13 +59,12 @@ struct AddCompanyView: View {
       _selectedCategoryIds = State(initialValue: Set(company.categoryIds))
       _selectedOwnershipTypes = State(initialValue: Set(company.ownershipTypes))
       
-// Use the non-optional dateFounded directly
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        if let date = formatter.date(from: company.dateFounded) {
-          _dateFounded = State(initialValue: date)
-        }
-     }
+      let formatter = DateFormatter()
+      formatter.dateFormat = "yyyy-MM"
+      if let date = formatter.date(from: company.dateFounded.prefix(7).description) {
+        _dateFounded = State(initialValue: date)
+      }
+    }
   }
   
   var body: some View {
@@ -112,34 +111,6 @@ struct AddCompanyView: View {
               currentPage += 1
             }
           } else {
-            saveCompany()
-          }
-        }) {
-          HStack {
-            Text(currentPage < 2 ? "Next" : "Save Company")
-              .fontWeight(.semibold)
-            Image(systemName: currentPage < 2 ? "arrow.right" : "checkmark")
-          }
-          .frame(maxWidth: .infinity)
-          .padding()
-          .background(Color.blue)
-          .foregroundColor(.white)
-          .cornerRadius(12)
-          .shadow(radius: 2)
-        }
-        .padding(.horizontal)
-        .padding(.bottom)
-      }
-      .navigationBarTitle(editingCompany != nil ? "Edit Company" : "Add Company", displayMode: .inline)
-      .sheet(isPresented: $isImagePickerPresented) {
-        ImagePicker(image: $logoImage)
-      }
-      .sheet(isPresented: $isPortfolioPickerPresented) {
-        PortfolioImagePicker(images: $portfolioImages, maxSelection: 6)
-      }
-      .toolbar {
-        ToolbarItem(placement: .navigationBarTrailing) {
-          Button(editingCompany != nil ? "Save" : "Add") {
             Task {
               do {
                 if let editingCompany = editingCompany {
@@ -191,8 +162,29 @@ struct AddCompanyView: View {
               }
             }
           }
-          .disabled(!isFormValid)
+        }) {
+          HStack {
+            Text(currentPage < 2 ? "Next" : (editingCompany != nil ? "Save Changes" : "Save Company"))
+              .fontWeight(.semibold)
+            Image(systemName: currentPage < 2 ? "arrow.right" : "checkmark")
+          }
+          .frame(maxWidth: .infinity)
+          .padding()
+          .background(isFormValid ? Color.blue : Color.gray)
+          .foregroundColor(.white)
+          .cornerRadius(12)
+          .shadow(radius: 2)
         }
+        .disabled(!isFormValid)
+        .padding(.horizontal)
+        .padding(.bottom)
+      }
+      .navigationBarTitleDisplayMode(.inline)
+      .sheet(isPresented: $isImagePickerPresented) {
+        ImagePicker(image: $logoImage)
+      }
+      .sheet(isPresented: $isPortfolioPickerPresented) {
+        PortfolioImagePicker(images: $portfolioImages, maxSelection: 6)
       }
     }
   }
@@ -200,60 +192,103 @@ struct AddCompanyView: View {
   private var companyInfoSection: some View {
     ScrollView {
       VStack(spacing: 16) {
-        // Company Name Field
-        CustomTextField(title: "Company Name", text: $companyName)
+        Text("Add your company information")
+          .font(.headline)
+          .foregroundColor(.gray)
+          .frame(maxWidth: .infinity, alignment: .leading)
           .padding(.horizontal)
         
-        // Logo and About Section
+        Text("* Required fields")
+          .font(.caption)
+          .foregroundColor(.gray)
+          .frame(maxWidth: .infinity, alignment: .leading)
+          .padding(.horizontal)
+        
+        // Company Name Field
+        CustomTextField(title: "Company Name *", text: $companyName)
+          .padding(.horizontal)
+        
+        // Logo and Date Founded Row
         HStack(alignment: .top, spacing: 12) {
           // Logo Button
-          Button(action: { isImagePickerPresented = true }) {
-            Group {
-              if let logoImage = logoImage {
-                Image(uiImage: logoImage)
-                  .resizable()
-                  .scaledToFill()
+          VStack(alignment: .leading, spacing: 4) {
+            Text("Logo")
+              .font(.subheadline)
+              .foregroundColor(.gray)
+            
+            Button(action: { isImagePickerPresented = true }) {
+              Group {
+                if let logoImage = logoImage {
+                  Image(uiImage: logoImage)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 80, height: 80)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                } else {
+                  VStack(spacing: 4) {
+                    Image(systemName: "camera.fill")
+                      .font(.system(size: 24))
+                      .foregroundColor(.blue)
+                    Text("Upload")
+                      .font(.caption2)
+                      .foregroundColor(.gray)
+                  }
                   .frame(width: 80, height: 80)
-                  .clipShape(RoundedRectangle(cornerRadius: 8))
-              } else {
-                VStack(spacing: 4) {
-                  Image(systemName: "camera.fill")
-                    .font(.system(size: 24))
-                    .foregroundColor(.blue)
-                  Text("Logo")
-                    .font(.caption2)
-                    .foregroundColor(.gray)
+                  .background(Color.white)
+                  .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                      .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                  )
                 }
-                .frame(width: 80, height: 80)
-                .background(Color.gray.opacity(0.1))
-                .clipShape(RoundedRectangle(cornerRadius: 8))
               }
             }
+            .buttonStyle(PlainButtonStyle())
           }
-          .buttonStyle(PlainButtonStyle())
           
-          // About Company Field
+          // Date Founded
           VStack(alignment: .leading, spacing: 4) {
-            Text("About Company")
-              .font(.caption)
+            Text("Date Founded")
+              .font(.subheadline)
               .foregroundColor(.gray)
-            TextEditor(text: $aboutUs)
-              .frame(height: 80)
-              .padding(4)
-              .background(Color.gray.opacity(0.1))
-              .cornerRadius(8)
+            
+            DatePicker("", selection: $dateFounded, displayedComponents: .date)
+                .datePickerStyle(CompactDatePickerStyle())
+                .labelsHidden()
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 8)
+                .padding(.horizontal, 12)
+                .background(Color.white)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                )
+                .environment(\.calendar, Calendar(identifier: .gregorian))
           }
         }
         .padding(.horizontal)
         
-        // Date Founded - Compact Style
+        // About Company Field
         VStack(alignment: .leading, spacing: 4) {
-          Text("Date Founded")
-            .font(.caption)
+          Text("About Company")
+            .font(.subheadline)
             .foregroundColor(.gray)
-          DatePicker("", selection: $dateFounded, displayedComponents: .date)
-            .datePickerStyle(CompactDatePickerStyle())
-            .labelsHidden()
+          
+          ZStack(alignment: .bottomLeading) {
+            TextEditor(text: $aboutUs)
+              .frame(height: 80)
+              .padding(.horizontal, 8)
+              .padding(.vertical, 4)
+              .background(Color.white)
+              .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                  .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+              )
+            
+            Text("\(aboutUs.count)/4000")
+              .font(.caption)
+              .foregroundColor(.gray)
+              .padding(8)
+          }
         }
         .padding(.horizontal)
         
@@ -271,7 +306,8 @@ struct AddCompanyView: View {
   private var categoriesSection: some View {
     VStack(alignment: .leading, spacing: 8) {
       Text("Business Categories")
-        .font(.headline)
+        .font(.subheadline)
+        .foregroundColor(.gray)
         .padding(.horizontal)
       
       NavigationLink(destination: MultipleSelectionList(categories: viewModel.categories, selectedCategoryIds: $selectedCategoryIds)) {
@@ -309,7 +345,8 @@ struct AddCompanyView: View {
   private var ownershipSection: some View {
     VStack(alignment: .leading, spacing: 8) {
       Text("Ownership Type")
-        .font(.headline)
+        .font(.subheadline)
+        .foregroundColor(.gray)
         .padding(.horizontal)
       
       LazyVGrid(columns: [
@@ -345,7 +382,8 @@ struct AddCompanyView: View {
   private var portfolioSection: some View {
     VStack(alignment: .leading, spacing: 12) {
       Text("Portfolio")
-        .font(.headline)
+        .font(.subheadline)
+        .foregroundColor(.gray)
         .padding(.horizontal)
       
       Button(action: { isPortfolioPickerPresented = true }) {
@@ -445,37 +483,13 @@ struct AddCompanyView: View {
     }
   }
   
-  private func saveCompany() {
-    Task {
-      do {
-        try await viewModel.saveCompany(
-            entrepreneur: entrepreneur,
-            companyName: companyName,
-            logoImage: logoImage,
-            portfolioImages: portfolioImages,
-            aboutUs: aboutUs,
-            dateFounded: dateFounded,
-            workHours: workHours,
-            services: services,
-            businessModel: businessModel,
-            address: address,
-            city: city,
-            phoneNum: phoneNum,
-            email: email,
-            website: website,
-            socialMediaInsta: socialMediaInsta,
-            socialMediaFacebook: socialMediaFacebook,
-            selectedCategoryIds: selectedCategoryIds,
-            selectedOwnershipTypes: selectedOwnershipTypes
-        )
-        dismiss()
-      } catch {
-        print("Failed to save company: \(error)")
-      }
-    }
+  private func formatDateForDisplay(_ date: Date) -> String {
+    let formatter = DateFormatter()
+    formatter.dateFormat = "MMMM yyyy"
+    return formatter.string(from: date)
   }
   
-  private func formatDate(_ date: Date) -> String {
+  private func formatDateForStorage(_ date: Date) -> String {
     let formatter = DateFormatter()
     formatter.dateFormat = "yyyy-MM-dd"
     return formatter.string(from: date)
@@ -503,7 +517,7 @@ struct CustomTextField: View {
   var icon: String? = nil
   
   var body: some View {
-    VStack(alignment: .leading, spacing: 8) {
+    VStack(alignment: .leading, spacing: 4) {
       Text(title)
         .font(.subheadline)
         .foregroundColor(.gray)
@@ -515,11 +529,14 @@ struct CustomTextField: View {
         }
         TextField(placeholder.isEmpty ? title : placeholder, text: $text)
       }
-      .padding()
-      .background(Color.gray.opacity(0.1))
-      .cornerRadius(12)
+      .padding(.vertical, 8)
+      .padding(.horizontal, 12)
+      .background(Color.white)
+      .overlay(
+        RoundedRectangle(cornerRadius: 8)
+          .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+      )
     }
-    .padding(.horizontal)
   }
 }
 
