@@ -145,8 +145,8 @@ struct ProfileView: View {
                         case .failure:
                             Image("placeholder")
                                 .resizable()
-                                .frame(width: 100, height: 100)
                                 .scaledToFill()
+                                .frame(width: 100, height: 100)
                                 .background(Color.gray.opacity(0.5))
                                 .clipShape(Circle())
                         @unknown default:
@@ -157,6 +157,7 @@ struct ProfileView: View {
                                 .clipShape(Circle())
                         }
                     }
+                    .frame(width: 100, height: 100)
                 } else {
                     Image("avatar")
                         .resizable()

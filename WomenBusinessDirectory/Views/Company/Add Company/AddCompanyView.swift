@@ -39,6 +39,9 @@ struct AddCompanyView: View {
   @State private var workHoursType = Company.WorkingHoursType.standard
   @State private var customWorkHours = ""
   
+  private let canadianPhonePattern = #"^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$"#
+  @State private var isValidPhone = false
+  
   init(viewModel: AddCompanyViewModel, entrepreneur: Entrepreneur, editingCompany: Company? = nil) {
     self._viewModel = StateObject(wrappedValue: viewModel)
     self.entrepreneur = entrepreneur
@@ -171,7 +174,7 @@ struct AddCompanyView: View {
         HStack(alignment: .top, spacing: 12) {
           // Logo Button
           VStack(alignment: .leading, spacing: 4) {
-            Text("Logo")
+            Text("Logo *")
               .font(.subheadline)
               .foregroundColor(.gray)
             
@@ -228,7 +231,7 @@ struct AddCompanyView: View {
         
         // About Company Field
         VStack(alignment: .leading, spacing: 4) {
-          Text("About Company")
+          Text("About Company *")
             .font(.subheadline)
             .foregroundColor(.gray)
           
@@ -264,7 +267,7 @@ struct AddCompanyView: View {
   
   private var categoriesSection: some View {
     VStack(alignment: .leading, spacing: 8) {
-      Text("Business Categories")
+      Text("Business Categories *")
         .font(.subheadline)
         .foregroundColor(.gray)
         .padding(.horizontal)
@@ -402,20 +405,36 @@ struct AddCompanyView: View {
               .font(.subheadline)
               .foregroundColor(.gray)
             
-            Picker("Working Hours", selection: $workHoursType) {
+            Menu {
               ForEach(Company.WorkingHoursType.allCases, id: \.self) { type in
-                Text(type.rawValue).tag(type)
+                Button(action: {
+                  workHoursType = type
+                }) {
+                  HStack {
+                    Text(type.rawValue)
+                    if workHoursType == type {
+                      Image(systemName: "checkmark")
+                    }
+                  }
+                }
               }
+            } label: {
+              HStack {
+                Text(workHoursType.rawValue)
+                  .foregroundColor(.primary)
+                Spacer()
+                Image(systemName: "chevron.down")
+                  .foregroundColor(.gray)
+              }
+              .frame(maxWidth: .infinity)
+              .padding(.vertical, 8)
+              .padding(.horizontal, 12)
+              .background(Color.white)
+              .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                  .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+              )
             }
-            .pickerStyle(MenuPickerStyle())
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 8)
-            .padding(.horizontal, 12)
-            .background(Color.white)
-            .overlay(
-              RoundedRectangle(cornerRadius: 8)
-                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-            )
             
             if workHoursType == .custom {
               TextField("Enter custom working hours", text: $customWorkHours)
@@ -430,7 +449,7 @@ struct AddCompanyView: View {
             }
           }
           
-          CustomTextField(title: "Services Offered", text: $services, placeholder: "List your services")
+          CustomTextField(title: "Services Offered *", text: $services, placeholder: "List your services")
           
           VStack(alignment: .leading, spacing: 8) {
             Text("Business Model")
@@ -457,7 +476,33 @@ struct AddCompanyView: View {
             .font(.headline)
           
           Group {
-            CustomTextField(title: "Phone Number", text: $phoneNum)
+            VStack(alignment: .leading) {
+              CustomTextField(title: "Phone Number", text: $phoneNum, placeholder: "123-456-7890")
+              if !phoneNum.isEmpty {
+                Text(isValidPhone ? "Valid phone number" : "Please enter a valid Canadian phone number (e.g., 123-456-7890)")
+                  .font(.caption)
+                  .foregroundColor(isValidPhone ? .green : .red)
+                  .padding(.top, 4)
+              }
+            }
+            .onChange(of: phoneNum) { newValue in
+              // Clean the phone number string
+              let cleaned = newValue.replacingOccurrences(of: "[^0-9]", with: "", options: .regularExpression)
+              if cleaned.count > 10 {
+                  // Trim to 10 digits if more are entered
+                  phoneNum = String(cleaned.prefix(10))
+              }
+              
+              // Format the phone number as user types
+              if cleaned.count == 10 {
+                  phoneNum = format(phoneNumber: cleaned)
+              }
+              
+              // Validate the phone number
+              isValidPhone = NSPredicate(format: "SELF MATCHES %@", canadianPhonePattern)
+                  .evaluate(with: phoneNum)
+            }
+            
             CustomTextField(title: "Address", text: $address)
             CustomTextField(title: "City", text: $city)
             CustomTextField(title: "Website", text: $website)
@@ -497,8 +542,20 @@ struct AddCompanyView: View {
   }
   
   private var isFormValid: Bool {
-    // Implement your validation logic here
-    true
+    switch currentPage {
+    case 0: // Company Info
+        return !companyName.isEmpty && 
+               !selectedCategoryIds.isEmpty && 
+               !aboutUs.isEmpty
+    case 1: // Business Details
+        return true // All fields in this section are optional
+    case 2: // Contact Info
+        return isValidPhone && 
+               !address.isEmpty && 
+               !city.isEmpty
+    default:
+        return false
+    }
   }
   
   private var workHoursValue: String {
@@ -555,6 +612,23 @@ struct AddCompanyView: View {
       )
     }
     dismiss()
+  }
+  
+  // Add helper function for phone number formatting
+  private func format(phoneNumber: String) -> String {
+      let cleaned = phoneNumber.replacingOccurrences(of: "[^0-9]", with: "")
+      let mask = "XXX-XXX-XXXX"
+      var result = ""
+      var index = cleaned.startIndex
+      for ch in mask where index < cleaned.endIndex {
+          if ch == "X" {
+              result.append(cleaned[index])
+              index = cleaned.index(after: index)
+          } else {
+              result.append(ch)
+          }
+      }
+      return result
   }
 }
 

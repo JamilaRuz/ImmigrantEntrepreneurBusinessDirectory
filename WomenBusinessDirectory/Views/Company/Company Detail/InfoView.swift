@@ -52,6 +52,7 @@ struct InfoView: View {
                             switch phase {
                             case .empty:
                                 ProgressView()
+                                    .frame(width: 50, height: 50)
                             case .success(let image):
                                 image
                                     .resizable()
@@ -66,6 +67,7 @@ struct InfoView: View {
                                     .foregroundColor(.gray)
                             @unknown default:
                                 EmptyView()
+                                    .frame(width: 50, height: 50)
                             }
                         }
                         .frame(width: 50, height: 50)
