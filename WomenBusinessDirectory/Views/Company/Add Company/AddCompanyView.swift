@@ -36,6 +36,8 @@ struct AddCompanyView: View {
   @State private var isPortfolioPickerPresented = false
   @State private var currentPage = 0
   @State private var selectedOwnershipTypes: Set<Company.OwnershipType> = []
+  @State private var workHoursType = Company.WorkingHoursType.standard
+  @State private var customWorkHours = ""
   
   init(viewModel: AddCompanyViewModel, entrepreneur: Entrepreneur, editingCompany: Company? = nil) {
     self._viewModel = StateObject(wrappedValue: viewModel)
@@ -113,50 +115,7 @@ struct AddCompanyView: View {
           } else {
             Task {
               do {
-                if let editingCompany = editingCompany {
-                  try await viewModel.updateCompany(
-                    company: editingCompany,
-                    companyName: companyName,
-                    logoImage: logoImage,
-                    portfolioImages: portfolioImages,
-                    aboutUs: aboutUs,
-                    dateFounded: dateFounded,
-                    workHours: workHours,
-                    services: services,
-                    businessModel: businessModel,
-                    address: address,
-                    city: city,
-                    phoneNum: phoneNum,
-                    email: email,
-                    website: website,
-                    socialMediaInsta: socialMediaInsta,
-                    socialMediaFacebook: socialMediaFacebook,
-                    selectedCategoryIds: selectedCategoryIds,
-                    selectedOwnershipTypes: selectedOwnershipTypes
-                  )
-                } else {
-                  try await viewModel.saveCompany(
-                    entrepreneur: entrepreneur,
-                    companyName: companyName,
-                    logoImage: logoImage,
-                    portfolioImages: portfolioImages,
-                    aboutUs: aboutUs,
-                    dateFounded: dateFounded,
-                    workHours: workHours,
-                    services: services,
-                    businessModel: businessModel,
-                    address: address,
-                    city: city,
-                    phoneNum: phoneNum,
-                    email: email,
-                    website: website,
-                    socialMediaInsta: socialMediaInsta,
-                    socialMediaFacebook: socialMediaFacebook,
-                    selectedCategoryIds: selectedCategoryIds,
-                    selectedOwnershipTypes: selectedOwnershipTypes
-                  )
-                }
-                dismiss()
+                  try await saveOrUpdateCompany()
               } catch {
                 print("Failed to save company: \(error)")
               }
@@ -437,7 +396,40 @@ struct AddCompanyView: View {
           Text("Business Details")
             .font(.headline)
           
-          CustomTextField(title: "Working Hours", text: $workHours, placeholder: "e.g., Mon-Fri 9-5")
+          // Working Hours Section
+          VStack(alignment: .leading, spacing: 4) {
+            Text("Working Hours")
+              .font(.subheadline)
+              .foregroundColor(.gray)
+            
+            Picker("Working Hours", selection: $workHoursType) {
+              ForEach(Company.WorkingHoursType.allCases, id: \.self) { type in
+                Text(type.rawValue).tag(type)
+              }
+            }
+            .pickerStyle(MenuPickerStyle())
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 8)
+            .padding(.horizontal, 12)
+            .background(Color.white)
+            .overlay(
+              RoundedRectangle(cornerRadius: 8)
+                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+            )
+            
+            if workHoursType == .custom {
+              TextField("Enter custom working hours", text: $customWorkHours)
+                .textFieldStyle(PlainTextFieldStyle())
+                .padding(.vertical, 8)
+                .padding(.horizontal, 12)
+                .background(Color.white)
+                .overlay(
+                  RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                )
+            }
+          }
+          
           CustomTextField(title: "Services Offered", text: $services, placeholder: "List your services")
           
           VStack(alignment: .leading, spacing: 8) {
@@ -507,6 +499,62 @@ struct AddCompanyView: View {
   private var isFormValid: Bool {
     // Implement your validation logic here
     true
+  }
+  
+  private var workHoursValue: String {
+    switch workHoursType {
+    case .custom:
+      return customWorkHours
+    default:
+      return workHoursType.rawValue
+    }
+  }
+  
+  private func saveOrUpdateCompany() async throws {
+    if let editingCompany = editingCompany {
+      try await viewModel.updateCompany(
+        company: editingCompany,
+        companyName: companyName,
+        logoImage: logoImage,
+        portfolioImages: portfolioImages,
+        aboutUs: aboutUs,
+        dateFounded: dateFounded,
+        workHours: workHoursValue,
+        services: services,
+        businessModel: businessModel,
+        address: address,
+        city: city,
+        phoneNum: phoneNum,
+        email: email,
+        website: website,
+        socialMediaInsta: socialMediaInsta,
+        socialMediaFacebook: socialMediaFacebook,
+        selectedCategoryIds: selectedCategoryIds,
+        selectedOwnershipTypes: selectedOwnershipTypes
+      )
+    } else {
+      try await viewModel.saveCompany(
+        entrepreneur: entrepreneur,
+        companyName: companyName,
+        logoImage: logoImage,
+        portfolioImages: portfolioImages,
+        aboutUs: aboutUs,
+        dateFounded: dateFounded,
+        workHours: workHoursValue,
+        services: services,
+        businessModel: businessModel,
+        address: address,
+        city: city,
+        phoneNum: phoneNum,
+        email: email,
+        website: website,
+        socialMediaInsta: socialMediaInsta,
+        socialMediaFacebook: socialMediaFacebook,
+        selectedCategoryIds: selectedCategoryIds,
+        selectedOwnershipTypes: selectedOwnershipTypes
+      )
+    }
+    dismiss()
   }
 }
 

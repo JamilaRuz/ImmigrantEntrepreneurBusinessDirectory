@@ -41,6 +41,29 @@ class Company: Codable, Hashable, Equatable, Identifiable {
     var isBookmarked: Bool
     let ownershipTypes: [OwnershipType]
     
+    enum BusinessModel: String, CaseIterable, Codable {
+        case online
+        case offline
+        case hybrid
+    }
+    
+    enum OwnershipType: String, Codable, CaseIterable {
+        case femaleOwned = "Female Owned"
+        case latinxOwned = "Latinx Owned"
+        case asianOwned = "Asian Owned"
+        case lgbtqOwned = "LGBTQ+ Owned"
+    }
+    
+    enum WorkingHoursType: String, CaseIterable, Codable {
+        case standard = "Mon - Fri 9am - 5pm"
+        case allDay = "24/7"
+        case custom = "Custom"
+        
+        var displayText: String {
+            return self.rawValue
+        }
+    }
+    
     init(companyId: String, entrepId: String, categoryIds: [String], name: String, logoImg: String?, aboutUs: String, dateFounded: String, portfolioImages: [String], address: String, city: String, phoneNum: String, email: String, workHours: String, services: [String], socialMediaFacebook: String, socialMediaInsta: String, businessModel: BusinessModel, website: String, ownershipTypes: [OwnershipType], isBookmarked: Bool = false) {
         self.companyId = companyId
         self.entrepId = entrepId
@@ -62,19 +85,6 @@ class Company: Codable, Hashable, Equatable, Identifiable {
         self.website = website
         self.isBookmarked = isBookmarked
         self.ownershipTypes = ownershipTypes
-    }
-    
-    enum BusinessModel: String, CaseIterable, Codable {
-        case online
-        case offline
-        case hybrid
-    }
-    
-    enum OwnershipType: String, Codable, CaseIterable {
-        case femaleOwned = "Female Owned"
-        case latinxOwned = "Latinx Owned"
-        case asianOwned = "Asian Owned"
-        case lgbtqOwned = "LGBTQ+ Owned"
     }
 }
 
