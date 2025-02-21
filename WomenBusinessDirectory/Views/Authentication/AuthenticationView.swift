@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import FirebaseAuth
 
 struct AuthenticationView: View {
     @StateObject private var viewModel = SignInEmailViewModel()
@@ -13,10 +14,60 @@ struct AuthenticationView: View {
     @State private var password: String = ""
     @State private var isPasswordVisible: Bool = false
     @State private var isLoading = false
+    @State private var showAlert = false
+    @State private var alertTitle = ""
+    @State private var alertMessage = ""
     
     @Binding var showSignInView: Bool
-    @Binding var userIsLoggedIn: Bool // Use binding to update login status
+    @Binding var userIsLoggedIn: Bool
 
+    func handleAuthError(_ error: Error) {
+        showAlert = true
+        alertTitle = "Sign In Error"
+        
+        if let errorCode = AuthErrorCode(rawValue: (error as NSError).code) {
+            switch errorCode {
+            case .wrongPassword:
+                alertMessage = "The password is incorrect. Please try again."
+            case .invalidEmail:
+                alertMessage = "The email address is badly formatted."
+            case .userNotFound:
+                alertMessage = "No account exists with this email. Please sign up first."
+            case .tooManyRequests:
+                alertMessage = "Too many unsuccessful attempts. Please try again later."
+            case .networkError:
+                alertMessage = "Network error. Please check your internet connection."
+            default:
+                alertMessage = error.localizedDescription
+            }
+        } else {
+            alertMessage = error.localizedDescription
+        }
+    }
+
+    func handleSocialSignIn(provider: String) {
+        isLoading = true
+        Task {
+            do {
+                switch provider {
+                case "apple":
+                    // Handle Apple sign in
+                    break
+                case "google":
+                    // Handle Google sign in
+                    break
+                case "facebook":
+                    // Handle Facebook sign in
+                    break
+                default:
+                    break
+                }
+            } catch {
+                handleAuthError(error)
+            }
+            isLoading = false
+        }
+    }
 
     var body: some View {
         ZStack {
@@ -71,10 +122,12 @@ struct AuthenticationView: View {
                                     userIsLoggedIn = true
                                     showSignInView = false
                                 } else {
-                                    print("Email does not exist.")
+                                    showAlert = true
+                                    alertTitle = "Sign In Error"
+                                    alertMessage = "No account exists with this email. Please sign up first."
                                 }
                             } catch {
-                                print("Error: \(error.localizedDescription)")
+                                handleAuthError(error)
                             }
                             isLoading = false
                         }
@@ -87,6 +140,13 @@ struct AuthenticationView: View {
                             .cornerRadius(10)
                     }
                     .padding(.horizontal)
+                    .alert(isPresented: $showAlert) {
+                        Alert(
+                            title: Text(alertTitle),
+                            message: Text(alertMessage),
+                            dismissButton: .default(Text("OK"))
+                        )
+                    }
                     
                     NavigationLink(destination: SignUpEmailView()) {
                         HStack {
@@ -104,20 +164,35 @@ struct AuthenticationView: View {
                     .foregroundColor(.gray)
                 
                 // Social media buttons
-                
-                Button(action: {
-                    // Handle Apple sign in
-                    // Add delay to simulate API call
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                Group {
+                    Button(action: {}) {
+                        ZStack {
+                            HStack {
+                                Image("apple_logo")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 20, height: 20)
+                                Text("Continue with Apple")
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.white)
+                            .cornerRadius(10)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(Color.gray, lineWidth: 1)
+                            )
+                        }
                     }
-                }) {
-                    ZStack {
+                    .disabled(true)
+                    
+                    Button(action: {}) {
                         HStack {
-                            Image("apple_logo")
+                            Image("google_logo")
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 20, height: 20)
-                            Text("Continue with Apple")
+                            Text("Continue with Google")
                         }
                         .frame(maxWidth: .infinity)
                         .padding()
@@ -128,58 +203,34 @@ struct AuthenticationView: View {
                                 .stroke(Color.gray, lineWidth: 1)
                         )
                     }
+                    .disabled(true)
+                    
+                    Button(action: {}) {
+                        HStack {
+                            Image("facebook_logo")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 20, height: 20)
+                            Text("Continue with Facebook")
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.white)
+                        .cornerRadius(10)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.gray, lineWidth: 1)
+                        )
+                    }
+                    .disabled(true)
                 }
                 .padding(.horizontal)
-                
-                Button(action: {
-                    isLoading = true
-                    // Handle Google sign in
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                        isLoading = false
-                    }
-                }) {
-                    HStack {
-                        Image("google_logo")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 20, height: 20)
-                        Text("Continue with Google")
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.white)
-                    .cornerRadius(10)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.gray, lineWidth: 1)
-                    )
-                }
-                .padding(.horizontal)
-                
-                Button(action: {
-                    isLoading = true
-                    // Handle Facebook sign in
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                        isLoading = false
-                    }
-                }) {
-                    HStack {
-                        Image("facebook_logo")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 20, height: 20)
-                        Text("Continue with Facebook")
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.white)
-                    .cornerRadius(10)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.gray, lineWidth: 1)
-                    )
-                }
-                .padding(.horizontal)
+                .opacity(0.6)
+                .overlay(
+                    Text("Coming Soon")
+                        .foregroundColor(.gray)
+                        .padding(.top, 50)
+                )
                 
                 Spacer()
                 
@@ -201,9 +252,14 @@ struct AuthenticationView: View {
             if isLoading {
                 Color.black.opacity(0.3)
                     .ignoresSafeArea()
-                ProgressView()
-                    .scaleEffect(1.5)
-                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                VStack {
+                    ProgressView()
+                        .scaleEffect(1.5)
+                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.black.opacity(0.3))
+                .ignoresSafeArea()
             }
         }
     } // body
