@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import FirebaseFirestoreSwift
 
 @MainActor
 final class ProfileViewModel: ObservableObject {
@@ -126,13 +125,11 @@ struct ProfileView: View {
                     AsyncImage(url: profileUrl) { phase in
                         switch phase {
                         case .empty:
-                            Image("placeholder")
+                            Image(systemName: "person.circle.fill")
                                 .resizable()
-                                .scaledToFill()
+                                .aspectRatio(contentMode: .fit)
                                 .frame(width: 100, height: 100)
-                                .clipShape(Circle())
-                            ProgressView()
-                                .frame(width: 100, height: 100)
+                                .foregroundColor(.gray.opacity(0.3))
                             
                         case .success(let image):
                             image
@@ -142,27 +139,27 @@ struct ProfileView: View {
                                 .clipShape(Circle())
                             
                         case .failure:
-                            Image("placeholder")
+                            Image(systemName: "person.circle.fill")
                                 .resizable()
-                                .scaledToFill()
+                                .aspectRatio(contentMode: .fit)
                                 .frame(width: 100, height: 100)
-                                .background(Color.gray.opacity(0.5))
-                                .clipShape(Circle())
+                                .foregroundColor(.gray.opacity(0.3))
+                            
                         @unknown default:
-                            Image("placeholder")
+                            Image(systemName: "person.circle.fill")
                                 .resizable()
-                                .scaledToFill()
+                                .aspectRatio(contentMode: .fit)
                                 .frame(width: 100, height: 100)
-                                .clipShape(Circle())
+                                .foregroundColor(.gray.opacity(0.3))
                         }
                     }
                     .frame(width: 100, height: 100)
                 } else {
-                    Image("avatar")
+                    Image(systemName: "person.circle.fill")
                         .resizable()
-                        .scaledToFill()
+                        .aspectRatio(contentMode: .fit)
                         .frame(width: 100, height: 100)
-                        .clipShape(Circle())
+                        .foregroundColor(.gray.opacity(0.3))
                 }
                 
                 Text(viewModel.entrepreneur.fullName ?? "Entrepreneur Name")

@@ -68,10 +68,11 @@ struct EntrepreneurRowView: View {
                     AsyncImage(url: profileUrl) { phase in
                         switch phase {
                         case .empty:
-                            ProgressView()
+                            Image(systemName: "person.circle.fill")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
                                 .frame(width: 60, height: 60)
-                                .background(Color.gray.opacity(0.1))
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                                .foregroundColor(.gray.opacity(0.3))
                         case .success(let image):
                             image
                                 .resizable()
@@ -83,11 +84,13 @@ struct EntrepreneurRowView: View {
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
                                 .frame(width: 60, height: 60)
-                                .foregroundColor(.gray)
-                                .background(Color.gray.opacity(0.1))
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                                .foregroundColor(.gray.opacity(0.3))
                         @unknown default:
-                            EmptyView()
+                            Image(systemName: "person.circle.fill")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 60, height: 60)
+                                .foregroundColor(.gray.opacity(0.3))
                         }
                     }
                 } else {
@@ -95,9 +98,7 @@ struct EntrepreneurRowView: View {
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 60, height: 60)
-                        .foregroundColor(.gray)
-                        .background(Color.gray.opacity(0.1))
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .foregroundColor(.gray.opacity(0.3))
                 }
                 
                 VStack(alignment: .leading, spacing: 8) {
@@ -128,13 +129,39 @@ struct EntrepreneurRowView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
                         ForEach(companies, id: \.companyId) { company in
-                            Text(company.name)
-                                .font(.caption)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(Color.orange1.opacity(0.1))
-                                .foregroundColor(Color.orange1)
-                                .cornerRadius(8)
+                            HStack(spacing: 4) {
+                                AsyncImage(url: URL(string: company.logoImg ?? "")) { phase in
+                                    switch phase {
+                                    case .empty, .failure:
+                                        Image(systemName: "building.2.fill")
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fit)
+                                            .frame(width: 20, height: 20)
+                                            .foregroundColor(.gray.opacity(0.3))
+                                    case .success(let image):
+                                        image
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fill)
+                                            .frame(width: 20, height: 20)
+                                            .clipShape(Circle())
+                                    @unknown default:
+                                        Image(systemName: "building.2.fill")
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fit)
+                                            .frame(width: 20, height: 20)
+                                            .foregroundColor(.gray.opacity(0.3))
+                                    }
+                                }
+                                .frame(width: 20, height: 20)
+                                
+                                Text(company.name)
+                                    .font(.caption)
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(Color.orange1.opacity(0.1))
+                            .foregroundColor(Color.orange1)
+                            .cornerRadius(8)
                         }
                     }
                 }

@@ -102,7 +102,6 @@ struct CompaniesListView: View {
                     SearchBar(text: $viewModel.searchTerm)
                         .padding(.horizontal)
                         .padding(.vertical, 8)
-                        .background(Color.white)
                     
                     if viewModel.filteredCompanies.isEmpty {
                         VStack(spacing: 20) {
@@ -134,10 +133,11 @@ struct CompaniesListView: View {
                         )
                     } else {
                         ScrollView {
-                            VStack(spacing: 16) {
+                            LazyVStack(spacing: 16) {
                                 ForEach(viewModel.filteredCompanies, id: \.companyId) { company in
                                     NavigationLink {
                                         CompanyDetailView(company: company)
+                                            .navigationBarTitleDisplayMode(.inline)
                                     } label: {
                                         CompanyRowView(company: company, categories: viewModel.categories)
                                     }
@@ -147,15 +147,17 @@ struct CompaniesListView: View {
                             .padding(.horizontal)
                             .padding(.vertical, 8)
                         }
+                        .scrollContentBackground(.hidden)
                         .refreshable {
                             viewModel.loadCompanies()
                         }
                     }
                 }
-                .background(Color(.systemGray6))
             }
         }
+        .background(Color(.systemGray6))
         .navigationTitle(category.name)
+        .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             viewModel.loadCompanies()
         }

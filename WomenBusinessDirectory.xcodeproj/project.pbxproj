@@ -7,11 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		8D3BE6132C17457400275033 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 8D3BE6122C17457400275033 /* FirebaseAuth */; };
-		8D3BE6152C17457400275033 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 8D3BE6142C17457400275033 /* FirebaseFirestore */; };
-		8D3BE6172C17457400275033 /* FirebaseFirestoreSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 8D3BE6162C17457400275033 /* FirebaseFirestoreSwift */; };
-		8D3BE6192C17457400275033 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 8D3BE6182C17457400275033 /* FirebaseStorage */; };
 		8D3BE6202C176F0100275033 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 8D3BE61F2C176F0100275033 /* .gitignore */; };
+		8D4DECA02D67A580001BCA71 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 8D4DEC9F2D67A580001BCA71 /* FirebaseAnalytics */; };
+		8D4DECA22D67A580001BCA71 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 8D4DECA12D67A580001BCA71 /* FirebaseAuth */; };
+		8D4DECA42D67A580001BCA71 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 8D4DECA32D67A580001BCA71 /* FirebaseCore */; };
+		8D4DECA62D67A580001BCA71 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 8D4DECA52D67A580001BCA71 /* FirebaseCrashlytics */; };
+		8D4DECA82D67A580001BCA71 /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = 8D4DECA72D67A580001BCA71 /* FirebaseDatabase */; };
+		8D4DECAA2D67A580001BCA71 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 8D4DECA92D67A580001BCA71 /* FirebaseFirestore */; };
+		8D4DECAC2D67A580001BCA71 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 8D4DECAB2D67A580001BCA71 /* FirebaseStorage */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -19,8 +22,18 @@
 		8D47A8722D3EA772004FCF20 /* WomenBusinessDirectory.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WomenBusinessDirectory.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		8D4DED912D680998001BCA71 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 8DDB66F82BC9981D00D9A2C8 /* WomenBusinessDirectory */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		8D5FC8922D3E047D00FA663E /* WomenBusinessDirectory */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = WomenBusinessDirectory; sourceTree = "<group>"; };
+		8D5FC8922D3E047D00FA663E /* WomenBusinessDirectory */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (8D4DED912D680998001BCA71 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = WomenBusinessDirectory; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -28,10 +41,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8D3BE6132C17457400275033 /* FirebaseAuth in Frameworks */,
-				8D3BE6192C17457400275033 /* FirebaseStorage in Frameworks */,
-				8D3BE6152C17457400275033 /* FirebaseFirestore in Frameworks */,
-				8D3BE6172C17457400275033 /* FirebaseFirestoreSwift in Frameworks */,
+				8D4DECA82D67A580001BCA71 /* FirebaseDatabase in Frameworks */,
+				8D4DECA02D67A580001BCA71 /* FirebaseAnalytics in Frameworks */,
+				8D4DECA62D67A580001BCA71 /* FirebaseCrashlytics in Frameworks */,
+				8D4DECA42D67A580001BCA71 /* FirebaseCore in Frameworks */,
+				8D4DECAC2D67A580001BCA71 /* FirebaseStorage in Frameworks */,
+				8D4DECA22D67A580001BCA71 /* FirebaseAuth in Frameworks */,
+				8D4DECAA2D67A580001BCA71 /* FirebaseFirestore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -67,10 +83,13 @@
 			);
 			name = WomenBusinessDirectory;
 			packageProductDependencies = (
-				8D3BE6122C17457400275033 /* FirebaseAuth */,
-				8D3BE6142C17457400275033 /* FirebaseFirestore */,
-				8D3BE6162C17457400275033 /* FirebaseFirestoreSwift */,
-				8D3BE6182C17457400275033 /* FirebaseStorage */,
+				8D4DEC9F2D67A580001BCA71 /* FirebaseAnalytics */,
+				8D4DECA12D67A580001BCA71 /* FirebaseAuth */,
+				8D4DECA32D67A580001BCA71 /* FirebaseCore */,
+				8D4DECA52D67A580001BCA71 /* FirebaseCrashlytics */,
+				8D4DECA72D67A580001BCA71 /* FirebaseDatabase */,
+				8D4DECA92D67A580001BCA71 /* FirebaseFirestore */,
+				8D4DECAB2D67A580001BCA71 /* FirebaseStorage */,
 			);
 			productName = WomenBusinessDirectory;
 			productReference = 8D47A8722D3EA772004FCF20 /* WomenBusinessDirectory.app */;
@@ -101,7 +120,7 @@
 			);
 			mainGroup = 8DDB66F02BC9981D00D9A2C8;
 			packageReferences = (
-				8D3BE6112C17457400275033 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				8D4DEC9E2D67A580001BCA71 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			productRefGroup = 8DDB66F02BC9981D00D9A2C8;
 			projectDirPath = "";
@@ -259,16 +278,20 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_ASSET_PATHS = "\"WomenBusinessDirectory/Preview Content\"";
 				DEVELOPMENT_TEAM = 4V4G78L69F;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = WomenBusinessDirectory/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Immigrant Entrepreneurs Canada";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.business";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -276,9 +299,13 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ruzimetova.WomenBusinessDirectory;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -288,16 +315,19 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"WomenBusinessDirectory/Preview Content\"";
 				DEVELOPMENT_TEAM = 4V4G78L69F;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = WomenBusinessDirectory/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Immigrant Entrepreneurs Canada";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.business";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -305,9 +335,13 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ruzimetova.WomenBusinessDirectory;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -335,35 +369,50 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		8D3BE6112C17457400275033 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+		8D4DEC9E2D67A580001BCA71 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 10.27.0;
+				minimumVersion = 11.8.1;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		8D3BE6122C17457400275033 /* FirebaseAuth */ = {
+		8D4DEC9F2D67A580001BCA71 /* FirebaseAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 8D3BE6112C17457400275033 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			package = 8D4DEC9E2D67A580001BCA71 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		8D4DECA12D67A580001BCA71 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8D4DEC9E2D67A580001BCA71 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAuth;
 		};
-		8D3BE6142C17457400275033 /* FirebaseFirestore */ = {
+		8D4DECA32D67A580001BCA71 /* FirebaseCore */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 8D3BE6112C17457400275033 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			package = 8D4DEC9E2D67A580001BCA71 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+		8D4DECA52D67A580001BCA71 /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8D4DEC9E2D67A580001BCA71 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCrashlytics;
+		};
+		8D4DECA72D67A580001BCA71 /* FirebaseDatabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8D4DEC9E2D67A580001BCA71 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseDatabase;
+		};
+		8D4DECA92D67A580001BCA71 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8D4DEC9E2D67A580001BCA71 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseFirestore;
 		};
-		8D3BE6162C17457400275033 /* FirebaseFirestoreSwift */ = {
+		8D4DECAB2D67A580001BCA71 /* FirebaseStorage */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 8D3BE6112C17457400275033 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseFirestoreSwift;
-		};
-		8D3BE6182C17457400275033 /* FirebaseStorage */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 8D3BE6112C17457400275033 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			package = 8D4DEC9E2D67A580001BCA71 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseStorage;
 		};
 /* End XCSwiftPackageProductDependency section */

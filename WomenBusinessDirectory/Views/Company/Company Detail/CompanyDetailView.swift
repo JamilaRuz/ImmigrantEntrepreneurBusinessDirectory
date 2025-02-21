@@ -19,41 +19,39 @@ struct CompanyDetailView: View {
   }
   
   var body: some View {
-    ScrollView {
+    ScrollView(showsIndicators: false) {
       VStack(spacing: 0) {
-        // Header Section
-        ZStack(alignment: .bottom) {
-          // Header Image with Gradient
-          AsyncImage(url: URL(string: company.headerImg ?? "")) { phase in
-            switch phase {
-            case .empty:
-              Rectangle()
-                .fill(Color.gray.opacity(0.3))
-                .frame(height: 300)
-            case .success(let image):
-              image
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .frame(height: 300)
-                .clipped()
-            case .failure:
-              Rectangle()
-                .fill(Color.gray.opacity(0.3))
-                .frame(height: 300)
-            @unknown default:
-              EmptyView()
-            }
+        // Header Image with Gradient
+        AsyncImage(url: URL(string: company.headerImg ?? "")) { phase in
+          switch phase {
+          case .empty:
+            Rectangle()
+              .fill(Color.gray.opacity(0.3))
+              .frame(height: 300)
+          case .success(let image):
+            image
+              .resizable()
+              .aspectRatio(contentMode: .fill)
+              .frame(height: 300)
+              .clipped()
+          case .failure:
+            Rectangle()
+              .fill(Color.gray.opacity(0.3))
+              .frame(height: 300)
+          @unknown default:
+            EmptyView()
           }
-          .overlay(
-            LinearGradient(
-              gradient: Gradient(colors: [.clear, .black.opacity(0.7)]),
-              startPoint: .top,
-              endPoint: .bottom
-            )
+        }
+        .overlay(
+          LinearGradient(
+            gradient: Gradient(colors: [.clear, .black.opacity(0.7)]),
+            startPoint: .top,
+            endPoint: .bottom
           )
-          
-          // Company Logo and Name with Action Buttons
+        )
+        .overlay(
           VStack(spacing: 16) {
+            Spacer()
             // Logo
             AsyncImage(url: URL(string: company.logoImg ?? "")) { phase in
               switch phase {
@@ -73,7 +71,9 @@ struct CompanyDetailView: View {
                   .fill(Color.gray.opacity(0.3))
                   .frame(width: 80, height: 80)
               @unknown default:
-                EmptyView()
+                Circle()
+                  .fill(Color.gray.opacity(0.3))
+                  .frame(width: 80, height: 80)
               }
             }
             
@@ -83,13 +83,13 @@ struct CompanyDetailView: View {
               .foregroundColor(.white)
               .multilineTextAlignment(.center)
               .padding(.horizontal, 20)
+              .padding(.bottom, 20)
           }
-          .padding(.bottom, 20)
-          
-          // Action buttons at bottom right
+        )
+        .overlay(
           HStack {
             Spacer()
-            HStack(spacing: 12) {
+            VStack(spacing: 12) {
               Button(action: toggleBookmark) {
                 Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
                   .font(.title3)
@@ -107,12 +107,11 @@ struct CompanyDetailView: View {
                   .clipShape(Circle())
               }
             }
-            .padding(EdgeInsets(top: 0, leading: 0, bottom: 20, trailing: 30))
-          }
-          .padding(.bottom, 20)
-        }
-        .frame(height: 300)
-        
+            .padding(20)
+          },
+          alignment: .bottomTrailing
+        )
+
         VStack(spacing: 0) {
           // Custom Tab Bar
           HStack(spacing: 0) {
@@ -137,61 +136,59 @@ struct CompanyDetailView: View {
             }
           }
           .padding(.vertical, 16)
-          .padding(.horizontal, 20)
           
-          // Tab Content
           TabView(selection: $selectedSegment) {
             InfoView(company: company)
               .tag(0)
-              .frame(maxWidth: .infinity, maxHeight: .infinity)
             ProductsView(services: company.services, portfolioImages: company.portfolioImages)
               .tag(1)
-              .frame(maxWidth: .infinity, maxHeight: .infinity)
             MapView(company: company)
               .tag(2)
-              .frame(maxWidth: .infinity, maxHeight: .infinity)
           }
           .frame(minHeight: 400)
           .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
           
           // Action Buttons
-          HStack(spacing: 20) {
-            Button(action: {
-              // Open Now action
-            }) {
-              HStack {
-                Image(systemName: "clock.fill")
-                Text("Open Now")
+          VStack {
+            HStack(spacing: 20) {
+              Button(action: {
+                // Open Now action
+              }) {
+                HStack {
+                  Image(systemName: "clock.fill")
+                  Text("Open Now")
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.green.opacity(0.2))
+                .foregroundColor(.green)
+                .cornerRadius(12)
               }
-              .frame(maxWidth: .infinity)
-              .padding()
-              .background(Color.green.opacity(0.2))
-              .foregroundColor(.green)
-              .cornerRadius(12)
-            }
-            
-            Button(action: {
-              guard let url = URL(string: "tel://\(company.phoneNum)") else { return }
-              UIApplication.shared.open(url)
-            }) {
-              HStack {
-                Image(systemName: "phone.fill")
-                Text("Call")
+              
+              Button(action: {
+                guard let url = URL(string: "tel://\(company.phoneNum)") else { return }
+                UIApplication.shared.open(url)
+              }) {
+                HStack {
+                  Image(systemName: "phone.fill")
+                  Text("Call")
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.blue.opacity(0.2))
+                .foregroundColor(.blue)
+                .cornerRadius(12)
               }
-              .frame(maxWidth: .infinity)
-              .padding()
-              .background(Color.blue.opacity(0.2))
-              .foregroundColor(.blue)
-              .cornerRadius(12)
             }
+            .padding(.horizontal)
+            .padding(.vertical, 16)
           }
-          .padding(.horizontal, 20)
-          .padding(.vertical, 16)
         }
-        .padding(.horizontal, 20)
+        .background(Color.white)
       }
     }
-    .ignoresSafeArea(.all, edges: .top)
+    .ignoresSafeArea(edges: .top)
+    .navigationBarTitleDisplayMode(.inline)
   }
   
   private func toggleBookmark() {

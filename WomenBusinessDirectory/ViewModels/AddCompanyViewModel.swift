@@ -7,7 +7,6 @@
 
 import Foundation
 import FirebaseFirestore
-import FirebaseFirestoreSwift
 import UIKit
 
 final class AddCompanyViewModel: ObservableObject {

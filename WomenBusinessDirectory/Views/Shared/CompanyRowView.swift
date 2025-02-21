@@ -24,12 +24,9 @@ struct CompanyRowView: View {
                     AsyncImage(url: URL(string: company.logoImg ?? "")) { phase in
                         switch phase {
                         case .empty, .failure:
-                            Image(systemName: "photo")
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.gray.opacity(0.3))
                                 .frame(width: 60, height: 60)
-                                .background(Color.gray.opacity(0.2))
-                                .cornerRadius(12)
                         case .success(let image):
                             image
                                 .resizable()
@@ -37,7 +34,9 @@ struct CompanyRowView: View {
                                 .frame(width: 60, height: 60)
                                 .clipShape(RoundedRectangle(cornerRadius: 12))
                         @unknown default:
-                            EmptyView()
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.gray.opacity(0.3))
+                                .frame(width: 60, height: 60)
                         }
                     }
                     
@@ -94,7 +93,7 @@ struct CompanyRowView: View {
         .padding()
         .background(Color.white)
         .cornerRadius(10)
-        .shadow(color: Color.black.opacity(0.1), radius: 3, x: 0, y: 1)
+        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
     }
 }
 
