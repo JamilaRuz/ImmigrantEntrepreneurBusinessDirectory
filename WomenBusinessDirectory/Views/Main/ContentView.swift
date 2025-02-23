@@ -6,10 +6,11 @@
 //
 
 import SwiftUI
+import FirebaseAuth
 
 struct ContentView: View {
-    @State private var showSignInView = true
-    @State private var userIsLoggedIn = false // Track login status
+    @State private var showSignInView = false  // Changed initial value to false
+    @State private var userIsLoggedIn = false
     @StateObject private var directoryListViewModel = DirectoryListViewModel()
     
     var body: some View {
@@ -23,6 +24,26 @@ struct ContentView: View {
                     directoryListViewModel: directoryListViewModel
                 )
             }
+        }
+        .onAppear {
+            // Check authentication state when app appears
+            checkAuthState()
+        }
+        .onChange(of: Auth.auth().currentUser) { user in
+            // Update login status whenever auth state changes
+            userIsLoggedIn = user != nil
+        }
+    }
+    
+    private func checkAuthState() {
+        if let user = Auth.auth().currentUser {
+            // User is signed in
+            userIsLoggedIn = true
+            showSignInView = false
+        } else {
+            // No user is signed in
+            userIsLoggedIn = false
+            showSignInView = true
         }
     }
 }
