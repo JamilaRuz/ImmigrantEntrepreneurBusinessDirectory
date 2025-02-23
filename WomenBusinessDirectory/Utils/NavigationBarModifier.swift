@@ -11,6 +11,7 @@ struct NavigationBarModifier: ViewModifier {
     @StateObject private var viewModel = SettingsViewModel()
     @Binding var showSignInView: Bool
     @Binding var isLoggedIn: Bool
+    let activeFiltersCount: Int
     @State private var showToast = false
     @State private var showFilterSheet = false
     
@@ -25,13 +26,25 @@ struct NavigationBarModifier: ViewModifier {
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    HStack(spacing: 16) {
+                    HStack {
                         Button {
                             showFilterSheet = true
                         } label: {
-                            Image(systemName: "line.3.horizontal.decrease.circle")
-                                .imageScale(.large)
-                                .foregroundColor(Color("pink1"))
+                            ZStack(alignment: .topTrailing) {
+                                Image(systemName: "line.3.horizontal.decrease.circle")
+                                    .imageScale(.large)
+                                    .foregroundColor(Color("pink1"))
+                                
+                                if activeFiltersCount > 0 {
+                                    Text("\(activeFiltersCount)")
+                                        .font(.system(size: 12))
+                                        .foregroundColor(.white)
+                                        .padding(4)
+                                        .background(Color("pink1"))
+                                        .clipShape(Circle())
+                                        .offset(x: 10, y: -10)
+                                }
+                            }
                         }
                         
                         Menu {
@@ -123,10 +136,11 @@ struct NavigationBarModifier: ViewModifier {
 }
 
 extension View {
-    func customNavigationBar(showSignInView: Binding<Bool>, isLoggedIn: Binding<Bool>) -> some View {
+    func customNavigationBar(showSignInView: Binding<Bool>, isLoggedIn: Binding<Bool>, activeFiltersCount: Int = 0) -> some View {
         self.modifier(NavigationBarModifier(
             showSignInView: showSignInView,
-            isLoggedIn: isLoggedIn
+            isLoggedIn: isLoggedIn,
+            activeFiltersCount: activeFiltersCount
         ))
     }
 }

@@ -16,6 +16,12 @@ final class DirectoryListViewModel: ObservableObject {
   private let filterManager: FilterManaging
   private var notificationObserver: NSObjectProtocol?
   
+  var activeFiltersCount: Int {
+    let selectedCities = filterManager.getSelectedCities().count
+    let selectedOwnershipTypes = filterManager.getSelectedOwnershipTypes().count
+    return selectedCities + selectedOwnershipTypes
+  }
+  
   init(filterManager: FilterManaging = FilterManager.shared) {
     self.filterManager = filterManager
     
@@ -63,6 +69,7 @@ final class DirectoryListViewModel: ObservableObject {
   func loadData() {
     Task {
       do {
+        print("DirectoryListView: Starting to load data...")
         isLoading = true
         
         // Load all data concurrently
@@ -74,7 +81,7 @@ final class DirectoryListViewModel: ObservableObject {
         
         isLoading = false
       } catch {
-        print("Failed to load data: \(error)")
+        print("DirectoryListView: Failed to load data: \(error)")
         isLoading = false
       }
     }
@@ -131,7 +138,7 @@ struct DirectoryListView: View {
         viewModel.loadData()
       }
     }
-    .customNavigationBar(showSignInView: $showSignInView, isLoggedIn: $userIsLoggedIn)
+    .customNavigationBar(showSignInView: $showSignInView, isLoggedIn: $userIsLoggedIn, activeFiltersCount: viewModel.activeFiltersCount)
   }
 }
 

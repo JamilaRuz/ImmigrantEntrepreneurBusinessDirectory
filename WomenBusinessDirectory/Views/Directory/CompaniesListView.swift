@@ -52,9 +52,10 @@ final class CompaniesListViewModel: ObservableObject {
                 
                 self.companies = try await companiesTask
                 self.categories = try await categoriesTask
+                
                 isLoading = false
             } catch {
-                print("Failed to load companies: \(error)")
+                print("CompaniesListViewModel: Failed to load companies: \(error)")
                 isLoading = false
             }
         }

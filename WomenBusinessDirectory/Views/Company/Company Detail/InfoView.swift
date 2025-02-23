@@ -51,8 +51,7 @@ struct InfoView: View {
                         AsyncImage(url: URL(string: viewModel.entrepreneur.profileUrl ?? "")) { phase in
                             switch phase {
                             case .empty:
-                                ProgressView()
-                                    .frame(width: 50, height: 50)
+                                DefaultProfileImage(size: 50)
                             case .success(let image):
                                 image
                                     .resizable()
@@ -60,14 +59,9 @@ struct InfoView: View {
                                     .frame(width: 50, height: 50)
                                     .clipShape(Circle())
                             case .failure:
-                                Image(systemName: "person.circle")
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(width: 50, height: 50)
-                                    .foregroundColor(.gray)
+                                DefaultProfileImage(size: 50)
                             @unknown default:
-                                EmptyView()
-                                    .frame(width: 50, height: 50)
+                                DefaultProfileImage(size: 50)
                             }
                         }
                         .frame(width: 50, height: 50)

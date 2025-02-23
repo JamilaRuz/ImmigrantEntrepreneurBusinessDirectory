@@ -89,6 +89,9 @@ struct AuthenticationView: View {
                 VStack(spacing: 20) {
                     TextField("Email", text: $email)
                         .autocapitalization(.none)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        .textContentType(.none)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .padding(.horizontal)
                     
@@ -96,10 +99,16 @@ struct AuthenticationView: View {
                         if isPasswordVisible {
                             TextField("Password", text: $password)
                                 .autocapitalization(.none)
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled()
+                                .textContentType(.none)
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
                         } else {
                             SecureField("Password", text: $password)
                                 .autocapitalization(.none)
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled()
+                                .textContentType(.none)
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
                         }
                         

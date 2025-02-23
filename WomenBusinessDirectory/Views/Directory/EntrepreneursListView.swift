@@ -68,11 +68,7 @@ struct EntrepreneurRowView: View {
                     AsyncImage(url: profileUrl) { phase in
                         switch phase {
                         case .empty:
-                            Image(systemName: "person.circle.fill")
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 60, height: 60)
-                                .foregroundColor(.gray.opacity(0.3))
+                            DefaultProfileImage(size: 60)
                         case .success(let image):
                             image
                                 .resizable()
@@ -80,25 +76,13 @@ struct EntrepreneurRowView: View {
                                 .frame(width: 60, height: 60)
                                 .clipShape(RoundedRectangle(cornerRadius: 12))
                         case .failure:
-                            Image(systemName: "person.circle.fill")
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 60, height: 60)
-                                .foregroundColor(.gray.opacity(0.3))
+                            DefaultProfileImage(size: 60)
                         @unknown default:
-                            Image(systemName: "person.circle.fill")
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 60, height: 60)
-                                .foregroundColor(.gray.opacity(0.3))
+                            DefaultProfileImage(size: 60)
                         }
                     }
                 } else {
-                    Image(systemName: "person.circle.fill")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 60, height: 60)
-                        .foregroundColor(.gray.opacity(0.3))
+                    DefaultProfileImage(size: 60)
                 }
                 
                 VStack(alignment: .leading, spacing: 8) {

@@ -61,21 +61,13 @@ struct EditProfileView: View {
                                 .scaledToFit()
                                 .frame(height: 200)
                         case .failure:
-                            Image(systemName: "person.circle.fill")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(height: 200)
-                                .foregroundColor(.gray)
+                            DefaultProfileImage(size: 200)
                         @unknown default:
-                            EmptyView()
+                            DefaultProfileImage(size: 200)
                         }
                     }
                 } else {
-                    Image(systemName: "person.circle.fill")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(height: 200)
-                        .foregroundColor(.gray)
+                    DefaultProfileImage(size: 200)
                 }
             }
             .frame(maxWidth: .infinity)

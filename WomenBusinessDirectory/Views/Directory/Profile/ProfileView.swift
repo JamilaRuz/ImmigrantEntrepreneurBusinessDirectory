@@ -125,41 +125,22 @@ struct ProfileView: View {
                     AsyncImage(url: profileUrl) { phase in
                         switch phase {
                         case .empty:
-                            Image(systemName: "person.circle.fill")
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 100, height: 100)
-                                .foregroundColor(.gray.opacity(0.3))
-                            
+                            DefaultProfileImage(size: 100)
                         case .success(let image):
                             image
                                 .resizable()
                                 .scaledToFill()
                                 .frame(width: 100, height: 100)
                                 .clipShape(Circle())
-                            
                         case .failure:
-                            Image(systemName: "person.circle.fill")
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 100, height: 100)
-                                .foregroundColor(.gray.opacity(0.3))
-                            
+                            DefaultProfileImage(size: 100)
                         @unknown default:
-                            Image(systemName: "person.circle.fill")
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 100, height: 100)
-                                .foregroundColor(.gray.opacity(0.3))
+                            DefaultProfileImage(size: 100)
                         }
                     }
                     .frame(width: 100, height: 100)
                 } else {
-                    Image(systemName: "person.circle.fill")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 100, height: 100)
-                        .foregroundColor(.gray.opacity(0.3))
+                    DefaultProfileImage(size: 100)
                 }
                 
                 Text(viewModel.entrepreneur.fullName ?? "Entrepreneur Name")
