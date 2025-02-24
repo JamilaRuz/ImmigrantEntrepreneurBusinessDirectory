@@ -39,51 +39,8 @@ struct BookmarkedListView: View {
         NavigationView {
             ScrollView {
                 if viewModel.bookmarkedCompanies.isEmpty {
-                    VStack(spacing: 24) {
-                        Image(systemName: "bookmark.slash")
-                            .font(.system(size: 70))
-                            .foregroundColor(Color.green1)
-                            .padding()
-                            .background(
-                                Circle()
-                                    .fill(Color.green1.opacity(0.1))
-                                    .frame(width: 120, height: 120)
-                            )
-                        
-                        Text("No Bookmarks Yet")
-                            .font(.title2)
-                            .fontWeight(.semibold)
-                            .foregroundColor(Color.green1)
-                        
-                        Text("Browse the directory and bookmark companies you're interested in to see them here.")
-                            .font(.body)
-                            .multilineTextAlignment(.center)
-                            .foregroundColor(.secondary)
-                            .padding(.horizontal, 32)
-                        
-                        NavigationLink(destination: DirectoryListView(viewModel: DirectoryListViewModel(), showSignInView: .constant(false), userIsLoggedIn: .constant(false))) {
-                            HStack {
-                                Image(systemName: "arrow.right.circle.fill")
-                                Text("Browse Directory")
-                            }
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .padding()
-                            .background(Color.green1)
-                            .cornerRadius(10)
-                        }
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(
-                        LinearGradient(
-                            gradient: Gradient(colors: [
-                                Color.green1.opacity(0.1),
-                                Color.white
-                            ]),
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
+                    EmptyBookmarksView()
+
                 } else {
                     VStack(spacing: 16) {
                         ForEach(viewModel.bookmarkedCompanies, id: \.companyId) { company in
@@ -100,13 +57,27 @@ struct BookmarkedListView: View {
                 }
             }
             .background(Color(.systemGray6))
-            .navigationTitle("Bookmarked")
-            .navigationBarTitleDisplayMode(.inline)
             .onAppear {
                 viewModel.loadBookmarkedCompanies()
             }
         }
         .tint(Color.green1)
+    }
+}
+
+struct EmptyBookmarksView: View {
+    var body: some View {
+        VStack(spacing: 16) {
+            Text("No Bookmarks Yet")
+                .font(.title2)
+                .foregroundColor(Color.green1)
+            Text("Browse the directory and bookmark companies you're interested in to see them here.")
+                .font(.subheadline)
+                .foregroundColor(Color.green1)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 40)
+        }
+        .padding(.top, 100)
     }
 }
 
