@@ -22,7 +22,13 @@ struct NavigationBarModifier: ViewModifier {
                     Image("main_logo")
                         .resizable()
                         .scaledToFit()
-                        .frame(height: 30)
+                        .frame(width: 35, height: 35)
+                        .background(Color.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.gray.opacity(0.2), lineWidth: 0.5)
+                        )
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {

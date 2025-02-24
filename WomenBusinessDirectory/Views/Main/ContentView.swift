@@ -54,6 +54,18 @@ struct MainTabView: View {
     @ObservedObject var directoryListViewModel: DirectoryListViewModel
     @State private var selectedTab = 0
     
+    init(showSignInView: Binding<Bool>, userIsLoggedIn: Binding<Bool>, directoryListViewModel: DirectoryListViewModel) {
+        self._showSignInView = showSignInView
+        self._userIsLoggedIn = userIsLoggedIn
+        self._directoryListViewModel = ObservedObject(wrappedValue: directoryListViewModel)
+        
+        // Configure tab bar appearance to be non-transparent
+        let tabBarAppearance = UITabBarAppearance()
+        tabBarAppearance.configureWithOpaqueBackground()
+        UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
+        UITabBar.appearance().standardAppearance = tabBarAppearance
+    }
+    
     var body: some View {
         TabView(selection: $selectedTab) {
             DirectoryListView(viewModel: directoryListViewModel, showSignInView: $showSignInView, userIsLoggedIn: $userIsLoggedIn)
