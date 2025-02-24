@@ -19,9 +19,13 @@ final class ProfileViewModel: ObservableObject {
     
     func loadData(for entrepreneur: Entrepreneur?) async throws {
         if let entrepreneur = entrepreneur {
+            // If viewing another entrepreneur's profile, use their data directly
             self.entrepreneur = entrepreneur
+        } else {
+            // If no entrepreneur provided (viewing own profile), load current user's data
+            try await loadCurrentEntrepreneur()
         }
-        try await loadCurrentEntrepreneur()
+        
         async let companiesTask = loadCompaniesOfEntrepreneur()
         async let categoriesTask = loadAllCategories()
         
@@ -114,7 +118,16 @@ struct ProfileView: View {
             }
         }
         .sheet(isPresented: $showingEditProfile) {
-            EditProfileView(entrepreneur: viewModel.entrepreneur)
+            EditProfileView(entrepreneur: viewModel.entrepreneur) {
+                // Refresh data when edit view saves changes
+                Task {
+                    do {
+                        try await viewModel.loadData(for: entrepreneur)
+                    } catch {
+                        print("Failed to refresh data after edit: \(error)")
+                    }
+                }
+            }
         }
     }
     

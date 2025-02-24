@@ -379,38 +379,44 @@ struct AddCompanyView: View {
   
   private var ownershipSection: some View {
     VStack(alignment: .leading, spacing: 8) {
-      Text("Ownership Type")
-        .font(.subheadline)
-        .foregroundColor(.gray)
+        HStack {
+            Text("Ownership Type")
+                .font(.subheadline)
+                .foregroundColor(.gray)
+            Text("(Optional)")
+                .font(.caption)
+                .foregroundColor(.gray)
+                .italic()
+        }
         .padding(.horizontal)
       
-      LazyVGrid(columns: [
-        GridItem(.flexible()),
-        GridItem(.flexible())
-      ], spacing: 8) {
-        ForEach(Company.OwnershipType.allCases, id: \.self) { type in
-          Button(action: {
-            if selectedOwnershipTypes.contains(type) {
-              selectedOwnershipTypes.remove(type)
-            } else {
-              selectedOwnershipTypes.insert(type)
+        LazyVGrid(columns: [
+            GridItem(.flexible()),
+            GridItem(.flexible())
+        ], spacing: 8) {
+            ForEach(Company.OwnershipType.allCases, id: \.self) { type in
+                Button(action: {
+                    if selectedOwnershipTypes.contains(type) {
+                        selectedOwnershipTypes.remove(type)
+                    } else {
+                        selectedOwnershipTypes.insert(type)
+                    }
+                }) {
+                    HStack {
+                        Image(systemName: selectedOwnershipTypes.contains(type) ? "checkmark.circle.fill" : "circle")
+                            .foregroundColor(selectedOwnershipTypes.contains(type) ? .blue : .gray)
+                        Text(type.rawValue)
+                            .font(.caption)
+                            .foregroundColor(.primary)
+                        Spacer()
+                    }
+                    .padding(8)
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(8)
+                }
             }
-          }) {
-            HStack {
-              Image(systemName: selectedOwnershipTypes.contains(type) ? "checkmark.circle.fill" : "circle")
-                .foregroundColor(selectedOwnershipTypes.contains(type) ? .blue : .gray)
-              Text(type.rawValue)
-                .font(.caption)
-                .foregroundColor(.primary)
-              Spacer()
-            }
-            .padding(8)
-            .background(Color.gray.opacity(0.1))
-            .cornerRadius(8)
-          }
         }
-      }
-      .padding(.horizontal)
+        .padding(.horizontal)
     }
   }
   

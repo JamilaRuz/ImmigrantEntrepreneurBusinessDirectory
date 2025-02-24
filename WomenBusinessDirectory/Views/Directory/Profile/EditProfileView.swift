@@ -12,30 +12,42 @@ struct EditProfileView: View {
     @State var entrepreneur: Entrepreneur
     @State private var selectedImage: UIImage?
     @State private var isImagePickerPresented = false
+    @State private var isSaving = false
     @Environment(\.presentationMode) var presentationMode
     @StateObject private var viewModel = EditProfileViewModel()
+    var onSave: (() -> Void)?
     
     var body: some View {
         NavigationView {
-            Form {
-                Section(header: Text("Profile Picture")) {
-                    profileImageView
-                    chooseImageButton
+            ZStack {
+                Form {
+                    Section(header: Text("Profile Picture")) {
+                        profileImageView
+                        chooseImageButton
+                    }
+                    
+                    Section(header: Text("Personal Information")) {
+                        TextField("Full Name", text: $entrepreneur.fullName.bound)
+                        Text(entrepreneur.email ?? "No email provided")
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    Section(header: Text("Entrepreneur's Story")) {
+                        TextEditor(text: $entrepreneur.bioDescr.bound)
+                            .frame(height: 200)
+                    }
                 }
+                .navigationTitle("Edit Profile")
+                .navigationBarItems(trailing: saveButton)
                 
-                Section(header: Text("Personal Information")) {
-                    TextField("Full Name", text: $entrepreneur.fullName.bound)
-                    Text(entrepreneur.email ?? "No email provided")
-                        .foregroundColor(.secondary)
-                }
-                
-                Section(header: Text("Entrepreneur's Story")) {
-                    TextEditor(text: $entrepreneur.bioDescr.bound)
-                        .frame(height: 200)
+                if isSaving {
+                    Color.black.opacity(0.3)
+                        .ignoresSafeArea()
+                    ProgressView()
+                        .scaleEffect(1.5)
+                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
                 }
             }
-            .navigationTitle("Edit Profile")
-            .navigationBarItems(trailing: saveButton)
         }
         .sheet(isPresented: $isImagePickerPresented) {
             ImagePicker(image: $selectedImage)
@@ -93,12 +105,15 @@ struct EditProfileView: View {
     private var saveButton: some View {
         Button("Save") {
             Task {
+                isSaving = true
                 do {
                     try await viewModel.saveProfile(entrepreneur: entrepreneur, newImage: selectedImage)
+                    onSave?()
                     presentationMode.wrappedValue.dismiss()
                 } catch {
                     print("Failed to save profile: \(error)")
                 }
+                isSaving = false
             }
         }
     }

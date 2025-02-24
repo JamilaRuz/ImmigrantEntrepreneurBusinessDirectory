@@ -105,7 +105,7 @@ struct NavigationBarModifier: ViewModifier {
                                 }
                             }
                         } label: {
-                            Image(systemName: "person.crop.circle")
+                            Image(systemName: "gearshape")
                                 .imageScale(.large)
                                 .foregroundColor(isLoggedIn ? Color("pink1") : Color.gray)
                         }

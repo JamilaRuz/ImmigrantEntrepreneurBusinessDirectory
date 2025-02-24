@@ -38,8 +38,17 @@ class Company: Codable, Hashable, Equatable, Identifiable {
     let socialMediaInsta: String
     let businessModel: BusinessModel
     let website: String
-    var isBookmarked: Bool
+    var bookmarkedBy: [String]
     let ownershipTypes: [OwnershipType]
+    
+    var isBookmarked: Bool {
+        get {
+            if let currentUserId = try? AuthenticationManager.shared.getAuthenticatedUser().uid {
+                return bookmarkedBy.contains(currentUserId)
+            }
+            return false
+        }
+    }
     
     enum BusinessModel: String, CaseIterable, Codable {
         case online
@@ -84,7 +93,7 @@ class Company: Codable, Hashable, Equatable, Identifiable {
         self.socialMediaInsta = socialMediaInsta
         self.businessModel = businessModel
         self.website = website
-        self.isBookmarked = isBookmarked
+        self.bookmarkedBy = []
         self.ownershipTypes = ownershipTypes
     }
 }
@@ -194,8 +203,9 @@ final class RealCompanyManager: CompanyManager {
     }
     
     func getBookmarkedCompanies() async throws -> [Company] {
+        let currentUserId = try AuthenticationManager.shared.getAuthenticatedUser().uid
         let querySnapshot = try await companiesCollection
-            .whereField("isBookmarked", isEqualTo: true)
+            .whereField("bookmarkedBy", arrayContains: currentUserId)
             .getDocuments()
         
         return try querySnapshot.documents.map { try $0.data(as: Company.self) }
@@ -284,8 +294,20 @@ final class RealCompanyManager: CompanyManager {
         print("Updating bookmark status for company: \(company.companyId)")
         
         do {
+            let currentUserId = try AuthenticationManager.shared.getAuthenticatedUser().uid
             let companyRef = companiesCollection.document(company.companyId)
-            try await companyRef.updateData(["isBookmarked": isBookmarked])
+            
+            if isBookmarked {
+                // Add user to bookmarkedBy array if not already present
+                try await companyRef.updateData([
+                    "bookmarkedBy": FieldValue.arrayUnion([currentUserId])
+                ])
+            } else {
+                // Remove user from bookmarkedBy array
+                try await companyRef.updateData([
+                    "bookmarkedBy": FieldValue.arrayRemove([currentUserId])
+                ])
+            }
             print("Bookmark status successfully updated")
         } catch let error as NSError {
             if error.domain == NSURLErrorDomain {
