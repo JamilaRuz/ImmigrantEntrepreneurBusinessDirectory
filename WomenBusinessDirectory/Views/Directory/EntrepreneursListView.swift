@@ -97,61 +97,72 @@ struct EntrepreneurRowView: View {
                             .foregroundColor(.gray)
                     }
                     
-                    // Bio preview if available
-                    if let bio = entrepreneur.bioDescr, !bio.isEmpty {
-                        Text(bio)
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                            .lineLimit(2)
-                    }
+                    // Bio preview or placeholder
+                    Text(entrepreneur.bioDescr?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "No description available yet")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .lineLimit(2)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
             
-            // Company names
+            // Company names or placeholder
             let companies = viewModel.getCompanies(for: entrepreneur)
-            if !companies.isEmpty {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        ForEach(companies, id: \.companyId) { company in
-                            HStack(spacing: 4) {
-                                AsyncImage(url: URL(string: company.logoImg ?? "")) { phase in
-                                    switch phase {
-                                    case .empty, .failure:
-                                        Image(systemName: "building.2.fill")
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fit)
-                                            .frame(width: 20, height: 20)
-                                            .foregroundColor(.gray.opacity(0.3))
-                                    case .success(let image):
-                                        image
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fill)
-                                            .frame(width: 20, height: 20)
-                                            .clipShape(Circle())
-                                    @unknown default:
-                                        Image(systemName: "building.2.fill")
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fit)
-                                            .frame(width: 20, height: 20)
-                                            .foregroundColor(.gray.opacity(0.3))
+            VStack(alignment: .leading, spacing: 8) {
+                if !companies.isEmpty {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(companies, id: \.companyId) { company in
+                                HStack(spacing: 4) {
+                                    AsyncImage(url: URL(string: company.logoImg ?? "")) { phase in
+                                        switch phase {
+                                        case .empty, .failure:
+                                            Image(systemName: "building.2.fill")
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fit)
+                                                .frame(width: 20, height: 20)
+                                                .foregroundColor(.gray.opacity(0.3))
+                                        case .success(let image):
+                                            image
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fill)
+                                                .frame(width: 20, height: 20)
+                                                .clipShape(Circle())
+                                        @unknown default:
+                                            Image(systemName: "building.2.fill")
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fit)
+                                                .frame(width: 20, height: 20)
+                                                .foregroundColor(.gray.opacity(0.3))
+                                        }
                                     }
+                                    .frame(width: 20, height: 20)
+                                    
+                                    Text(company.name)
+                                        .font(.caption)
                                 }
-                                .frame(width: 20, height: 20)
-                                
-                                Text(company.name)
-                                    .font(.caption)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(Color.orange1.opacity(0.1))
+                                .foregroundColor(Color.orange1)
+                                .cornerRadius(8)
                             }
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(Color.orange1.opacity(0.1))
-                            .foregroundColor(Color.orange1)
-                            .cornerRadius(8)
                         }
                     }
+                } else {
+                    Text("No companies added yet")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(Color.gray.opacity(0.1))
+                        .cornerRadius(8)
                 }
             }
+            .frame(height: 35) // Fixed height for company section
         }
         .padding()
+        .frame(maxWidth: .infinity)
         .background(Color.white)
         .cornerRadius(12)
         .shadow(color: Color.black.opacity(0.1), radius: 3, x: 0, y: 1)
