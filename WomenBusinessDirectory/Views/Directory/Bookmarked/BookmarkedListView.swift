@@ -37,23 +37,35 @@ struct BookmarkedListView: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
+            Group {
                 if viewModel.bookmarkedCompanies.isEmpty {
-                    EmptyBookmarksView()
-
-                } else {
                     VStack(spacing: 16) {
-                        ForEach(viewModel.bookmarkedCompanies, id: \.companyId) { company in
-                            NavigationLink {
-                                CompanyDetailView(company: company)
-                            } label: {
-                                CompanyRowView(company: company, categories: viewModel.categories)
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                        }
+                        Text("No Bookmarks Yet")
+                            .font(.title2)
+                            .foregroundColor(Color.green1)
+                        Text("Browse the directory and bookmark companies you're interested in to see them here.")
+                            .font(.subheadline)
+                            .foregroundColor(Color.green1)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 40)
                     }
-                    .padding(.horizontal)
-                    .padding(.vertical, 8)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .offset(y: -30)
+                } else {
+                    ScrollView {
+                        VStack(spacing: 16) {
+                            ForEach(viewModel.bookmarkedCompanies, id: \.companyId) { company in
+                                NavigationLink {
+                                    CompanyDetailView(company: company)
+                                } label: {
+                                    CompanyRowView(company: company, categories: viewModel.categories)
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                            }
+                        }
+                        .padding(.horizontal)
+                        .padding(.vertical, 8)
+                    }
                 }
             }
             .background(Color(.systemGray6))
@@ -62,22 +74,6 @@ struct BookmarkedListView: View {
             }
         }
         .tint(Color.green1)
-    }
-}
-
-struct EmptyBookmarksView: View {
-    var body: some View {
-        VStack(spacing: 16) {
-            Text("No Bookmarks Yet")
-                .font(.title2)
-                .foregroundColor(Color.green1)
-            Text("Browse the directory and bookmark companies you're interested in to see them here.")
-                .font(.subheadline)
-                .foregroundColor(Color.green1)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 40)
-        }
-        .padding(.top, 100)
     }
 }
 

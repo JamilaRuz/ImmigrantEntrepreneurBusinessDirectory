@@ -84,33 +84,18 @@ struct CompaniesListView: View {
                         .padding(.vertical, 8)
                     
                     if viewModel.filteredCompanies.isEmpty {
-                        VStack(spacing: 20) {
-                            Image(systemName: "building.2.crop.circle")
-                                .font(.system(size: 60))
-                                .foregroundColor(.gray)
-                            if viewModel.searchTerm.isEmpty {
-                                Text("No companies found in this category")
-                                    .font(.headline)
-                                    .foregroundColor(.gray)
-                            } else {
-                                Text("No matching companies found")
-                                    .font(.headline)
-                                Text("Try adjusting your search or filters")
-                                    .font(.subheadline)
-                                    .foregroundColor(.gray)
-                            }
+                        VStack(spacing: 16) {
+                            Text("No Companies Yet")
+                                .font(.title2)
+                                .foregroundColor(Color.pink1)
+                            Text("Companies in this category will appear here once they are added.")
+                                .font(.subheadline)
+                                .foregroundColor(Color.pink1)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 40)
                         }
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background(
-                            LinearGradient(
-                                gradient: Gradient(colors: [
-                                    Color.purple1.opacity(0.1),
-                                    Color.white
-                                ]),
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                        )
+                        .offset(y: -30)
                     } else {
                         ScrollView {
                             LazyVStack(spacing: 16) {
@@ -143,6 +128,25 @@ struct CompaniesListView: View {
         }
     }
 }
+
+struct EmptyCompaniesListView: View {
+    var body: some View {
+        VStack(spacing: 16) {
+            Text("No Companies Yet")
+                .font(.title2)
+                .foregroundColor(Color.pink1)
+
+            Text("Companies in this category will appear here once they are added.")
+                .font(.subheadline)
+                .foregroundColor(Color.pink1)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 40)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+    
+}
+
 
 #Preview {
     NavigationStack {
