@@ -228,6 +228,15 @@ struct ProfileView: View {
                                         .clipShape(Circle())
                                         .shadow(radius: 3)
                                 }
+                                .onDisappear {
+                                    Task {
+                                        do {
+                                            try await viewModel.loadData(for: entrepreneur)
+                                        } catch {
+                                            print("Failed to refresh data after edit: \(error)")
+                                        }
+                                    }
+                                }
                                 
                                 Button {
                                     selectedCompanyToEdit = company
@@ -256,7 +265,13 @@ struct ProfileView: View {
             Button("Delete", role: .destructive) {
                 if let company = selectedCompanyToEdit {
                     Task {
-                        try await viewModel.deleteCompany(company)
+                        do {
+                            try await viewModel.deleteCompany(company)
+                            // Refresh the data after deletion
+                            try await viewModel.loadData(for: entrepreneur)
+                        } catch {
+                            print("Failed to delete company: \(error)")
+                        }
                     }
                 }
             }
@@ -274,6 +289,15 @@ struct ProfileView: View {
                 .frame(maxWidth: .infinity)
                 .background(Color.pink1)
                 .cornerRadius(10)
+        }
+        .onDisappear {
+            Task {
+                do {
+                    try await viewModel.loadData(for: entrepreneur)
+                } catch {
+                    print("Failed to refresh data after adding company: \(error)")
+                }
+            }
         }
     }
 }

@@ -87,10 +87,10 @@ struct CompaniesListView: View {
                         VStack(spacing: 16) {
                             Text("No Companies Yet")
                                 .font(.title2)
-                                .foregroundColor(Color.pink1)
+                                .foregroundColor(Color.orange1)
                             Text("Companies in this category will appear here once they are added.")
                                 .font(.subheadline)
-                                .foregroundColor(Color.pink1)
+                                .foregroundColor(Color.orange1)
                                 .multilineTextAlignment(.center)
                                 .padding(.horizontal, 40)
                         }
@@ -127,24 +127,6 @@ struct CompaniesListView: View {
             viewModel.loadCompanies()
         }
     }
-}
-
-struct EmptyCompaniesListView: View {
-    var body: some View {
-        VStack(spacing: 16) {
-            Text("No Companies Yet")
-                .font(.title2)
-                .foregroundColor(Color.pink1)
-
-            Text("Companies in this category will appear here once they are added.")
-                .font(.subheadline)
-                .foregroundColor(Color.pink1)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 40)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-    
 }
 
 

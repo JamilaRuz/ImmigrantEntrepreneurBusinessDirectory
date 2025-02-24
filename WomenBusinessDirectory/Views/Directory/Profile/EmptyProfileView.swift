@@ -13,7 +13,8 @@ struct EmptyProfileView: View {
     var body: some View {
         VStack(spacing: 20) {
             Text("Please log in first to create your profile.")
-                .font(.headline)
+                .font(.title2)
+                .foregroundColor(Color.pink1)
                 .multilineTextAlignment(.center)
                 .padding()
 
@@ -21,12 +22,16 @@ struct EmptyProfileView: View {
                 showSignInView = true // Navigate to AuthenticationView
             }) {
                 Text("Log In")
-                    .fontWeight(.semibold)
-                    .foregroundColor(.white)
+                    .font(.headline)
+                    .foregroundColor(Color.pink1)
                     .padding()
                     .frame(maxWidth: .infinity)
-                    .background(Color.blue)
+                    .background(Color.white)
                     .cornerRadius(10)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(Color.pink1, lineWidth: 1)
+                    )
             }
             .padding(.horizontal)
         }

@@ -122,18 +122,21 @@ struct EntrepreneurRowView: View {
                                                 .aspectRatio(contentMode: .fit)
                                                 .frame(width: 20, height: 20)
                                                 .foregroundColor(.gray.opacity(0.3))
+                                                .overlay(Circle().stroke(Color.gray.opacity(0.3), lineWidth: 1))
                                         case .success(let image):
                                             image
                                                 .resizable()
                                                 .aspectRatio(contentMode: .fill)
                                                 .frame(width: 20, height: 20)
                                                 .clipShape(Circle())
+                                                .overlay(Circle().stroke(Color.gray.opacity(0.3), lineWidth: 1))
                                         @unknown default:
                                             Image(systemName: "building.2.fill")
                                                 .resizable()
                                                 .aspectRatio(contentMode: .fit)
                                                 .frame(width: 20, height: 20)
                                                 .foregroundColor(.gray.opacity(0.3))
+                                                .overlay(Circle().stroke(Color.gray.opacity(0.3), lineWidth: 1))
                                         }
                                     }
                                     .frame(width: 20, height: 20)

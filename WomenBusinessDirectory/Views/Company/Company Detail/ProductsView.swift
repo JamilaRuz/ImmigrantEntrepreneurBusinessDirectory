@@ -36,12 +36,24 @@ struct ProductsView: View {
                     }
                 }
                 
-                if !portfolioImages.isEmpty {
-                    Text("Business portfolio")
-                        .font(.headline)
-                        .padding(.top, 10)
-                    
-                    LazyVGrid(columns: columns, spacing: 15) {
+                Text("Business portfolio")
+                    .font(.headline)
+                    .padding(.top, 10)
+                
+                LazyVGrid(columns: columns, spacing: 15) {
+                    if portfolioImages.isEmpty {
+                        // Show 3 placeholder rectangles when no images
+                        ForEach(0..<3) { _ in
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(Color.gray.opacity(0.3))
+                                    .frame(width: 100, height: 100)
+                                Text("No image")
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
+                            }
+                        }
+                    } else {
                         ForEach(portfolioImages, id: \.self) { imageUrl in
                             AsyncImage(url: URL(string: imageUrl)) { phase in
                                 switch phase {
