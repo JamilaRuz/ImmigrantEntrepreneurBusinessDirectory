@@ -70,7 +70,7 @@ func createEntrepreneur(fullName: String, email: String) async throws {
     print("Adding company \(company.companyId) to entrepreneur \(company.entrepId)")
     var entrep = try await getEntrepreneur(entrepId: company.entrepId)
     entrep.companyIds.append(company.companyId)
-    try await entrepDocument(entrepId: entrep.entrepId).setData(from: entrep, merge: true)
+    try entrepDocument(entrepId: entrep.entrepId).setData(from: entrep, merge: true)
     print("Successfully added company to entrepreneur's list")
   }
 
@@ -94,7 +94,7 @@ func createEntrepreneur(fullName: String, email: String) async throws {
     entrep.companyIds.removeAll { $0 == companyId }
     
     // Update the entrepreneur document
-    try await entrepDocument(entrepId: entrep.entrepId).setData(from: entrep, merge: true)
+    try entrepDocument(entrepId: entrep.entrepId).setData(from: entrep, merge: true)
     print("Successfully removed company \(companyId) from entrepreneur's list")
   }
   

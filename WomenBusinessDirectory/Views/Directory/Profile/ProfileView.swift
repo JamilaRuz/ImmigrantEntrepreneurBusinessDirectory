@@ -20,7 +20,9 @@ final class ProfileViewModel: ObservableObject {
     func loadData(for entrepreneur: Entrepreneur?) async throws {
         if let entrepreneur = entrepreneur {
             // If viewing another entrepreneur's profile, use their data directly
-            self.entrepreneur = entrepreneur
+            await MainActor.run {
+                self.entrepreneur = entrepreneur
+            }
         } else {
             // If no entrepreneur provided (viewing own profile), load current user's data
             try await loadCurrentEntrepreneur()
@@ -29,8 +31,12 @@ final class ProfileViewModel: ObservableObject {
         async let companiesTask = loadCompaniesOfEntrepreneur()
         async let categoriesTask = loadAllCategories()
         
-        self.companies = try await companiesTask
-        self.allCategories = try await categoriesTask
+        let (newCompanies, newCategories) = try await (companiesTask, categoriesTask)
+        
+        await MainActor.run {
+            self.companies = newCompanies
+            self.allCategories = newCategories
+        }
     }
     
     private func loadCurrentEntrepreneur() async throws {
@@ -186,7 +192,7 @@ struct ProfileView: View {
     private var entrepreneurStory: some View {
         VStack(alignment: .center) {
             Text("Entrepreneur's Story")
-                .font(.custom("Zapfino", size: 24))
+                .font(.title)
                 .foregroundColor(.purple1)
             
             Text(viewModel.entrepreneur.bioDescr ?? "Share your entrepreneurial journey here! Tell us about your passion, vision, and what inspired you to start your business. Your story can inspire others...")
@@ -217,9 +223,10 @@ struct ProfileView: View {
                             // Action buttons
                             HStack(spacing: 16) {
                                 NavigationLink {
-                                    AddCompanyView(viewModel: AddCompanyViewModel(), 
-                                                 entrepreneur: viewModel.entrepreneur,
-                                                 editingCompany: company)
+                                    AddCompanyView(
+                                        viewModel: AddCompanyViewModel(),
+                                        entrepreneur: viewModel.entrepreneur,
+                                        editingCompany: company)
                                 } label: {
                                     Image(systemName: "pencil")
                                         .foregroundColor(.purple1)
@@ -281,7 +288,12 @@ struct ProfileView: View {
     }
     
     private var addCompanyButton: some View {
-        NavigationLink(destination: AddCompanyView(viewModel: AddCompanyViewModel(), entrepreneur: viewModel.entrepreneur)) {
+        NavigationLink(
+            destination: AddCompanyView(
+                viewModel: AddCompanyViewModel(),
+                entrepreneur: viewModel.entrepreneur
+            )
+        ) {
             Text("Add Company")
                 .font(.headline)
                 .foregroundColor(.white)
@@ -291,7 +303,7 @@ struct ProfileView: View {
                 .cornerRadius(10)
         }
         .onDisappear {
-            Task {
+            Task { @MainActor in
                 do {
                     try await viewModel.loadData(for: entrepreneur)
                 } catch {

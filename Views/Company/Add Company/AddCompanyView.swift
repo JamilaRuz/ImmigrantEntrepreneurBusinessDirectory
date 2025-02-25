@@ -97,3 +97,54 @@ struct OwnershipTypeGrid: View {
         }
     }
 }
+
+private func saveOrUpdateCompany() async throws {
+    if let editingCompany = editingCompany {
+        try await viewModel.updateCompany(
+            company: editingCompany,
+            companyName: companyName,
+            logoImage: logoImage,
+            headerImage: headerImage,
+            portfolioImages: portfolioImages,
+            aboutUs: aboutUs,
+            dateFounded: dateFounded,
+            workHours: workHoursValue,
+            services: services,
+            businessModel: businessModel,
+            address: address,
+            city: city,
+            phoneNum: phoneNum,
+            email: email,
+            website: website,
+            socialMediaInsta: socialMediaInsta,
+            socialMediaFacebook: socialMediaFacebook,
+            selectedCategoryIds: selectedCategoryIds,
+            selectedOwnershipTypes: selectedOwnershipTypes
+        )
+        onCompanyCreated?() // Call the callback after successful update
+    } else {
+        try await viewModel.saveCompany(
+            entrepreneur: entrepreneur,
+            companyName: companyName,
+            logoImage: logoImage,
+            headerImage: headerImage,
+            portfolioImages: portfolioImages,
+            aboutUs: aboutUs,
+            dateFounded: dateFounded,
+            workHours: workHoursValue,
+            services: services,
+            businessModel: businessModel,
+            address: address,
+            city: city,
+            phoneNum: phoneNum,
+            email: email,
+            website: website,
+            socialMediaInsta: socialMediaInsta,
+            socialMediaFacebook: socialMediaFacebook,
+            selectedCategoryIds: selectedCategoryIds,
+            selectedOwnershipTypes: selectedOwnershipTypes
+        )
+        onCompanyCreated?() // Call the callback after successful creation
+    }
+    dismiss()
+}

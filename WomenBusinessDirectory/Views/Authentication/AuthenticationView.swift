@@ -62,8 +62,6 @@ struct AuthenticationView: View {
                 default:
                     break
                 }
-            } catch {
-                handleAuthError(error)
             }
             isLoading = false
         }

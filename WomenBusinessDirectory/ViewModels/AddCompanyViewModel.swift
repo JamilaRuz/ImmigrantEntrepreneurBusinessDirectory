@@ -9,6 +9,7 @@ import Foundation
 import FirebaseFirestore
 import UIKit
 
+@MainActor
 final class AddCompanyViewModel: ObservableObject {
     @Published private(set) var categories: [Category] = []
     @Published var isSaving = false

@@ -164,10 +164,10 @@ final class RealCompanyManager: CompanyManager {
         print("Creating company...")
         
         let companyRef = companiesCollection.document()
-        var updatedCompany = company
+        let updatedCompany = company
         updatedCompany.companyId = companyRef.documentID
         
-        try await companyRef.setData(from: updatedCompany)
+        try companyRef.setData(from: updatedCompany)
         print("Company created with ID: \(updatedCompany.companyId)")
     }
 
@@ -176,7 +176,7 @@ final class RealCompanyManager: CompanyManager {
         
         do {
             // First get the company to get the entrepreneur ID
-            let company = try await getCompany(companyId: companyId)
+            _ = try await getCompany(companyId: companyId)
             
             // Delete the company document
             let companyRef = companiesCollection.document(companyId)
