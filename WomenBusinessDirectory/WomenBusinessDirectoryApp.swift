@@ -15,8 +15,7 @@ struct WomenBusinessDirectoryApp: App {
   var body: some Scene {
     WindowGroup {
       NavigationStack {
-//        AuthenticationView()
-        ContentView()
+        SplashScreen()
           .environment(\.companyManager, RealCompanyManager.shared)
       }
     }
