@@ -47,6 +47,11 @@ final class SignUpEmailViewModel: ObservableObject {
       throw error
     }
   }
+  
+  func signIn() async throws {
+    // Sign in with the same credentials used for sign up
+    _ = try await AuthenticationManager.shared.signIn(email: email, password: password)
+  }
 }
 
   

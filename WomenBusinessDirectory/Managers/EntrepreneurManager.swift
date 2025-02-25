@@ -138,4 +138,21 @@ func createEntrepreneur(fullName: String, email: String) async throws {
     print("Successfully fetched \(entrepreneurs.count) entrepreneurs")
     return entrepreneurs
   }
+
+  func deleteEntrepreneur(entrepId: String) async throws {
+    print("Deleting entrepreneur with ID: \(entrepId)")
+    
+    // Get the entrepreneur data first
+    let entrepreneur = try await getEntrepreneur(entrepId: entrepId)
+    
+    // Delete profile image if it exists
+    if let profileUrl = entrepreneur.profileUrl {
+      let storageRef = Storage.storage().reference(forURL: profileUrl)
+      try? await storageRef.delete()
+    }
+    
+    // Delete the entrepreneur document
+    try await entrepDocument(entrepId: entrepId).delete()
+    print("Successfully deleted entrepreneur and related data")
+  }
 }

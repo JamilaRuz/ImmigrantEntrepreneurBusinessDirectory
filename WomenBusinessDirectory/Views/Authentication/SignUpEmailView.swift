@@ -10,6 +10,9 @@ import FirebaseAuth
 
 struct SignUpEmailView: View {
   @StateObject private var viewModel = SignUpEmailViewModel()
+  @Environment(\.dismiss) var dismiss
+  @Environment(\.presentationMode) var presentationMode
+  @Binding var showSignInView: Bool
   
   @State var confirmPassword: String = ""
   @State private var showAlert = false
@@ -17,26 +20,31 @@ struct SignUpEmailView: View {
   @State private var alertMessage = ""
   @State private var isSuccess = false
   @State private var isLoading = false
-  @Environment(\.dismiss) var dismiss
   
   func handleAuthError(_ error: Error) {
-      alertTitle = "Sign Up Error"
+      alertTitle = "Please Note"
       
       if let errorCode = AuthErrorCode(rawValue: (error as NSError).code) {
           switch errorCode {
           case .emailAlreadyInUse:
-              alertMessage = "This email is already in use. Please try signing in instead."
+              alertMessage = "This email is already registered. Please try signing in instead."
           case .invalidEmail:
-              alertMessage = "The email address is badly formatted."
+              alertMessage = "Please enter a valid email address."
           case .weakPassword:
-              alertMessage = "The password is too weak. Please use at least 6 characters."
+              alertMessage = "Please use a stronger password (at least 6 characters)."
           case .networkError:
-              alertMessage = "Network error. Please check your internet connection."
+              alertMessage = "Unable to connect. Please check your internet connection and try again."
+          case .invalidCredential:
+              alertMessage = "These credentials do not exist. Please check your email and try again."
+          case .userNotFound:
+              alertMessage = "Account not found. Please check your email or sign up for a new account."
+          case .wrongPassword:
+              alertMessage = "Incorrect password. Please try again."
           default:
-              alertMessage = error.localizedDescription
+              alertMessage = "Something went wrong. Please try again."
           }
       } else {
-          alertMessage = error.localizedDescription
+          alertMessage = "Something went wrong. Please try again."
       }
   }
   
@@ -103,9 +111,12 @@ struct SignUpEmailView: View {
                     Task {
                         do {
                             try await viewModel.signUp()
+                            // After successful signup, sign in automatically
+                            try await viewModel.signIn()
                             isSuccess = true
+                            showSignInView = false  // Update parent view
                             alertTitle = "Success"
-                            alertMessage = "Your account has been created successfully! Please sign in with your email and password."
+                            alertMessage = "You have successfully signed up!"
                             showAlert = true
                         } catch {
                             isSuccess = false
@@ -149,7 +160,7 @@ struct SignUpEmailView: View {
                 message: Text(alertMessage),
                 dismissButton: .default(Text("OK")) {
                     if isSuccess {
-                        dismiss()
+                        presentationMode.wrappedValue.dismiss()
                     }
                 }
             )
@@ -180,5 +191,5 @@ extension SignUpEmailView: AuthenticationFormProtocol {
 }
 
 #Preview {
-  SignUpEmailView()
+  SignUpEmailView(showSignInView: .constant(false))
 }

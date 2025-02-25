@@ -14,6 +14,10 @@ struct NavigationBarModifier: ViewModifier {
     let activeFiltersCount: Int
     @State private var showToast = false
     @State private var showFilterSheet = false
+    @State private var showDeleteConfirmation = false
+    @State private var showPasswordConfirmation = false
+    @State private var confirmPassword = ""
+    @State private var deleteError: String?
     
     func body(content: Content) -> some View {
         content
@@ -58,18 +62,26 @@ struct NavigationBarModifier: ViewModifier {
                                 Section("Email Functions") {
                                     Button {
                                         Task {
-                                            try? await viewModel.resetPassword()
+                                            do {
+                                                try await viewModel.resetPassword()
+                                            } catch {
+                                                print("Error resetting password: \(error)")
+                                            }
                                         }
                                     } label: {
-                                        Label("Reset Password", systemImage: "person.badge.key")
+                                        Label("Reset Password", systemImage: "person.fill.questionmark")
                                     }
                                     
                                     Button {
                                         Task {
-                                            try? await viewModel.updatePassword()
+                                            do {
+                                                try await viewModel.updatePassword()
+                                            } catch {
+                                                print("Error updating password: \(error)")
+                                            }
                                         }
                                     } label: {
-                                        Label("Update Password", systemImage: "lock.circle")
+                                        Label("Update Password", systemImage: "lock")
                                     }
                                 }
                                 
@@ -92,15 +104,7 @@ struct NavigationBarModifier: ViewModifier {
                                     }
                                     
                                     Button(role: .destructive) {
-                                        Task {
-                                            do {
-                                                try await viewModel.deleteAccount()
-                                                isLoggedIn = false
-                                                showSignInView = true
-                                            } catch {
-                                                print("Error deleting account: \(error)")
-                                            }
-                                        }
+                                        showDeleteConfirmation = true
                                     } label: {
                                         Label("Delete Account", systemImage: "xmark.circle.fill")
                                     }
@@ -137,6 +141,49 @@ struct NavigationBarModifier: ViewModifier {
             .sheet(isPresented: $showFilterSheet) {
                 FilterView()
                     .presentationDetents([.medium, .large])
+            }
+            .alert("Delete Account", isPresented: $showDeleteConfirmation) {
+                Button("Cancel", role: .cancel) {}
+                Button("Continue", role: .destructive) {
+                    showPasswordConfirmation = true
+                }
+            } message: {
+                Text("Are you sure you want to delete your account? This will permanently delete all your data including your profile, companies, and all associated images. This action cannot be undone.")
+            }
+            .alert("Confirm Password", isPresented: $showPasswordConfirmation) {
+                SecureField("Enter your password", text: $confirmPassword)
+                Button("Cancel", role: .cancel) {
+                    confirmPassword = ""
+                }
+                Button("Delete Account", role: .destructive) {
+                    Task {
+                        do {
+                            guard let email = try? AuthenticationManager.shared.getAuthenticatedUser().email else {
+                                return
+                            }
+                            try await viewModel.reauthenticateAndDelete(email: email, password: confirmPassword)
+                            isLoggedIn = false
+                            showSignInView = true
+                        } catch {
+                            deleteError = error.localizedDescription
+                            confirmPassword = ""
+                        }
+                    }
+                }
+            } message: {
+                Text("For security reasons, please enter your password to delete your account.")
+            }
+            .alert("Error", isPresented: .init(
+                get: { deleteError != nil },
+                set: { if !$0 { deleteError = nil } }
+            )) {
+                Button("OK", role: .cancel) {
+                    deleteError = nil
+                }
+            } message: {
+                if let error = deleteError {
+                    Text(error)
+                }
             }
     }
 }

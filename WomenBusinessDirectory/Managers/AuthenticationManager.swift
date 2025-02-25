@@ -96,4 +96,13 @@ final class AuthenticationManager {
     }
     try await user.delete()
   }
+  
+  func reauthenticate(email: String, password: String) async throws {
+    guard let user = Auth.auth().currentUser else {
+      throw URLError(.badServerResponse)
+    }
+    
+    let credential = EmailAuthProvider.credential(withEmail: email, password: password)
+    try await user.reauthenticate(with: credential)
+  }
 }

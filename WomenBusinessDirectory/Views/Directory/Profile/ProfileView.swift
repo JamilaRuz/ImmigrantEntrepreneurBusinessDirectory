@@ -191,8 +191,9 @@ struct ProfileView: View {
     
     private var entrepreneurStory: some View {
         VStack(alignment: .center) {
-            Text("Entrepreneur's Story")
+            Text("Entrepreneur's story")
                 .font(.title)
+                .italic()
                 .foregroundColor(.purple1)
             
             Text(viewModel.entrepreneur.bioDescr ?? "Share your entrepreneurial journey here! Tell us about your passion, vision, and what inspired you to start your business. Your story can inspire others...")

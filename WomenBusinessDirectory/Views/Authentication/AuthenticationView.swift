@@ -155,7 +155,7 @@ struct AuthenticationView: View {
                         )
                     }
                     
-                    NavigationLink(destination: SignUpEmailView()) {
+                    NavigationLink(destination: SignUpEmailView(showSignInView: $showSignInView)) {
                         HStack {
                             Text("Don't have an account?")
                                 .foregroundColor(.gray)

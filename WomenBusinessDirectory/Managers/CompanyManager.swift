@@ -175,8 +175,20 @@ final class RealCompanyManager: CompanyManager {
         print("Deleting company with ID: \(companyId)")
         
         do {
-            // First get the company to get the entrepreneur ID
-            _ = try await getCompany(companyId: companyId)
+            // First get the company to get all image URLs
+            let company = try await getCompany(companyId: companyId)
+            
+            // Delete all associated images from Storage
+            let imagesToDelete = [company.logoImg, company.headerImg].compactMap { $0 } + company.portfolioImages
+            
+            for imageUrl in imagesToDelete {
+                do {
+                    let storageRef = Storage.storage().reference(forURL: imageUrl)
+                    try? await storageRef.delete()
+                } catch {
+                    print("Error deleting image \(imageUrl): \(error)")
+                }
+            }
             
             // Delete the company document
             let companyRef = companiesCollection.document(companyId)
@@ -185,8 +197,7 @@ final class RealCompanyManager: CompanyManager {
             // Remove company ID from entrepreneur's list
             try await EntrepreneurManager.shared.removeCompany(companyId: companyId)
             
-            // TODO: Consider cleaning up related images from Storage
-            print("Successfully deleted company and removed from entrepreneur's list")
+            print("Successfully deleted company and all associated data")
         } catch let error as NSError {
             if error.domain == NSURLErrorDomain {
                 print("Network error while deleting company: \(error.localizedDescription)")
