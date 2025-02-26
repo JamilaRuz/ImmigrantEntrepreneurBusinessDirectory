@@ -114,7 +114,7 @@ struct ProfileView: View {
                     }
                 }
             }
-            .navigationTitle(isEditable ? "Profile" : "Entrepreneur Profile")
+            .navigationTitle("Profile")
         }
         .task {
             do {
@@ -138,65 +138,68 @@ struct ProfileView: View {
     }
     
     private var profileCard: some View {
-        ZStack(alignment: .topTrailing) {
-            VStack(alignment: .center, spacing: 10) {
+        HStack(spacing: 15) {
+            // Profile image with edit button overlay
+            ZStack(alignment: .topTrailing) {
                 if let profileUrlString = viewModel.entrepreneur.profileUrl, let profileUrl = URL(string: profileUrlString) {
                     AsyncImage(url: profileUrl) { phase in
                         switch phase {
                         case .empty:
-                            DefaultProfileImage(size: 100)
+                            DefaultProfileImage(size: 80)
                         case .success(let image):
                             image
                                 .resizable()
                                 .scaledToFill()
-                                .frame(width: 100, height: 100)
+                                .frame(width: 80, height: 80)
                                 .clipShape(Circle())
                         case .failure:
-                            DefaultProfileImage(size: 100)
+                            DefaultProfileImage(size: 80)
                         @unknown default:
-                            DefaultProfileImage(size: 100)
+                            DefaultProfileImage(size: 80)
                         }
                     }
-                    .frame(width: 100, height: 100)
+                    .frame(width: 80, height: 80)
                 } else {
-                    DefaultProfileImage(size: 100)
+                    DefaultProfileImage(size: 80)
                 }
                 
+                if isEditable {
+                    Button(action: { showingEditProfile = true }) {
+                        Image(systemName: "pencil")
+                            .font(.caption)
+                            .padding(6)
+                            .foregroundColor(.white)
+                            .background(Color.purple1)
+                            .clipShape(Circle())
+                    }
+                    .offset(x: 5, y: -5)
+                }
+            }
+            
+            // Name and email
+            VStack(alignment: .leading, spacing: 5) {
                 Text(viewModel.entrepreneur.fullName ?? "Entrepreneur Name")
-                    .font(.title2)
+                    .font(.title3)
                     .fontWeight(.bold)
                 
                 Text(viewModel.entrepreneur.email ?? "email@example.com")
                     .font(.subheadline)
                     .foregroundColor(.gray)
             }
-            .padding()
-            .frame(maxWidth: .infinity)
-            .background(Color.white)
-            .cornerRadius(15)
-            .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
             
-            if isEditable {
-                Button(action: { showingEditProfile = true }) {
-                    Image(systemName: "pencil")
-                        .padding(8)
-                        .background(Color.white)
-                        .clipShape(Circle())
-                        .shadow(radius: 3)
-                }
-                .offset(x: 10, y: -10)
-            }
+            Spacer()
         }
+        .padding(.vertical, 10)
     }
     
     private var entrepreneurStory: some View {
         VStack(alignment: .center) {
-            Text("Entrepreneur's story")
-                .font(.title)
-                .italic()
+            Text("Entrepreneur's Story")
+                .font(.custom("Zapfino", size: 20))
                 .foregroundColor(.purple1)
             
             Text(viewModel.entrepreneur.bioDescr ?? "Share your entrepreneurial journey here! Tell us about your passion, vision, and what inspired you to start your business. Your story can inspire others...")
+                .font(.subheadline)
                 .italic()
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
