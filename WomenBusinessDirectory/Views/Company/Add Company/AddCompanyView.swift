@@ -81,6 +81,9 @@ struct AddCompanyView: View {
       if let date = formatter.date(from: company.dateFounded.prefix(7).description) {
         _dateFounded = State(initialValue: date)
       }
+    } else {
+      // For new company, pre-fill with entrepreneur's email
+      _email = State(initialValue: entrepreneur.email ?? "")
     }
   }
   
@@ -315,6 +318,25 @@ struct AddCompanyView: View {
                 CustomTextField(title: "Address *", text: $address)
             }
             CityField(city: $city)
+            
+            VStack(alignment: .leading) {
+                Text("Company Email")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+                Text("This can be different from your account email")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                    .padding(.bottom, 4)
+                TextField(entrepreneur.email ?? "", text: $email)
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 12)
+                    .background(Color.white)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                    )
+            }
+            
             CustomTextField(title: "Website", text: $website)
           }
           
