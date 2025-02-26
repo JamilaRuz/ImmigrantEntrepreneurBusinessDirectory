@@ -59,32 +59,6 @@ struct NavigationBarModifier: ViewModifier {
                         
                         Menu {
                             if isLoggedIn {
-                                Section("Email Functions") {
-                                    Button {
-                                        Task {
-                                            do {
-                                                try await viewModel.resetPassword()
-                                            } catch {
-                                                print("Error resetting password: \(error)")
-                                            }
-                                        }
-                                    } label: {
-                                        Label("Reset Password", systemImage: "person.fill.questionmark")
-                                    }
-                                    
-                                    Button {
-                                        Task {
-                                            do {
-                                                try await viewModel.updatePassword()
-                                            } catch {
-                                                print("Error updating password: \(error)")
-                                            }
-                                        }
-                                    } label: {
-                                        Label("Update Password", systemImage: "lock")
-                                    }
-                                }
-                                
                                 Section("Account") {
                                     Button {
                                         Task {
