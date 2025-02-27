@@ -48,8 +48,7 @@ final class AddCompanyViewModel: ObservableObject {
         phoneNum: String,
         email: String,
         website: String,
-        socialMediaInsta: String,
-        socialMediaFacebook: String,
+        socialMediaLinks: [(platform: Company.SocialMedia, link: String)],
         selectedCategoryIds: Set<String>,
         selectedOwnershipTypes: Set<Company.OwnershipType>
     ) async throws {
@@ -76,6 +75,12 @@ final class AddCompanyViewModel: ObservableObject {
         
         let portfolioUrls = try await RealCompanyManager.shared.uploadPortfolioImages(portfolioImages)
         
+        // Convert the array of tuples to a dictionary
+        var socialMediaDict: [Company.SocialMedia: String] = [:]
+        for link in socialMediaLinks {
+            socialMediaDict[link.platform] = link.link
+        }
+        
         let newCompany = Company(
             companyId: "",
             entrepId: entrepreneur.entrepId,
@@ -92,8 +97,7 @@ final class AddCompanyViewModel: ObservableObject {
             email: email,
             workHours: workHours,
             services: services.split(separator: ",").map { String($0.trimmingCharacters(in: .whitespaces)) },
-            socialMediaFacebook: socialMediaFacebook,
-            socialMediaInsta: socialMediaInsta,
+            socialMedia: socialMediaDict,
             businessModel: Company.BusinessModel(rawValue: businessModel.rawValue) ?? .offline,
             website: website,
             ownershipTypes: Array(selectedOwnershipTypes),
@@ -119,8 +123,7 @@ final class AddCompanyViewModel: ObservableObject {
         phoneNum: String,
         email: String,
         website: String,
-        socialMediaInsta: String,
-        socialMediaFacebook: String,
+        socialMediaLinks: [(platform: Company.SocialMedia, link: String)],
         selectedCategoryIds: Set<String>,
         selectedOwnershipTypes: Set<Company.OwnershipType>
     ) async throws {
@@ -145,7 +148,14 @@ final class AddCompanyViewModel: ObservableObject {
         let portfolioUrls = try await RealCompanyManager.shared.uploadPortfolioImages(portfolioImages)
         let allPortfolioUrls = company.portfolioImages + portfolioUrls // Combine existing and new images
         
-        let updatedCompany = Company(
+        // Convert the array of tuples to a dictionary
+        var socialMediaDict: [Company.SocialMedia: String] = [:]
+        for link in socialMediaLinks {
+            socialMediaDict[link.platform] = link.link
+        }
+        
+        // Create a new company object with updated values but preserve the bookmarkedBy array
+        var updatedCompany = Company(
             companyId: company.companyId,
             entrepId: company.entrepId,
             categoryIds: Array(selectedCategoryIds),
@@ -161,13 +171,15 @@ final class AddCompanyViewModel: ObservableObject {
             email: email,
             workHours: workHours,
             services: services.split(separator: ",").map { String($0.trimmingCharacters(in: .whitespaces)) },
-            socialMediaFacebook: socialMediaFacebook,
-            socialMediaInsta: socialMediaInsta,
+            socialMedia: socialMediaDict,
             businessModel: businessModel,
             website: website,
             ownershipTypes: Array(selectedOwnershipTypes),
             isBookmarked: company.isBookmarked
         )
+        
+        // Preserve the existing bookmarkedBy array
+        updatedCompany.bookmarkedBy = company.bookmarkedBy
         
         try await RealCompanyManager.shared.updateCompany(company: updatedCompany)
     }

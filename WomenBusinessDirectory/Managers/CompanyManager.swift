@@ -34,12 +34,16 @@ class Company: Codable, Hashable, Equatable, Identifiable {
     let email: String
     let workHours: String
     let services: [String]
-    let socialMediaFacebook: String
-    let socialMediaInsta: String
+    let socialMedia: [SocialMedia: String]?
     let businessModel: BusinessModel
     let website: String
     var bookmarkedBy: [String]
     let ownershipTypes: [OwnershipType]
+    
+    // Computed property to get the social media platforms
+    var socialMedias: [SocialMedia] {
+        return socialMedia?.keys.sorted { $0.rawValue < $1.rawValue } ?? []
+    }
     
     var isBookmarked: Bool {
         get {
@@ -54,6 +58,26 @@ class Company: Codable, Hashable, Equatable, Identifiable {
         case online
         case offline
         case hybrid
+    }
+
+    enum SocialMedia: String, CaseIterable, Codable {
+        case facebook = "Facebook"
+        case instagram = "Instagram"
+        case twitter = "Twitter"
+        case linkedin = "LinkedIn"
+        case youtube = "YouTube"
+        case other = "Other"
+        
+        var icon: String {
+            switch self {
+            case .facebook: return "person.2"
+            case .instagram: return "camera"
+            case .twitter: return "message.fill"
+            case .linkedin: return "briefcase.fill"
+            case .youtube: return "play.rectangle.fill"
+            case .other: return "link"
+            }
+        }
     }
     
     enum OwnershipType: String, Codable, CaseIterable {
@@ -73,7 +97,7 @@ class Company: Codable, Hashable, Equatable, Identifiable {
         }
     }
     
-    init(companyId: String, entrepId: String, categoryIds: [String], name: String, logoImg: String?, headerImg: String?, aboutUs: String, dateFounded: String, portfolioImages: [String], address: String, city: String, phoneNum: String, email: String, workHours: String, services: [String], socialMediaFacebook: String, socialMediaInsta: String, businessModel: BusinessModel, website: String, ownershipTypes: [OwnershipType], isBookmarked: Bool = false) {
+    init(companyId: String, entrepId: String, categoryIds: [String], name: String, logoImg: String?, headerImg: String?, aboutUs: String, dateFounded: String, portfolioImages: [String], address: String, city: String, phoneNum: String, email: String, workHours: String, services: [String], socialMedia: [SocialMedia: String]? = nil, businessModel: BusinessModel, website: String, ownershipTypes: [OwnershipType], isBookmarked: Bool = false) {
         self.companyId = companyId
         self.entrepId = entrepId
         self.categoryIds = categoryIds
@@ -89,11 +113,17 @@ class Company: Codable, Hashable, Equatable, Identifiable {
         self.email = email
         self.workHours = workHours
         self.services = services
-        self.socialMediaFacebook = socialMediaFacebook
-        self.socialMediaInsta = socialMediaInsta
+        self.socialMedia = socialMedia
         self.businessModel = businessModel
         self.website = website
-        self.bookmarkedBy = []
+        
+        // Initialize bookmarkedBy array
+        if isBookmarked, let currentUserId = try? AuthenticationManager.shared.getAuthenticatedUser().uid {
+            self.bookmarkedBy = [currentUserId]
+        } else {
+            self.bookmarkedBy = []
+        }
+        
         self.ownershipTypes = ownershipTypes
     }
 }

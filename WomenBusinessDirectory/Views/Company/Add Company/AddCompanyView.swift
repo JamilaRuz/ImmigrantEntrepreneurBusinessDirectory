@@ -33,6 +33,9 @@ struct AddCompanyView: View {
   @State private var website = ""
   @State private var socialMediaInsta = ""
   @State private var socialMediaFacebook = ""
+  @State private var socialMediaLinks: [(platform: Company.SocialMedia, link: String)] = []
+  @State private var selectedSocialMedia: Company.SocialMedia = .instagram
+  @State private var socialMediaLinkInput: String = ""
   
   @State private var selectedCategoryIds: Set<String> = []
   @State private var isImagePickerPresented = false
@@ -67,14 +70,27 @@ struct AddCompanyView: View {
       _phoneNum = State(initialValue: company.phoneNum)
       _email = State(initialValue: company.email)
       _website = State(initialValue: company.website)
-      _socialMediaInsta = State(initialValue: company.socialMediaInsta)
-      _socialMediaFacebook = State(initialValue: company.socialMediaFacebook)
+      _socialMediaInsta = State(initialValue: company.socialMedias.contains(.instagram) ? "instagram" : "")
+      _socialMediaFacebook = State(initialValue: company.socialMedias.contains(.facebook) ? "facebook" : "")
       _selectedCategoryIds = State(initialValue: Set(company.categoryIds))
       _selectedOwnershipTypes = State(initialValue: Set(company.ownershipTypes))
       
       // Validate phone number during initialization
       _isValidPhone = State(initialValue: NSPredicate(format: "SELF MATCHES %@", canadianPhonePattern)
           .evaluate(with: company.phoneNum))
+      
+      // Initialize social media links from the company data
+      var links: [(platform: Company.SocialMedia, link: String)] = []
+      for platform in company.socialMedias {
+          if let socialMedia = company.socialMedia,
+             let link = socialMedia[platform] {
+              links.append((platform: platform, link: link))
+          } else {
+              // If we have the platform but no link, add a default empty link
+              links.append((platform: platform, link: ""))
+          }
+      }
+      _socialMediaLinks = State(initialValue: links)
       
       let formatter = DateFormatter()
       formatter.dateFormat = "yyyy-MM"
@@ -242,7 +258,6 @@ struct AddCompanyView: View {
       Text("Portfolio")
         .font(.subheadline)
         .foregroundColor(.gray)
-        .padding(.horizontal)
       
       Text("Adding portfolio images is recommended as they help showcase and promote your company's services. You can choose up to 6 images.")
         .font(.caption)
@@ -340,11 +355,97 @@ struct AddCompanyView: View {
             CustomTextField(title: "Website", text: $website)
           }
           
-          VStack(alignment: .leading, spacing: 8) {
+          VStack(alignment: .leading, spacing: 12) {
             Text("Social Media")
               .font(.subheadline)
-            CustomTextField(title: "Instagram", text: $socialMediaInsta, icon: "camera")
-            CustomTextField(title: "Facebook", text: $socialMediaFacebook, icon: "person.2")
+              .foregroundColor(.gray)
+            
+            Text("Add your social media profiles")
+              .font(.caption)
+              .foregroundColor(.gray)
+              .padding(.bottom, 4)
+            
+            HStack(spacing: 10) {
+              // Platform dropdown
+              Menu {
+                ForEach(Company.SocialMedia.allCases, id: \.self) { platform in
+                  Button(platform.rawValue) {
+                    selectedSocialMedia = platform
+                  }
+                }
+              } label: {
+                HStack {
+                  Text(selectedSocialMedia.rawValue)
+                    .foregroundColor(.primary)
+                  Spacer()
+                  Image(systemName: "chevron.down")
+                    .foregroundColor(.gray)
+                }
+                .frame(width: 120)
+                .padding(.vertical, 8)
+                .padding(.horizontal, 12)
+                .background(Color.white)
+                .overlay(
+                  RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                )
+              }
+              
+              // Link text field
+              TextField("Enter profile link", text: $socialMediaLinkInput)
+                .padding(.vertical, 8)
+                .padding(.horizontal, 12)
+                .background(Color.white)
+                .overlay(
+                  RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                )
+              
+              // Add button
+              Button(action: {
+                if !socialMediaLinkInput.isEmpty {
+                  socialMediaLinks.append((selectedSocialMedia, socialMediaLinkInput))
+                  socialMediaLinkInput = ""
+                }
+              }) {
+                Image(systemName: "plus.circle.fill")
+                  .foregroundColor(.blue)
+                  .font(.title3)
+              }
+              .disabled(socialMediaLinkInput.isEmpty)
+            }
+            
+            // Display added social media links
+            if !socialMediaLinks.isEmpty {
+              VStack(alignment: .leading, spacing: 8) {
+                Text("Added Profiles:")
+                  .font(.caption)
+                  .foregroundColor(.gray)
+                  .padding(.top, 4)
+                
+                ForEach(socialMediaLinks.indices, id: \.self) { index in
+                  HStack {
+                    Text(socialMediaLinks[index].platform.rawValue)
+                      .font(.subheadline)
+                      .foregroundColor(.primary)
+                    Spacer()
+                    Text(socialMediaLinks[index].link)
+                      .font(.caption)
+                      .foregroundColor(.gray)
+                    
+                    Button(action: {
+                      socialMediaLinks.remove(at: index)
+                    }) {
+                      Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(.red)
+                    }
+                  }
+                  .padding(8)
+                  .background(Color.gray.opacity(0.1))
+                  .cornerRadius(8)
+                }
+              }
+            }
           }
         }
       }
@@ -417,8 +518,7 @@ struct AddCompanyView: View {
         phoneNum: phoneNum,
         email: email,
         website: website,
-        socialMediaInsta: socialMediaInsta,
-        socialMediaFacebook: socialMediaFacebook,
+        socialMediaLinks: socialMediaLinks,
         selectedCategoryIds: selectedCategoryIds,
         selectedOwnershipTypes: selectedOwnershipTypes
       )
@@ -439,8 +539,7 @@ struct AddCompanyView: View {
         phoneNum: phoneNum,
         email: email,
         website: website,
-        socialMediaInsta: socialMediaInsta,
-        socialMediaFacebook: socialMediaFacebook,
+        socialMediaLinks: socialMediaLinks,
         selectedCategoryIds: selectedCategoryIds,
         selectedOwnershipTypes: selectedOwnershipTypes
       )
@@ -1071,6 +1170,38 @@ struct OwnershipTypeGrid: View {
                     .cornerRadius(8)
                 }
             }
+        }
+    }
+}
+
+struct SocialMediaToggle: View {
+    let title: String
+    let icon: String
+    let isSelected: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack {
+                Image(systemName: icon)
+                    .foregroundColor(.gray)
+                Text(title)
+                    .font(.caption)
+                    .foregroundColor(.primary)
+                Spacer()
+                if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.blue)
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 8)
+            .padding(.horizontal, 12)
+            .background(Color.white)
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+            )
         }
     }
 }
