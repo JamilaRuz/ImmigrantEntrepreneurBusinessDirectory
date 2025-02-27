@@ -797,7 +797,7 @@ struct PhoneNumberField: View {
                     .padding(.top, 4)
             }
         }
-        .onChange(of: phoneNum) { newValue in
+        .onChange(of: phoneNum) { oldValue, newValue in
             formatAndValidatePhoneNumber(newValue)
         }
     }
@@ -845,7 +845,7 @@ struct AddressField: View {
     var body: some View {
         VStack(alignment: .leading) {
             CustomTextField(title: "Address *", text: $address)
-                .onChange(of: address) { newValue in
+                .onChange(of: address) {oldValue, newValue in
                     addressCompleter.searchAddress(newValue)
                     showAddressSuggestions = !newValue.isEmpty
                 }
@@ -874,7 +874,7 @@ struct CityField: View {
     var body: some View {
         VStack(alignment: .leading) {
             CustomTextField(title: "City *", text: $city)
-                .onChange(of: city) { newValue in
+                .onChange(of: city) { oldValue, newValue in
                     addressCompleter.searchCity(newValue)
                     showCitySuggestions = !newValue.isEmpty
                 }

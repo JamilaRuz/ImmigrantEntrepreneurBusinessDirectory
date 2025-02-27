@@ -74,21 +74,7 @@ final class AuthenticationManager {
   func resetPassword(email: String) async throws {
     try await Auth.auth().sendPasswordReset(withEmail: email)
   }
-  
-  func updatePassword(password: String) async throws {
-    guard let user = Auth.auth().currentUser else {
-      throw URLError(.badServerResponse)
-    }
-    try await user.updatePassword(to: password)
-  }
-  
-  func updateEmail(email: String) async throws {
-    guard let user = Auth.auth().currentUser else {
-      throw URLError(.badServerResponse)
-    }
-    try await user.updateEmail(to: email)
-  }
-  
+    
   func deleteAccount() async throws {
     print("Deleting account...")
     guard let user = Auth.auth().currentUser else {

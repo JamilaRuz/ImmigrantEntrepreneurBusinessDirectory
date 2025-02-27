@@ -107,7 +107,7 @@ class FilterManager: FilterManaging {
         // Apply ownership type filter if types are selected
         if !selectedTypes.isEmpty {
             filtered = filtered.filter { company in
-                !selectedTypes.isDisjoint(with: Set(company.ownershipTypes ?? []))
+                !selectedTypes.isDisjoint(with: Set(company.ownershipTypes))
             }
         }
         

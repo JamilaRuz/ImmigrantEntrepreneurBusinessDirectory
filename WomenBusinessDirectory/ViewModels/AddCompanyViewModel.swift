@@ -155,7 +155,7 @@ final class AddCompanyViewModel: ObservableObject {
         }
         
         // Create a new company object with updated values but preserve the bookmarkedBy array
-        var updatedCompany = Company(
+        let updatedCompany = Company(
             companyId: company.companyId,
             entrepId: company.entrepId,
             categoryIds: Array(selectedCategoryIds),

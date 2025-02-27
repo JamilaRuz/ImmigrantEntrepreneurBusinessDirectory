@@ -214,7 +214,7 @@ final class RealCompanyManager: CompanyManager {
             for imageUrl in imagesToDelete {
                 do {
                     let storageRef = Storage.storage().reference(forURL: imageUrl)
-                    try? await storageRef.delete()
+                    try await storageRef.delete()
                 } catch {
                     print("Error deleting image \(imageUrl): \(error)")
                 }

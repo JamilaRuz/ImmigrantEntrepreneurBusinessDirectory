@@ -29,14 +29,14 @@ struct ContentView: View {
             // Check authentication state when app appears
             checkAuthState()
         }
-        .onChange(of: Auth.auth().currentUser) { user in
+        .onChange(of: Auth.auth().currentUser) { _, newUser in
             // Update login status whenever auth state changes
-            userIsLoggedIn = user != nil
+            userIsLoggedIn = newUser != nil
         }
     }
     
     private func checkAuthState() {
-        if let user = Auth.auth().currentUser {
+        if Auth.auth().currentUser != nil {
             // User is signed in
             userIsLoggedIn = true
             showSignInView = false
@@ -46,6 +46,7 @@ struct ContentView: View {
             showSignInView = true
         }
     }
+    
 }
 
 struct MainTabView: View {

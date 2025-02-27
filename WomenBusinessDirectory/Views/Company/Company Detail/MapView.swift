@@ -18,12 +18,16 @@ struct MapView: View {
 
     var body: some View {
         VStack(alignment: .leading) {
-            Map(coordinateRegion: $region, annotationItems: annotation.map { [$0] } ?? []) { item in
-                MapMarker(coordinate: item.coordinate, tint: .red)
+            Map {
+                if let annotation = annotation {
+                    Marker(coordinate: annotation.coordinate) {
+                        Image(systemName: "mappin.circle.fill")
+                            .foregroundStyle(.red)
+                    }
+                }
             }
             .frame(height: 300)
             .cornerRadius(10)
-            .padding(.bottom, 10)
 
             Text(company.address)
                 .font(.subheadline)
