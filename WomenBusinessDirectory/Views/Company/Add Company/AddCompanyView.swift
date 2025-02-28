@@ -346,13 +346,31 @@ struct AddCompanyView: View {
                     .padding(.vertical, 8)
                     .padding(.horizontal, 12)
                     .background(Color.white)
+                    .autocorrectionDisabled(true)
+                    .textInputAutocapitalization(.never)
+                    .keyboardType(.emailAddress)
                     .overlay(
                         RoundedRectangle(cornerRadius: 8)
                             .stroke(Color.gray.opacity(0.3), lineWidth: 1)
                     )
             }
             
-            CustomTextField(title: "Website", text: $website)
+            VStack(alignment: .leading) {
+                Text("Website")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+                TextField("Website", text: $website)
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 12)
+                    .background(Color.white)
+                    .autocorrectionDisabled(true)
+                    .textInputAutocapitalization(.never)
+                    .keyboardType(.URL)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                    )
+            }
           }
           
           VStack(alignment: .leading, spacing: 12) {
@@ -396,6 +414,9 @@ struct AddCompanyView: View {
                 .padding(.vertical, 8)
                 .padding(.horizontal, 12)
                 .background(Color.white)
+                .autocorrectionDisabled(true)
+                .textInputAutocapitalization(.never)
+                .keyboardType(.URL)
                 .overlay(
                   RoundedRectangle(cornerRadius: 8)
                     .stroke(Color.gray.opacity(0.3), lineWidth: 1)
@@ -425,18 +446,26 @@ struct AddCompanyView: View {
                 
                 ForEach(socialMediaLinks.indices, id: \.self) { index in
                   HStack {
+                    // Platform icon in a circular background
+                    ZStack {
+                      Circle()
+                        .fill(Color.blue.opacity(0.1))
+                        .frame(width: 28, height: 28)
+                      
+                      Image(systemName: socialMediaLinks[index].platform.icon)
+                        .foregroundColor(.blue)
+                        .font(.system(size: 14))
+                    }
+                    
                     Text(socialMediaLinks[index].platform.rawValue)
                       .font(.subheadline)
                       .foregroundColor(.primary)
                     Spacer()
-                    Text(socialMediaLinks[index].link)
-                      .font(.caption)
-                      .foregroundColor(.gray)
                     
                     Button(action: {
                       socialMediaLinks.remove(at: index)
                     }) {
-                      Image(systemName: "xmark.circle.fill")
+                      Image(systemName: "trash.fill")
                         .foregroundColor(.red)
                     }
                   }

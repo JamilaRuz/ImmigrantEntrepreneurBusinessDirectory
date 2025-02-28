@@ -161,11 +161,15 @@ struct CompanyDetailView: View {
               VStack {
                 HStack(spacing: 20) {
                   Button(action: {
-                    // Open Now action
+                    // Email Us action
+                    let encodedEmail = company.email.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? company.email
+                    if let emailURL = URL(string: "mailto:\(encodedEmail)") {
+                      UIApplication.shared.open(emailURL, options: [:], completionHandler: nil)
+                    }
                   }) {
                     HStack {
-                      Image(systemName: "clock.fill")
-                      Text("Open Now")
+                      Image(systemName: "envelope.fill")
+                      Text("Email Us")
                     }
                     .frame(maxWidth: .infinity)
                     .padding()

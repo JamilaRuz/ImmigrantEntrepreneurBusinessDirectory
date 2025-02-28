@@ -45,77 +45,64 @@ struct InfoView: View {
                         .background(Color.gray.opacity(0.1))
                         .cornerRadius(8)
                 } else {
-                    VStack(spacing: 8) {
-                        // Facebook
-                        if company.socialMedias.contains(.facebook) {
-                            SocialMediaLinkButton(
-                                platform: .facebook,
-                                color: Color.blue1,
-                                company: company
-                            )
-                            if shouldShowDivider(platform: .facebook, in: company.socialMedias) {
-                                Divider()
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 12) {
+                            // Facebook
+                            if company.socialMedias.contains(.facebook) {
+                                SocialMediaLinkButton(
+                                    platform: .facebook,
+                                    color: Color.blue1,
+                                    company: company
+                                )
+                            }
+                            
+                            // Instagram
+                            if company.socialMedias.contains(.instagram) {
+                                SocialMediaLinkButton(
+                                    platform: .instagram,
+                                    color: Color.blue1,
+                                    company: company
+                                )
+                            }
+                            
+                            // Twitter
+                            if company.socialMedias.contains(.twitter) {
+                                SocialMediaLinkButton(
+                                    platform: .twitter,
+                                    color: Color.blue1,
+                                    company: company
+                                )
+                            }
+                            
+                            // LinkedIn
+                            if company.socialMedias.contains(.linkedin) {
+                                SocialMediaLinkButton(
+                                    platform: .linkedin,
+                                    color: Color.blue1,
+                                    company: company
+                                )
+                            }
+                            
+                            // YouTube
+                            if company.socialMedias.contains(.youtube) {
+                                SocialMediaLinkButton(
+                                    platform: .youtube,
+                                    color: Color.blue1,
+                                    company: company
+                                )
+                            }
+                            
+                            // Other
+                            if company.socialMedias.contains(.other) {
+                                SocialMediaLinkButton(
+                                    platform: .other,
+                                    color: Color.blue1,
+                                    company: company
+                                )
                             }
                         }
-                        
-                        // Instagram
-                        if company.socialMedias.contains(.instagram) {
-                            SocialMediaLinkButton(
-                                platform: .instagram,
-                                color: Color.blue1,
-                                company: company
-                            )
-                            if shouldShowDivider(platform: .instagram, in: company.socialMedias) {
-                                Divider()
-                            }
-                        }
-                        
-                        // Twitter
-                        if company.socialMedias.contains(.twitter) {
-                            SocialMediaLinkButton(
-                                platform: .twitter,
-                                color: Color.blue1,
-                                company: company
-                            )
-                            if shouldShowDivider(platform: .twitter, in: company.socialMedias) {
-                                Divider()
-                            }
-                        }
-                        
-                        // LinkedIn
-                        if company.socialMedias.contains(.linkedin) {
-                            SocialMediaLinkButton(
-                                platform: .linkedin,
-                                color: Color.blue1,
-                                company: company
-                            )
-                            if shouldShowDivider(platform: .linkedin, in: company.socialMedias) {
-                                Divider()
-                            }
-                        }
-                        
-                        // YouTube
-                        if company.socialMedias.contains(.youtube) {
-                            SocialMediaLinkButton(
-                                platform: .youtube,
-                                color: Color.blue1,
-                                company: company
-                            )
-                            if shouldShowDivider(platform: .youtube, in: company.socialMedias) {
-                                Divider()
-                            }
-                        }
-                        
-                        // Other
-                        if company.socialMedias.contains(.other) {
-                            SocialMediaLinkButton(
-                                platform: .other,
-                                color: Color.blue1,
-                                company: company
-                            )
-                        }
+                        .padding(.vertical, 4)
                     }
-                    .padding(.vertical, 4)
                 }
             }
             
@@ -219,35 +206,28 @@ struct SocialMediaLinkButton: View {
         Button(action: {
             openLink(for: platform)
         }) {
-            HStack {
+            VStack(spacing: 8) {
                 // Platform icon in a circular background
                 ZStack {
                     Circle()
                         .fill(Color.blue1.opacity(0.2))
-                        .frame(width: 36, height: 36)
+                        .frame(width: 50, height: 50)
                     
                     Image(systemName: platform.icon)
                         .foregroundColor(Color.blue1)
-                        .font(.system(size: 16))
+                        .font(.system(size: 20))
                 }
                 
                 // Platform name
                 Text(platform.rawValue)
-                    .font(.subheadline)
+                    .font(.caption)
                     .foregroundColor(.primary)
-                
-                Spacer()
-                
-                // Social media handle/URL
-                Text(getSocialMediaHandle(for: platform))
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
             }
+            .frame(width: 80)
             .padding(.vertical, 8)
-            .padding(.horizontal, 12)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 8)
+            .background(Color.gray.opacity(0.05))
+            .cornerRadius(12)
         }
     }
     
