@@ -162,9 +162,25 @@ struct CompanyDetailView: View {
                 HStack(spacing: 20) {
                   Button(action: {
                     // Email Us action
-                    let encodedEmail = company.email.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? company.email
-                    if let emailURL = URL(string: "mailto:\(encodedEmail)") {
-                      UIApplication.shared.open(emailURL, options: [:], completionHandler: nil)
+                    let emailAddress = company.email
+                    
+                    // Create the mailto URL
+                    guard let mailtoURL = URL(string: "mailto:\(emailAddress)") else {
+                      print("Failed to create mailto URL")
+                      return
+                    }
+                    
+                    print("mailtoURL: \(mailtoURL)")
+                      
+                    // Check if the device can open the URL
+                    if UIApplication.shared.canOpenURL(mailtoURL) {
+                      UIApplication.shared.open(mailtoURL, options: [:]) { success in
+                        if !success {
+                          print("Failed to open mail app: \(mailtoURL)")
+                        }
+                      }
+                    } else {
+                      print("Cannot open mail app. URL scheme not supported: \(mailtoURL)")
                     }
                   }) {
                     HStack {
