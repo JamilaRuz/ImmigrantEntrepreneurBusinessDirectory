@@ -335,7 +335,7 @@ struct AddCompanyView: View {
             CityField(city: $city)
             
             VStack(alignment: .leading) {
-                Text("Company Email")
+                Text("Company Email *")
                     .font(.subheadline)
                     .foregroundColor(.gray)
                 Text("This can be different from your account email")
@@ -514,7 +514,8 @@ struct AddCompanyView: View {
     case 2: // Contact Info
         return !address.isEmpty && 
                !city.isEmpty &&
-               isValidPhone
+               !email.isEmpty &&
+               (phoneNum.isEmpty || isValidPhone) // Phone is optional but must be valid if provided
     default:
         return false
     }
@@ -818,7 +819,7 @@ struct PhoneNumberField: View {
     
     var body: some View {
         VStack(alignment: .leading) {
-            CustomTextField(title: "Phone Number *", text: $phoneNum, placeholder: "123-456-7890")
+            CustomTextField(title: "Phone Number", text: $phoneNum, placeholder: "123-456-7890")
             if !phoneNum.isEmpty && phoneNum != editingCompany?.phoneNum {
                 Text(isValidPhone ? "Valid phone number" : "Please enter a valid Canadian phone number (e.g., 123-456-7890)")
                     .font(.caption)
