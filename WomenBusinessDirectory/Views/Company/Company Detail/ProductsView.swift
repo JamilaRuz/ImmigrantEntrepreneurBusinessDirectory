@@ -18,6 +18,7 @@ struct ProductsView: View {
     ]
     
     @State private var selectedImage: String?
+    @State private var hasAppeared = false
     
     var body: some View {
         ScrollView {
@@ -103,6 +104,14 @@ struct ProductsView: View {
                         EmptyView()
                     }
                 }
+            }
+        }
+        .onAppear {
+            if !hasAppeared {
+                print("ProductsView appeared for the first time")
+                hasAppeared = true
+            } else {
+                print("ProductsView reappeared - not triggering reload")
             }
         }
     }

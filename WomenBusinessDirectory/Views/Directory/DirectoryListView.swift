@@ -11,10 +11,14 @@ import SwiftUI
 final class DirectoryListViewModel: ObservableObject {
   @Published private(set) var categories: [Category] = []
   @Published private(set) var allCompanies: [Company] = []
-  @Published var isLoading = true
+  @Published var isLoading = false
+  private var hasInitialLoad = false
   
   private let filterManager: FilterManaging
   private var notificationObserver: NSObjectProtocol?
+  
+  // Add a flag to track if the view is active
+  private var isViewActive = false
   
   var activeFiltersCount: Int {
     let selectedCities = filterManager.getSelectedCities().count
@@ -66,7 +70,26 @@ final class DirectoryListViewModel: ObservableObject {
     }
   }
   
+  func setViewActive(_ active: Bool) {
+    isViewActive = active
+    if active && !isLoading && (categories.isEmpty || allCompanies.isEmpty) {
+      loadData()
+    }
+  }
+  
   func loadData() {
+    // Skip loading if the view is not active
+    if !isViewActive {
+      print("DirectoryListView: View is not active, skipping load...")
+      return
+    }
+    
+    // Only check if already loading after initial load
+    if isLoading {
+      print("DirectoryListView: Already loading data, skipping redundant load...")
+      return
+    }
+    
     Task {
       do {
         print("DirectoryListView: Starting to load data...")
@@ -78,13 +101,22 @@ final class DirectoryListViewModel: ObservableObject {
         
         self.categories = try await categoriesTask
         self.allCompanies = try await companiesTask
-        
+        hasInitialLoad = true
         isLoading = false
       } catch {
         print("DirectoryListView: Failed to load data: \(error)")
         isLoading = false
       }
     }
+  }
+  
+  // Add a method to force reload data even if isLoading is true
+  func forceReload() {
+    print("DirectoryListView: Force reloading data...")
+    // Reset loading state
+    isLoading = false
+    // Call loadData
+    loadData()
   }
 }
 
@@ -128,14 +160,26 @@ struct DirectoryListView: View {
           .listStyle(.automatic)
           .background(Color.white)
           .refreshable {
-            viewModel.loadData()
+            viewModel.forceReload()
           }
         }
       }
       .navigationTitle("Business Directory")
       .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        ToolbarItem(placement: .navigationBarTrailing) {
+          Button(action: {
+            viewModel.forceReload()
+          }) {
+            Image(systemName: "arrow.clockwise")
+          }
+        }
+      }
       .onAppear {
-        viewModel.loadData()
+        viewModel.setViewActive(true)
+      }
+      .onDisappear {
+        viewModel.setViewActive(false)
       }
     }
     .customNavigationBar(showSignInView: $showSignInView, isLoggedIn: $userIsLoggedIn, activeFiltersCount: viewModel.activeFiltersCount)

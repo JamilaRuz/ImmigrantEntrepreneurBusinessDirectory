@@ -158,15 +158,30 @@ final class RealCompanyManager: CompanyManager {
     }
     
     func getCompanies() async throws -> [Company] {
-        print("Fetching all companies...")
-        let querySnapshot = try await companiesCollection.getDocuments()
-        let companies = try querySnapshot.documents.map { try $0.data(as: Company.self) }
-        print("Fetched \(companies.count) companies")
-        print("Company details:")
-        for company in companies {
-            print("- \(company.name) (ID: \(company.companyId), Category IDs: \(company.categoryIds), Owner: \(company.entrepId))")
+        print("RealCompanyManager: Fetching all companies...")
+        do {
+            let querySnapshot = try await companiesCollection.getDocuments()
+            print("RealCompanyManager: Received document snapshot with \(querySnapshot.documents.count) documents")
+            
+            let companies = try querySnapshot.documents.map { document -> Company in
+                do {
+                    return try document.data(as: Company.self)
+                } catch {
+                    print("RealCompanyManager: Error decoding company from document \(document.documentID): \(error)")
+                    throw error
+                }
+            }
+            
+            print("RealCompanyManager: Successfully decoded \(companies.count) companies")
+            print("RealCompanyManager: Company details:")
+            for company in companies {
+                print("- \(company.name) (ID: \(company.companyId), Category IDs: \(company.categoryIds), Owner: \(company.entrepId))")
+            }
+            return companies
+        } catch {
+            print("RealCompanyManager: Error fetching companies: \(error)")
+            throw error
         }
-        return companies
     }
     
     func getCompaniesByCategory(categoryId: String) async throws -> [Company] {

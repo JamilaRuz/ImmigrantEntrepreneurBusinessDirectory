@@ -4,11 +4,14 @@ import SwiftUI
 final class CompaniesListViewModel: ObservableObject {
     @Published private(set) var companies: [Company] = []
     @Published private(set) var categories: [Category] = []
-    @Published var isLoading = true
+    @Published var isLoading = false
     @Published var searchTerm = ""
     
     private let category: Category
     private let filterManager: FilterManaging
+    
+    // Add a flag to track if the view is active
+    private var isViewActive = false
     
     init(category: Category, filterManager: FilterManaging = FilterManager.shared) {
         self.category = category
@@ -42,10 +45,30 @@ final class CompaniesListViewModel: ObservableObject {
         return filtered
     }
     
+    func setViewActive(_ active: Bool) {
+        isViewActive = active
+        if active && !isLoading && companies.isEmpty {
+            loadCompanies()
+        }
+    }
+    
     func loadCompanies() {
+        // Skip loading if the view is not active
+        if !isViewActive {
+            print("CompaniesListViewModel: View is not active, skipping load...")
+            return
+        }
+        
+        // Only check if already loading
+        if isLoading {
+            print("CompaniesListViewModel: Already loading companies, skipping redundant load...")
+            return
+        }
+        
         Task {
             do {
                 isLoading = true
+                print("CompaniesListViewModel: Loading companies for category \(category.id)...")
                 
                 async let companiesTask = RealCompanyManager.shared.getCompaniesByCategory(categoryId: category.id)
                 async let categoriesTask = CategoryManager.shared.getCategories()
@@ -54,6 +77,7 @@ final class CompaniesListViewModel: ObservableObject {
                 self.categories = try await categoriesTask
                 
                 isLoading = false
+                print("CompaniesListViewModel: Finished loading \(self.companies.count) companies")
             } catch {
                 print("CompaniesListViewModel: Failed to load companies: \(error)")
                 isLoading = false
@@ -124,7 +148,10 @@ struct CompaniesListView: View {
         .navigationTitle(category.name)
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
-            viewModel.loadCompanies()
+            viewModel.setViewActive(true)
+        }
+        .onDisappear {
+            viewModel.setViewActive(false)
         }
     }
 }
