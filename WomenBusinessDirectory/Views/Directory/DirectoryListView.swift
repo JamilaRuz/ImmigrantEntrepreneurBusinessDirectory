@@ -166,15 +166,6 @@ struct DirectoryListView: View {
       }
       .navigationTitle("Business Directory")
       .navigationBarTitleDisplayMode(.inline)
-      .toolbar {
-        ToolbarItem(placement: .navigationBarTrailing) {
-          Button(action: {
-            viewModel.forceReload()
-          }) {
-            Image(systemName: "arrow.clockwise")
-          }
-        }
-      }
       .onAppear {
         viewModel.setViewActive(true)
       }
