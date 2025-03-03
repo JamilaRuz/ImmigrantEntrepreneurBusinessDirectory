@@ -21,6 +21,33 @@ Handles user authentication with Google, Facebook, and Apple login.</br></br>
    <img src="https://github.com/user-attachments/assets/f89ec88a-a4e4-44c0-85ec-1bcfb6b1b444" width="200"/>
  </p>
  
+## CI/CD with GitHub Actions
+
+This project uses GitHub Actions for continuous integration and delivery. The workflow automatically:
+
+1. Builds the app
+2. Runs unit tests
+3. (When configured) Deploys to TestFlight
+
+### CI/CD Status
+
+[![iOS CI/CD](https://github.com/YOUR_USERNAME/WomenBusinessDirectory/actions/workflows/ios.yml/badge.svg)](https://github.com/YOUR_USERNAME/WomenBusinessDirectory/actions/workflows/ios.yml)
+
+### Setting Up Deployment
+
+To enable automatic deployment to TestFlight:
+
+1. Uncomment the `deploy-to-testflight` job in `.github/workflows/ios.yml`
+2. Add the following secrets to your GitHub repository:
+   - `BUILD_CERTIFICATE_BASE64`: Your distribution certificate as base64
+   - `P12_PASSWORD`: The password for your certificate
+   - `BUILD_PROVISION_PROFILE_BASE64`: Your provisioning profile as base64
+   - `KEYCHAIN_PASSWORD`: A password for the temporary keychain
+   - `APP_STORE_CONNECT_API_KEY_ID`: Your App Store Connect API Key ID
+   - `APP_STORE_CONNECT_API_ISSUER_ID`: Your App Store Connect API Issuer ID
+   - `APP_STORE_CONNECT_API_KEY_CONTENT`: Your App Store Connect API Key content
+
+3. Create an `ExportOptions.plist` file in your repository with the appropriate settings for your app.
 
 
 
