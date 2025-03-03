@@ -17,7 +17,26 @@
 		8D4DECAC2D67A580001BCA71 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 8D4DECAB2D67A580001BCA71 /* FirebaseStorage */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		8D1E09A92D73BD2600B55741 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8DDB66F12BC9981D00D9A2C8 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8DDB66F82BC9981D00D9A2C8;
+			remoteInfo = WomenBusinessDirectory;
+		};
+		8D1E09B82D73BD6400B55741 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8DDB66F12BC9981D00D9A2C8 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8DDB66F82BC9981D00D9A2C8;
+			remoteInfo = WomenBusinessDirectory;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		8D1E09A52D73BD2600B55741 /* WomenBusinessDirectoryTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WomenBusinessDirectoryTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D1E09B22D73BD6400B55741 /* WomenBusinessDirectoryUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WomenBusinessDirectoryUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D3BE61F2C176F0100275033 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		8D47A8722D3EA772004FCF20 /* WomenBusinessDirectory.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WomenBusinessDirectory.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -33,10 +52,26 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		8D1E09A62D73BD2600B55741 /* WomenBusinessDirectoryTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = WomenBusinessDirectoryTests; sourceTree = "<group>"; };
+		8D1E09B32D73BD6400B55741 /* WomenBusinessDirectoryUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = WomenBusinessDirectoryUITests; sourceTree = "<group>"; };
 		8D5FC8922D3E047D00FA663E /* WomenBusinessDirectory */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (8D4DED912D680998001BCA71 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = WomenBusinessDirectory; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		8D1E09A22D73BD2600B55741 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8D1E09AF2D73BD6400B55741 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8DDB66F62BC9981D00D9A2C8 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -60,12 +95,62 @@
 				8D3BE61F2C176F0100275033 /* .gitignore */,
 				8D5FC8922D3E047D00FA663E /* WomenBusinessDirectory */,
 				8D47A8722D3EA772004FCF20 /* WomenBusinessDirectory.app */,
+				8D1E09A52D73BD2600B55741 /* WomenBusinessDirectoryTests.xctest */,
+				8D1E09A62D73BD2600B55741 /* WomenBusinessDirectoryTests */,
+				8D1E09B22D73BD6400B55741 /* WomenBusinessDirectoryUITests.xctest */,
+				8D1E09B32D73BD6400B55741 /* WomenBusinessDirectoryUITests */,
 			);
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		8D1E09A42D73BD2600B55741 /* WomenBusinessDirectoryTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8D1E09AB2D73BD2600B55741 /* Build configuration list for PBXNativeTarget "WomenBusinessDirectoryTests" */;
+			buildPhases = (
+				8D1E09A12D73BD2600B55741 /* Sources */,
+				8D1E09A22D73BD2600B55741 /* Frameworks */,
+				8D1E09A32D73BD2600B55741 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				8D1E09AA2D73BD2600B55741 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				8D1E09A62D73BD2600B55741 /* WomenBusinessDirectoryTests */,
+			);
+			name = WomenBusinessDirectoryTests;
+			packageProductDependencies = (
+			);
+			productName = WomenBusinessDirectoryTests;
+			productReference = 8D1E09A52D73BD2600B55741 /* WomenBusinessDirectoryTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		8D1E09B12D73BD6400B55741 /* WomenBusinessDirectoryUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8D1E09BA2D73BD6400B55741 /* Build configuration list for PBXNativeTarget "WomenBusinessDirectoryUITests" */;
+			buildPhases = (
+				8D1E09AE2D73BD6400B55741 /* Sources */,
+				8D1E09AF2D73BD6400B55741 /* Frameworks */,
+				8D1E09B02D73BD6400B55741 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				8D1E09B92D73BD6400B55741 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				8D1E09B32D73BD6400B55741 /* WomenBusinessDirectoryUITests */,
+			);
+			name = WomenBusinessDirectoryUITests;
+			packageProductDependencies = (
+			);
+			productName = WomenBusinessDirectoryUITests;
+			productReference = 8D1E09B22D73BD6400B55741 /* WomenBusinessDirectoryUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		8DDB66F82BC9981D00D9A2C8 /* WomenBusinessDirectory */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 8DDB67092BC9982000D9A2C8 /* Build configuration list for PBXNativeTarget "WomenBusinessDirectory" */;
@@ -102,9 +187,17 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1530;
+				LastSwiftUpdateCheck = 1620;
 				LastUpgradeCheck = 1530;
 				TargetAttributes = {
+					8D1E09A42D73BD2600B55741 = {
+						CreatedOnToolsVersion = 16.2;
+						TestTargetID = 8DDB66F82BC9981D00D9A2C8;
+					};
+					8D1E09B12D73BD6400B55741 = {
+						CreatedOnToolsVersion = 16.2;
+						TestTargetID = 8DDB66F82BC9981D00D9A2C8;
+					};
 					8DDB66F82BC9981D00D9A2C8 = {
 						CreatedOnToolsVersion = 15.3;
 					};
@@ -127,11 +220,27 @@
 			projectRoot = "";
 			targets = (
 				8DDB66F82BC9981D00D9A2C8 /* WomenBusinessDirectory */,
+				8D1E09A42D73BD2600B55741 /* WomenBusinessDirectoryTests */,
+				8D1E09B12D73BD6400B55741 /* WomenBusinessDirectoryUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		8D1E09A32D73BD2600B55741 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8D1E09B02D73BD6400B55741 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8DDB66F72BC9981D00D9A2C8 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -143,6 +252,20 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		8D1E09A12D73BD2600B55741 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8D1E09AE2D73BD6400B55741 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8DDB66F52BC9981D00D9A2C8 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -152,7 +275,94 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		8D1E09AA2D73BD2600B55741 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8DDB66F82BC9981D00D9A2C8 /* WomenBusinessDirectory */;
+			targetProxy = 8D1E09A92D73BD2600B55741 /* PBXContainerItemProxy */;
+		};
+		8D1E09B92D73BD6400B55741 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8DDB66F82BC9981D00D9A2C8 /* WomenBusinessDirectory */;
+			targetProxy = 8D1E09B82D73BD6400B55741 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		8D1E09AC2D73BD2600B55741 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 4V4G78L69F;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.Ruzimetova.WomenBusinessDirectoryTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/WomenBusinessDirectory.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/WomenBusinessDirectory";
+			};
+			name = Debug;
+		};
+		8D1E09AD2D73BD2600B55741 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 4V4G78L69F;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.Ruzimetova.WomenBusinessDirectoryTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/WomenBusinessDirectory.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/WomenBusinessDirectory";
+			};
+			name = Release;
+		};
+		8D1E09BB2D73BD6400B55741 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 4V4G78L69F;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.Ruzimetova.WomenBusinessDirectoryUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = WomenBusinessDirectory;
+			};
+			name = Debug;
+		};
+		8D1E09BC2D73BD6400B55741 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 4V4G78L69F;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.Ruzimetova.WomenBusinessDirectoryUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = WomenBusinessDirectory;
+			};
+			name = Release;
+		};
 		8DDB67072BC9982000D9A2C8 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -348,6 +558,24 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		8D1E09AB2D73BD2600B55741 /* Build configuration list for PBXNativeTarget "WomenBusinessDirectoryTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8D1E09AC2D73BD2600B55741 /* Debug */,
+				8D1E09AD2D73BD2600B55741 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		8D1E09BA2D73BD6400B55741 /* Build configuration list for PBXNativeTarget "WomenBusinessDirectoryUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8D1E09BB2D73BD6400B55741 /* Debug */,
+				8D1E09BC2D73BD6400B55741 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		8DDB66F42BC9981D00D9A2C8 /* Build configuration list for PBXProject "WomenBusinessDirectory" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
