@@ -60,55 +60,45 @@ struct EntrepreneurRowView: View {
     @ObservedObject var viewModel: EntrepreneursListViewModel
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .top, spacing: 16) {
-                // Profile image
-                if let profileUrlString = entrepreneur.profileUrl,
-                   let profileUrl = URL(string: profileUrlString) {
-                    AsyncImage(url: profileUrl) { phase in
-                        switch phase {
-                        case .empty:
-                            DefaultProfileImage(size: 60)
-                        case .success(let image):
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .frame(width: 60, height: 60)
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
-                        case .failure:
-                            DefaultProfileImage(size: 60)
-                        @unknown default:
-                            DefaultProfileImage(size: 60)
-                        }
+        HStack(spacing: 12) {
+            // Profile image
+            if let profileUrlString = entrepreneur.profileUrl,
+               let profileUrl = URL(string: profileUrlString) {
+                AsyncImage(url: profileUrl) { phase in
+                    switch phase {
+                    case .empty:
+                        DefaultProfileImage(size: 50)
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 50, height: 50)
+                            .clipShape(Circle())
+                    case .failure:
+                        DefaultProfileImage(size: 50)
+                    @unknown default:
+                        DefaultProfileImage(size: 50)
                     }
-                } else {
-                    DefaultProfileImage(size: 60)
                 }
-                
-                VStack(alignment: .leading, spacing: 8) {
-                    // Name and email
-                    Text(entrepreneur.fullName ?? "Entrepreneur")
-                        .font(.headline)
-                        .foregroundColor(.primary)
-                    
-                    if let email = entrepreneur.email {
-                        Text(email)
-                            .font(.subheadline)
-                            .foregroundColor(.gray)
-                    }
-                    
-                    // Bio preview or placeholder
-                    Text(entrepreneur.bioDescr?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "No description available yet")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .lineLimit(2)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
+                .frame(width: 50, height: 50)
+            } else {
+                DefaultProfileImage(size: 50)
             }
             
-            // Company names or placeholder
-            let companies = viewModel.getCompanies(for: entrepreneur)
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 4) {
+                // Name and email
+                Text(entrepreneur.fullName ?? "Entrepreneur")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+                
+                if let email = entrepreneur.email {
+                    Text(email)
+                        .font(.subheadline)
+                        .foregroundColor(.gray)
+                }
+                
+                // Company names or placeholder
+                let companies = viewModel.getCompanies(for: entrepreneur)
                 if !companies.isEmpty {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
@@ -120,55 +110,43 @@ struct EntrepreneurRowView: View {
                                             Image(systemName: "building.2.fill")
                                                 .resizable()
                                                 .aspectRatio(contentMode: .fit)
-                                                .frame(width: 20, height: 20)
-                                                .foregroundColor(.gray.opacity(0.3))
-                                                .overlay(Circle().stroke(Color.gray.opacity(0.3), lineWidth: 1))
+                                                .frame(width: 16, height: 16)
+                                                .foregroundColor(.gray.opacity(0.5))
                                         case .success(let image):
                                             image
                                                 .resizable()
                                                 .aspectRatio(contentMode: .fill)
-                                                .frame(width: 20, height: 20)
+                                                .frame(width: 16, height: 16)
                                                 .clipShape(Circle())
-                                                .overlay(Circle().stroke(Color.gray.opacity(0.3), lineWidth: 1))
                                         @unknown default:
                                             Image(systemName: "building.2.fill")
                                                 .resizable()
                                                 .aspectRatio(contentMode: .fit)
-                                                .frame(width: 20, height: 20)
-                                                .foregroundColor(.gray.opacity(0.3))
-                                                .overlay(Circle().stroke(Color.gray.opacity(0.3), lineWidth: 1))
+                                                .frame(width: 16, height: 16)
+                                                .foregroundColor(.gray.opacity(0.5))
                                         }
                                     }
-                                    .frame(width: 20, height: 20)
+                                    .frame(width: 16, height: 16)
                                     
                                     Text(company.name)
                                         .font(.caption)
                                 }
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
                                 .background(Color.orange1.opacity(0.1))
                                 .foregroundColor(Color.orange1)
                                 .cornerRadius(8)
                             }
                         }
                     }
+                    .frame(height: 28)
                 } else {
                     Text("No companies added yet")
                         .font(.caption)
                         .foregroundColor(.gray)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(Color.gray.opacity(0.1))
-                        .cornerRadius(8)
                 }
             }
-            .frame(height: 35) // Fixed height for company section
         }
-        .padding()
-        .frame(maxWidth: .infinity)
-        .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.1), radius: 3, x: 0, y: 1)
     }
 }
 
@@ -178,76 +156,67 @@ struct EntrepreneursListView: View {
     
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 16) {
-                    // Search bar
-                    SearchBar(text: $viewModel.searchTerm)
-                        .padding(.horizontal)
-                        .padding(.vertical, 8)
-                    
-                    if viewModel.isLoading {
-                        ProgressView()
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    } else if let error = viewModel.error {
-                        VStack(spacing: 16) {
-                            Image(systemName: "exclamationmark.triangle")
-                                .font(.system(size: 50))
-                                .foregroundColor(Color.orange1)
-                            Text(error)
-                                .multilineTextAlignment(.center)
-                                .foregroundColor(.secondary)
-                        }
-                        .padding()
+            VStack(spacing: 0) {
+                // Search bar
+                SearchBar(text: $viewModel.searchTerm)
+                    .padding(.horizontal)
+                    .padding(.vertical, 8)
+                    .background(Color.white)
+                
+                if viewModel.isLoading {
+                    ProgressView()
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    } else if viewModel.filteredEntrepreneurs.isEmpty {
-                        VStack(spacing: 16) {
-                            Image(systemName: "person.2.slash")
-                                .font(.system(size: 70))
-                                .foregroundColor(Color.orange1)
-                                .padding()
-                                .background(
-                                    Circle()
-                                        .fill(Color.orange1.opacity(0.1))
-                                        .frame(width: 120, height: 120)
-                                )
-                            if viewModel.searchTerm.isEmpty {
-                                Text("No entrepreneurs found")
-                                    .font(.title2)
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(Color.orange1)
-                            } else {
-                                Text("No entrepreneurs match your search")
-                                    .font(.title2)
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(Color.orange1)
-                            }
-                        }
-                        .padding()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background(
-                            LinearGradient(
-                                gradient: Gradient(colors: [
-                                    Color.orange1.opacity(0.1),
-                                    Color.white
-                                ]),
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                        )
-                    } else {
-                        LazyVStack(spacing: 16) {
-                            ForEach(viewModel.filteredEntrepreneurs, id: \.entrepId) { entrepreneur in
-                                NavigationLink(destination: ProfileView(showSignInView: .constant(false), isEditable: false, entrepreneur: entrepreneur)) {
-                                    EntrepreneurRowView(entrepreneur: entrepreneur, viewModel: viewModel)
-                                }
-                                .buttonStyle(PlainButtonStyle())
-                            }
-                        }
-                        .padding(.horizontal)
+                } else if let error = viewModel.error {
+                    VStack(spacing: 16) {
+                        Image(systemName: "exclamationmark.triangle")
+                            .font(.system(size: 50))
+                            .foregroundColor(Color.orange1)
+                        Text(error)
+                            .multilineTextAlignment(.center)
+                            .foregroundColor(.secondary)
                     }
+                    .padding()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if viewModel.filteredEntrepreneurs.isEmpty {
+                    VStack(spacing: 16) {
+                        Image(systemName: "person.2.slash")
+                            .font(.system(size: 70))
+                            .foregroundColor(Color.orange1)
+                            .padding()
+                            .background(
+                                Circle()
+                                    .fill(Color.orange1.opacity(0.1))
+                                    .frame(width: 120, height: 120)
+                            )
+                        if viewModel.searchTerm.isEmpty {
+                            Text("No entrepreneurs found")
+                                .font(.title2)
+                                .fontWeight(.semibold)
+                                .foregroundColor(Color.orange1)
+                        } else {
+                            Text("No entrepreneurs match your search")
+                                .font(.title2)
+                                .fontWeight(.semibold)
+                                .foregroundColor(Color.orange1)
+                        }
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color(.systemGroupedBackground))
+                } else {
+                    List {
+                        ForEach(viewModel.filteredEntrepreneurs, id: \.entrepId) { entrepreneur in
+                            NavigationLink(destination: ProfileView(showSignInView: .constant(false), isEditable: false, entrepreneur: entrepreneur)) {
+                                EntrepreneurRowView(entrepreneur: entrepreneur, viewModel: viewModel)
+                            }
+                            .listRowSeparator(.visible)
+                            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                        }
+                    }
+                    .listStyle(.plain)
                 }
             }
-            .background(Color(.systemGray6))
+            .background(Color(.systemGroupedBackground))
             .navigationTitle("Entrepreneurs")
             .navigationBarTitleDisplayMode(.inline)
         }

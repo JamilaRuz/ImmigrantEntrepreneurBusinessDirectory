@@ -22,7 +22,7 @@ struct SplashScreen: View {
                     .ignoresSafeArea()
                 
                 VStack {
-9                    LogoView(width: 150, height: 150, cornerRadius: 20)
+                    LogoView(width: 150, height: 150, cornerRadius: 20)
                     
                     Text("Immigrant\nEntrepreneur Canada")
                         .font(.title)
