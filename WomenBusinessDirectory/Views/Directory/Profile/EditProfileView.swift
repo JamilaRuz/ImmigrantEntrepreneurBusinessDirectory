@@ -13,9 +13,16 @@ struct EditProfileView: View {
     @State private var selectedImage: UIImage?
     @State private var isImagePickerPresented = false
     @State private var isSaving = false
+    @State private var bioText: String = ""
     @Environment(\.presentationMode) var presentationMode
     @StateObject private var viewModel = EditProfileViewModel()
     var onSave: (() -> Void)?
+    
+    init(entrepreneur: Entrepreneur, onSave: (() -> Void)? = nil) {
+        self._entrepreneur = State(initialValue: entrepreneur)
+        self._bioText = State(initialValue: entrepreneur.bioDescr ?? "")
+        self.onSave = onSave
+    }
     
     var body: some View {
         NavigationView {
@@ -32,9 +39,12 @@ struct EditProfileView: View {
                             .foregroundColor(.secondary)
                     }
                     
-                    Section(header: Text("Entrepreneur's Story")) {
-                        TextEditor(text: $entrepreneur.bioDescr.bound)
+                    Section(header: Text("Tell us about yourself")) {
+                        TextEditor(text: $bioText)
                             .frame(height: 200)
+                            .onChange(of: bioText) { oldValue, newValue in
+                                print("Bio changed from: \(oldValue) to: \(newValue)")
+                            }
                     }
                 }
                 .navigationTitle("Edit Profile")
@@ -51,6 +61,10 @@ struct EditProfileView: View {
         }
         .sheet(isPresented: $isImagePickerPresented) {
             ImagePicker(image: $selectedImage)
+        }
+        .onAppear {
+            print("EditProfileView appeared with bio: \(entrepreneur.bioDescr ?? "nil")")
+            print("bioText initialized as: \(bioText)")
         }
     }
     
@@ -107,6 +121,9 @@ struct EditProfileView: View {
             Task {
                 isSaving = true
                 do {
+                    entrepreneur.bioDescr = bioText.isEmpty ? nil : bioText
+                    
+                    print("Saving entrepreneur with bio: \(entrepreneur.bioDescr ?? "nil")")
                     try await viewModel.saveProfile(entrepreneur: entrepreneur, newImage: selectedImage)
                     onSave?()
                     presentationMode.wrappedValue.dismiss()

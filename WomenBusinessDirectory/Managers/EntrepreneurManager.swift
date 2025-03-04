@@ -126,7 +126,22 @@ func createEntrepreneur(fullName: String, email: String) async throws {
     guard !entrepreneur.entrepId.isEmpty else {
         throw NSError(domain: "EntrepreneurManager", code: 1, userInfo: [NSLocalizedDescriptionKey: "Entrepreneur ID cannot be empty"])
     }
-    try entrepDocument(entrepId: entrepreneur.entrepId).setData(from: entrepreneur, merge: true)
+    print("Updating entrepreneur: \(entrepreneur.entrepId)")
+    print("Bio being saved: \(entrepreneur.bioDescr ?? "nil")")
+    
+    // Create a dictionary with all the fields to ensure they're all updated
+    let data: [String: Any] = [
+        "entrepId": entrepreneur.entrepId,
+        "fullName": entrepreneur.fullName as Any,
+        "profileUrl": entrepreneur.profileUrl as Any,
+        "dateCreated": entrepreneur.dateCreated,
+        "email": entrepreneur.email as Any,
+        "bioDescr": entrepreneur.bioDescr as Any,
+        "companyIds": entrepreneur.companyIds
+    ]
+    
+    try await entrepDocument(entrepId: entrepreneur.entrepId).setData(data, merge: false)
+    print("Entrepreneur updated successfully")
   }
 
   func getAllEntrepreneurs() async throws -> [Entrepreneur] {

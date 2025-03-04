@@ -112,6 +112,12 @@ struct ProfileView: View {
                         }
                         .padding()
                     }
+                    
+                    if isEditable {
+                        addCompanyButton
+                            .padding(.horizontal)
+                            .padding(.bottom, 16)
+                    }
                 }
             }
             .navigationTitle("Profile")
@@ -193,26 +199,78 @@ struct ProfileView: View {
     }
     
     private var entrepreneurStory: some View {
-        VStack(alignment: .center) {
-            Text("Entrepreneur's Story")
-                .font(.custom("Zapfino", size: 20))
+        VStack(alignment: .center, spacing: 12) {
+            Text("Tell us about yourself")
+                .font(.title2)
+                .italic()
                 .foregroundColor(.purple1)
             
-            Text(viewModel.entrepreneur.bioDescr ?? "Share your entrepreneurial journey here! Tell us about your passion, vision, and what inspired you to start your business. Your story can inspire others...")
-                .font(.subheadline)
-                .italic()
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
+            if let bio = viewModel.entrepreneur.bioDescr, !bio.isEmpty {
+                Text(bio)
+                    .font(.subheadline)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+                    .foregroundColor(.purple1)
+            } else {
+                VStack(spacing: 16) {
+                    Image(systemName: "doc.text")
+                        .font(.system(size: 40))
+                        .foregroundColor(.purple1.opacity(0.6))
+                    
+                    Text("Share your entrepreneurial journey here! Tell us about your passion, vision, and what inspired you to start your business. Your story can inspire others...")
+                        .font(.subheadline)
+                        .italic()
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                        .foregroundColor(.gray.opacity(0.8))
+                    
+                    if isEditable {
+                        Button(action: {
+                            showingEditProfile = true
+                        }) {
+                            Text("Add Your Story")
+                                .font(.subheadline)
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 20)
+                                .padding(.vertical, 8)
+                                .background(Color.purple1)
+                                .cornerRadius(20)
+                        }
+                        .padding(.top, 8)
+                    }
+                }
+                .padding(.vertical, 10)
+                .padding(.horizontal, 20)
+                .background(Color.purple1.opacity(0.05))
+                .cornerRadius(12)
+            }
         }
-        .foregroundColor(.purple1)
+        .padding(.vertical, 10)
     }
     
     private var companiesList: some View {
         VStack(alignment: .leading, spacing: 16) {
             if viewModel.companies.isEmpty {
-                Text("No companies to show")
-                    .foregroundColor(.secondary)
-                    .padding()
+                VStack(spacing: 20) {
+                    Image(systemName: "building.2")
+                        .font(.system(size: 50))
+                        .foregroundColor(.pink1.opacity(0.6))
+                    
+                    Text("No companies to show")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                    
+                    Text("Add your business to showcase your products and services to potential customers.")
+                        .font(.subheadline)
+                        .multilineTextAlignment(.center)
+                        .foregroundColor(.gray)
+                        .padding(.horizontal)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 30)
+                .background(Color.pink1.opacity(0.05))
+                .cornerRadius(12)
+                .padding(.horizontal)
             } else {
                 ForEach(viewModel.companies, id: \.self) { company in
                     ZStack(alignment: .topTrailing) {
@@ -266,10 +324,6 @@ struct ProfileView: View {
                     }
                 }
             }
-            if isEditable {
-                addCompanyButton
-                    .padding(.top)
-            }
         }
         .alert("Delete Company", isPresented: $showingDeleteAlert) {
             Button("Cancel", role: .cancel) {}
@@ -299,13 +353,18 @@ struct ProfileView: View {
             )
         ) {
             Text("Add Company")
-                .font(.headline)
-                .foregroundColor(.white)
-                .frame(height: 50)
-                .frame(maxWidth: .infinity)
-                .background(Color.pink1)
+                .font(.system(size: 16, weight: .regular))
+                .foregroundColor(.pink1)
+                .frame(width: 150, height: 40)
+                .background(Color.white)
                 .cornerRadius(10)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(Color.pink1.opacity(0.6), lineWidth: 1)
+                )
+                .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1)
         }
+        .frame(maxWidth: .infinity, alignment: .center)
         .onDisappear {
             Task { @MainActor in
                 do {

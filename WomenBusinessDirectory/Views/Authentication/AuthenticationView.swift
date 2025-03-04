@@ -28,20 +28,22 @@ struct AuthenticationView: View {
         if let errorCode = AuthErrorCode(rawValue: (error as NSError).code) {
             switch errorCode {
             case .wrongPassword:
-                alertMessage = "The password is incorrect. Please try again."
+                alertMessage = "Your email or password is incorrect. Please try again."
             case .invalidEmail:
-                alertMessage = "The email address is badly formatted."
+                alertMessage = "Please enter a valid email address."
             case .userNotFound:
                 alertMessage = "No account exists with this email. Please sign up first."
             case .tooManyRequests:
                 alertMessage = "Too many unsuccessful attempts. Please try again later."
             case .networkError:
                 alertMessage = "Network error. Please check your internet connection."
+            case .invalidCredential:
+                alertMessage = "Your email or password is incorrect. Please try again."
             default:
-                alertMessage = error.localizedDescription
+                alertMessage = "Your email or password is incorrect. Please try again."
             }
         } else {
-            alertMessage = error.localizedDescription
+            alertMessage = "Your email or password is incorrect. Please try again."
         }
     }
 
@@ -75,14 +77,12 @@ struct AuthenticationView: View {
                     .fontWeight(.semibold)
                     .multilineTextAlignment(.center)
                 
-                Image("main_logo")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 100, height: 100)
+                LogoView(width: 100, height: 100)
                 
-                Text("Log in or Sign up")
+                Text("Sign in or Sign up")
                     .font(.title2)
                     .fontWeight(.semibold)
+                    .padding(.bottom, 10)
                 
                 VStack(spacing: 20) {
                     TextField("Email", text: $email)

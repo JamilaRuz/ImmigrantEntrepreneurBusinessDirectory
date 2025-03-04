@@ -211,10 +211,11 @@ struct CompanyDetailView: View {
                   }
                   .frame(maxWidth: .infinity)
                   .padding()
-                  .background(Color.blue.opacity(0.2))
-                  .foregroundColor(.blue)
+                  .background(company.phoneNum.isEmpty ? Color.gray.opacity(0.2) : Color.blue.opacity(0.2))
+                  .foregroundColor(company.phoneNum.isEmpty ? Color.gray : Color.blue)
                   .cornerRadius(12)
                 }
+                .disabled(company.phoneNum.isEmpty)
               }
               .padding(.horizontal)
               .padding(.vertical, 16)
