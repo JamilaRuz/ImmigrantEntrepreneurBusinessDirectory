@@ -214,11 +214,19 @@ struct EntrepreneursListView: View {
                         }
                     }
                     .listStyle(.plain)
+                    .refreshable {
+                        await Task { 
+                            viewModel.loadEntrepreneurs() 
+                        }.value
+                    }
                 }
             }
             .background(Color(.systemGroupedBackground))
             .navigationTitle("Entrepreneurs")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                // Empty toolbar to override any default buttons
+            }
         }
         .tint(Color.orange1)
         .task {
