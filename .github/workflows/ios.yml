@@ -420,15 +420,15 @@ jobs:
             if [ "$FASTLANE_FAILED" = "1" ]; then
               echo "Fastlane upload failed, trying direct upload with altool..."
               
-              # Create a temporary JSON file for altool authentication
+              # Create a temporary JSON file for altool authentication using a simpler approach
               echo "Creating API key JSON file for altool..."
-              cat > apiKey.json << EOF
-              {
-                "key_id": "$APP_STORE_CONNECT_API_KEY_ID",
-                "issuer_id": "$APP_STORE_CONNECT_API_KEY_ISSUER_ID",
-                "key": "$(cat ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8 | sed -E ':a;N;$!ba;s/\r{0,1}\n/\\n/g')"
-              }
-              EOF
+              echo "{" > apiKey.json
+              echo "  \"key_id\": \"$APP_STORE_CONNECT_API_KEY_ID\"," >> apiKey.json
+              echo "  \"issuer_id\": \"$APP_STORE_CONNECT_API_KEY_ISSUER_ID\"," >> apiKey.json
+              # Process the key file to escape newlines
+              KEY_CONTENT=$(cat ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8 | sed -E ':a;N;$!ba;s/\r{0,1}\n/\\n/g')
+              echo "  \"key\": \"$KEY_CONTENT\"" >> apiKey.json
+              echo "}" >> apiKey.json
               
               # Verify JSON file was created
               if [ -s apiKey.json ]; then
