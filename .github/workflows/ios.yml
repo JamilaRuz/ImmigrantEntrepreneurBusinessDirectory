@@ -12,6 +12,10 @@ jobs:
     name: Build and Deploy to TestFlight
     runs-on: macos-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_15.3.app/Contents/Developer
+      DISABLE_FILE_SYSTEM_SYNCHRONIZATION: 1
+      DISABLE_XCODE_PROJECT_VALIDATION: 1
     
     steps:
       - name: Checkout repository
@@ -102,29 +106,26 @@ jobs:
           mkdir -p ~/.appstoreconnect/private_keys/
           echo "$APP_STORE_CONNECT_API_KEY_CONTENT" > ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8
       
-      - name: Create Workspace
+      - name: Create Legacy Build Settings
         run: |
-          # Create a workspace file to avoid file system synchronization issues
-          mkdir -p WomenBusinessDirectory.xcworkspace/xcshareddata
-          cat > WomenBusinessDirectory.xcworkspace/contents.xcworkspacedata << 'EOF'
-          <?xml version="1.0" encoding="UTF-8"?>
-          <Workspace
-             version = "1.0">
-             <FileRef
-                location = "group:WomenBusinessDirectory.xcodeproj">
-             </FileRef>
-          </Workspace>
+          # Create a .xcodebuild.env file with environment variables
+          cat > .xcodebuild.env << 'EOF'
+          DISABLE_FILE_SYSTEM_SYNCHRONIZATION=1
+          DISABLE_XCODE_PROJECT_VALIDATION=1
           EOF
           
-          # Create workspace settings to disable package resolution
-          cat > WomenBusinessDirectory.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings << 'EOF'
+          # Create a shared data directory with build settings
+          mkdir -p WomenBusinessDirectory.xcodeproj/project.xcworkspace/xcshareddata
+          cat > WomenBusinessDirectory.xcodeproj/project.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings << 'EOF'
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
           <dict>
-              <key>IDEPackageSupportUseBuiltinSCM</key>
-              <true/>
+              <key>BuildSystemType</key>
+              <string>Original</string>
               <key>DisableBuildSystemDeprecationWarning</key>
+              <true/>
+              <key>IDEPackageSupportUseBuiltinSCM</key>
               <true/>
           </dict>
           </plist>
@@ -132,17 +133,20 @@ jobs:
       
       - name: Build and Archive
         run: |
-          # Build with workspace instead of project and disable automatic package resolution
-          xcodebuild -workspace WomenBusinessDirectory.xcworkspace \
-                     -scheme WomenBusinessDirectory \
-                     -sdk iphoneos \
-                     -configuration Release \
-                     -allowProvisioningUpdates \
-                     -derivedDataPath DerivedData \
-                     -archivePath ./WomenBusinessDirectory.xcarchive \
-                     -disableAutomaticPackageResolution \
-                     -IDEPackageSupportUseBuiltinSCM=YES \
-                     archive
+          # Use env file and direct project reference with legacy build system
+          source .xcodebuild.env
+          
+          # Try building with xcpretty for better output formatting
+          set -o pipefail && xcodebuild clean archive \
+            -project WomenBusinessDirectory.xcodeproj \
+            -scheme WomenBusinessDirectory \
+            -sdk iphoneos \
+            -configuration Release \
+            -allowProvisioningUpdates \
+            -derivedDataPath DerivedData \
+            -archivePath ./WomenBusinessDirectory.xcarchive \
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            | xcpretty
       
       - name: Export IPA
         run: |
