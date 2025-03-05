@@ -183,86 +183,27 @@ jobs:
             # Create schemes directory if it doesn't exist
             mkdir -p WomenBusinessDirectory.xcodeproj/xcshareddata/xcschemes
             
-            # Create a basic scheme file
-            cat > WomenBusinessDirectory.xcodeproj/xcshareddata/xcschemes/WomenBusinessDirectory.xcscheme << EOF
-            <?xml version="1.0" encoding="UTF-8"?>
-            <Scheme
-               LastUpgradeVersion = "1510"
-               version = "1.7">
-               <BuildAction
-                  parallelizeBuildables = "YES"
-                  buildImplicitDependencies = "YES">
-                  <BuildActionEntries>
-                     <BuildActionEntry
-                        buildForTesting = "YES"
-                        buildForRunning = "YES"
-                        buildForProfiling = "YES"
-                        buildForArchiving = "YES"
-                        buildForAnalyzing = "YES">
-                        <BuildableReference
-                           BuildableIdentifier = "primary"
-                           BlueprintIdentifier = "1234567890ABCDEF"
-                           BuildableName = "WomenBusinessDirectory.app"
-                           BlueprintName = "$MAIN_TARGET"
-                           ReferencedContainer = "container:WomenBusinessDirectory.xcodeproj">
-                        </BuildableReference>
-                     </BuildActionEntry>
-                  </BuildActionEntries>
-               </BuildAction>
-               <TestAction
-                  buildConfiguration = "Debug"
-                  selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
-                  selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-                  shouldUseLaunchSchemeArgsEnv = "YES"
-                  shouldAutocreateTestPlan = "YES">
-               </TestAction>
-               <LaunchAction
-                  buildConfiguration = "Debug"
-                  selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
-                  selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-                  launchStyle = "0"
-                  useCustomWorkingDirectory = "NO"
-                  ignoresPersistentStateOnLaunch = "NO"
-                  debugDocumentVersioning = "YES"
-                  debugServiceExtension = "internal"
-                  allowLocationSimulation = "YES">
-                  <BuildableProductRunnable
-                     runnableDebuggingMode = "0">
-                     <BuildableReference
-                        BuildableIdentifier = "primary"
-                        BlueprintIdentifier = "1234567890ABCDEF"
-                        BuildableName = "WomenBusinessDirectory.app"
-                        BlueprintName = "$MAIN_TARGET"
-                        ReferencedContainer = "container:WomenBusinessDirectory.xcodeproj">
-                     </BuildableReference>
-                  </BuildableProductRunnable>
-               </LaunchAction>
-               <ProfileAction
-                  buildConfiguration = "Release"
-                  shouldUseLaunchSchemeArgsEnv = "YES"
-                  savedToolIdentifier = ""
-                  useCustomWorkingDirectory = "NO"
-                  debugDocumentVersioning = "YES">
-                  <BuildableProductRunnable
-                     runnableDebuggingMode = "0">
-                     <BuildableReference
-                        BuildableIdentifier = "primary"
-                        BlueprintIdentifier = "1234567890ABCDEF"
-                        BuildableName = "WomenBusinessDirectory.app"
-                        BlueprintName = "$MAIN_TARGET"
-                        ReferencedContainer = "container:WomenBusinessDirectory.xcodeproj">
-                     </BuildableReference>
-                  </BuildableProductRunnable>
-               </ProfileAction>
-               <AnalyzeAction
-                  buildConfiguration = "Debug">
-               </AnalyzeAction>
-               <ArchiveAction
-                  buildConfiguration = "Release"
-                  revealArchiveInOrganizer = "YES">
-               </ArchiveAction>
-            </Scheme>
-            EOF
+            # Create a simple scheme file with just the essential elements
+            cat > scheme_template.xml << 'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<Scheme LastUpgradeVersion="1510" version="1.7">
+  <BuildAction parallelizeBuildables="YES" buildImplicitDependencies="YES">
+    <BuildActionEntries>
+      <BuildActionEntry buildForTesting="YES" buildForRunning="YES" buildForProfiling="YES" buildForArchiving="YES" buildForAnalyzing="YES">
+        <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="1234567890ABCDEF" BuildableName="WomenBusinessDirectory.app" BlueprintName="PLACEHOLDER_TARGET" ReferencedContainer="container:WomenBusinessDirectory.xcodeproj"></BuildableReference>
+      </BuildActionEntry>
+    </BuildActionEntries>
+  </BuildAction>
+  <TestAction buildConfiguration="Debug" selectedDebuggerIdentifier="Xcode.DebuggerFoundation.Debugger.LLDB" selectedLauncherIdentifier="Xcode.DebuggerFoundation.Launcher.LLDB" shouldUseLaunchSchemeArgsEnv="YES"></TestAction>
+  <LaunchAction buildConfiguration="Debug" selectedDebuggerIdentifier="Xcode.DebuggerFoundation.Debugger.LLDB" selectedLauncherIdentifier="Xcode.DebuggerFoundation.Launcher.LLDB" launchStyle="0" useCustomWorkingDirectory="NO" ignoresPersistentStateOnLaunch="NO" debugDocumentVersioning="YES" debugServiceExtension="internal" allowLocationSimulation="YES"></LaunchAction>
+  <ProfileAction buildConfiguration="Release" shouldUseLaunchSchemeArgsEnv="YES" savedToolIdentifier="" useCustomWorkingDirectory="NO" debugDocumentVersioning="YES"></ProfileAction>
+  <AnalyzeAction buildConfiguration="Debug"></AnalyzeAction>
+  <ArchiveAction buildConfiguration="Release" revealArchiveInOrganizer="YES"></ArchiveAction>
+</Scheme>
+EOF
+            
+            # Replace placeholder with actual target name and move to final location
+            sed "s/PLACEHOLDER_TARGET/$MAIN_TARGET/g" scheme_template.xml > WomenBusinessDirectory.xcodeproj/xcshareddata/xcschemes/WomenBusinessDirectory.xcscheme
             
             echo "Basic scheme created. Verifying..."
             xcodebuild -list -project WomenBusinessDirectory.xcodeproj
