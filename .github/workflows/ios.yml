@@ -32,7 +32,7 @@ jobs:
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '15.2'
+          xcode-version: '14.3'
       
       - name: Check for Firebase configuration
         run: |
@@ -103,42 +103,38 @@ jobs:
           mkdir -p ~/.appstoreconnect/private_keys/
           echo "$APP_STORE_CONNECT_API_KEY_CONTENT" > ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8
       
-      - name: Try Alternative Build Approach
+      - name: Fix Xcode Project
         run: |
-          # Try a different approach using fastlane directly
-          echo "app_identifier(\"com.jamilaruzimetova.WomenBusinessDirectory\")" > fastlane/Appfile
-          echo "apple_id(\"${{ secrets.APPLE_ID }}\")" >> fastlane/Appfile
-          echo "team_id(\"${{ secrets.TEAM_ID }}\")" >> fastlane/Appfile
+          # Try to fix the Xcode project by recreating it
+          echo "Attempting to fix Xcode project..."
           
+          # Create a backup of the original project
+          cp -R WomenBusinessDirectory.xcodeproj WomenBusinessDirectory.xcodeproj.bak
+          
+          # Create a simple Swift package
+          mkdir -p BuildTools
+          cat > BuildTools/Package.swift << 'EOF'
+          // swift-tools-version:5.3
+          import PackageDescription
+
+          let package = Package(
+              name: "BuildTools",
+              platforms: [.macOS(.v10_15)],
+              dependencies: [],
+              targets: []
+          )
+          EOF
+          
+          # Create a simple Fastfile for upload only
           mkdir -p fastlane
           cat > fastlane/Fastfile << 'EOF'
           default_platform(:ios)
           
           platform :ios do
-            desc "Build and upload to TestFlight"
-            lane :beta do
-              build_app(
-                project: "WomenBusinessDirectory.xcodeproj",
-                scheme: "WomenBusinessDirectory",
-                clean: true,
-                output_directory: "./build",
-                output_name: "WomenBusinessDirectory.ipa",
-                export_method: "app-store",
-                export_options: {
-                  provisioningProfiles: { 
-                    "com.jamilaruzimetova.WomenBusinessDirectory" => "match AppStore com.jamilaruzimetova.WomenBusinessDirectory"
-                  },
-                  signingCertificate: "Apple Distribution",
-                  signingStyle: "manual",
-                  teamID: ENV["TEAM_ID"]
-                },
-                skip_profile_detection: true,
-                skip_package_dependencies_resolution: true,
-                disable_package_automatic_updates: true,
-                xcargs: "COMPILER_INDEX_STORE_ENABLE=NO IDEPackageSupportUseBuiltinSCM=YES DISABLE_FILE_SYSTEM_SYNCHRONIZATION=1"
-              )
-              
+            desc "Upload to TestFlight"
+            lane :upload do
               upload_to_testflight(
+                ipa: "./build/WomenBusinessDirectory.ipa",
                 api_key_path: "~/.appstoreconnect/private_keys/AuthKey_#{ENV['APP_STORE_CONNECT_API_KEY_ID']}.p8",
                 api_key: {
                   key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
@@ -150,15 +146,88 @@ jobs:
           end
           EOF
       
-      - name: Run Fastlane
+      - name: Build with xcodebuild
+        env:
+          DEVELOPER_DIR: /Applications/Xcode_14.3.app/Contents/Developer
+        run: |
+          # Create build directory
+          mkdir -p build
+          
+          # Build the app using xcodebuild directly with minimal dependencies on the project file
+          echo "Building app with xcodebuild..."
+          
+          # First, try to list the schemes to see if the project is accessible
+          xcodebuild -list -project WomenBusinessDirectory.xcodeproj || true
+          
+          # Try building with minimal options
+          xcodebuild clean build \
+            -project WomenBusinessDirectory.xcodeproj \
+            -scheme WomenBusinessDirectory \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath ./DerivedData \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            CODE_SIGN_STYLE=Manual \
+            PROVISIONING_PROFILE_SPECIFIER="match AppStore com.jamilaruzimetova.WomenBusinessDirectory" \
+            DEVELOPMENT_TEAM="${{ secrets.TEAM_ID }}" \
+            PRODUCT_BUNDLE_IDENTIFIER="com.jamilaruzimetova.WomenBusinessDirectory" \
+            MARKETING_VERSION="1.0.0" \
+            CURRENT_PROJECT_VERSION="1" \
+            OTHER_LDFLAGS="-ObjC" \
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            IDEPackageSupportUseBuiltinSCM=YES \
+            || echo "Build failed, but continuing to try archive"
+          
+          # Try to archive the app
+          xcodebuild archive \
+            -project WomenBusinessDirectory.xcodeproj \
+            -scheme WomenBusinessDirectory \
+            -configuration Release \
+            -sdk iphoneos \
+            -archivePath ./build/WomenBusinessDirectory.xcarchive \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            CODE_SIGN_STYLE=Manual \
+            PROVISIONING_PROFILE_SPECIFIER="match AppStore com.jamilaruzimetova.WomenBusinessDirectory" \
+            DEVELOPMENT_TEAM="${{ secrets.TEAM_ID }}" \
+            PRODUCT_BUNDLE_IDENTIFIER="com.jamilaruzimetova.WomenBusinessDirectory" \
+            MARKETING_VERSION="1.0.0" \
+            CURRENT_PROJECT_VERSION="1" \
+            OTHER_LDFLAGS="-ObjC" \
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            IDEPackageSupportUseBuiltinSCM=YES \
+            || echo "Archive failed, but continuing to try export"
+          
+          # Try to export the archive
+          xcodebuild -exportArchive \
+            -archivePath ./build/WomenBusinessDirectory.xcarchive \
+            -exportOptionsPlist ExportOptions.plist \
+            -exportPath ./build \
+            || echo "Export failed, but continuing to try upload"
+      
+      - name: Upload to TestFlight
         env:
           TEAM_ID: ${{ secrets.TEAM_ID }}
           APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
           FASTLANE_DISABLE_COLORS: 1
           FASTLANE_SKIP_UPDATE_CHECK: 1
-          DISABLE_FILE_SYSTEM_SYNCHRONIZATION: 1
-          DISABLE_XCODE_PROJECT_VALIDATION: 1
         run: |
-          # Run fastlane with environment variables
-          bundle exec fastlane beta
+          # Check if IPA exists
+          if [ -f "./build/WomenBusinessDirectory.ipa" ]; then
+            echo "IPA file found, uploading to TestFlight..."
+            bundle exec fastlane upload
+          else
+            echo "IPA file not found, trying direct upload with altool..."
+            # Try direct upload with altool as a fallback
+            xcrun altool --upload-app \
+              --type ios \
+              --file ./build/WomenBusinessDirectory.ipa \
+              --apiKey $APP_STORE_CONNECT_API_KEY_ID \
+              --apiIssuer $APP_STORE_CONNECT_API_KEY_ISSUER_ID \
+              || echo "Upload failed with altool"
+            
+            # If all else fails, report the error
+            echo "Failed to build and upload the app to TestFlight."
+            echo "Please check the logs for more information."
+            exit 1
+          fi
