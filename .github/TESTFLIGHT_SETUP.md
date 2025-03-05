@@ -80,3 +80,49 @@ If you encounter issues:
 2. Verify that all secrets are correctly set up
 3. Ensure your Apple Developer account has the necessary permissions
 4. Check that your provisioning profile is valid and includes the correct devices 
+
+## Additional Changes
+
+### Create Legacy Build Settings
+
+```yaml
+- name: Create Legacy Build Settings
+  run: |
+    # Create a shared data directory with build settings
+    mkdir -p WomenBusinessDirectory.xcodeproj/project.xcworkspace/xcshareddata
+    cat > WomenBusinessDirectory.xcodeproj/project.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings << 'EOF'
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    <plist version="1.0">
+    <dict>
+        <key>BuildSystemType</key>
+        <string>Original</string>
+        <key>DisableBuildSystemDeprecationWarning</key>
+        <true/>
+        <key>IDEPackageSupportUseBuiltinSCM</key>
+        <true/>
+    </dict>
+    </plist>
+    EOF
+```
+
+### Build and Archive
+
+```yaml
+- name: Build and Archive
+  run: |
+    # Use env file and direct project reference with legacy build system
+    source .xcodebuild.env
+    
+    # Try building with xcpretty for better output formatting
+    set -o pipefail && xcodebuild clean archive \
+      -project WomenBusinessDirectory.xcodeproj \
+      -scheme WomenBusinessDirectory \
+      -sdk iphoneos \
+      -configuration Release \
+      -allowProvisioningUpdates \
+      -derivedDataPath DerivedData \
+      -archivePath ./WomenBusinessDirectory.xcarchive \
+      COMPILER_INDEX_STORE_ENABLE=NO \
+      | xcpretty 
+``` 
