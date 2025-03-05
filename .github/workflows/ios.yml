@@ -46,7 +46,7 @@ jobs:
         run: |
           if ! grep -q "lane :test" fastlane/Fastfile 2>/dev/null; then
             mkdir -p fastlane
-            cat > fastlane/Fastfile << 'EOF'
+            cat > fastlane/Fastfile << 'EOFMARKER'
             default_platform(:ios)
 
             platform :ios do
@@ -86,7 +86,7 @@ jobs:
                 )
               end
             end
-            EOF
+            EOFMARKER
             echo "Created Fastfile with test and beta lanes"
           else
             echo "Fastfile with test lane already exists"
