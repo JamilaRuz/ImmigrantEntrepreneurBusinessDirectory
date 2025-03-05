@@ -285,26 +285,18 @@ jobs:
             ls -la ~/.appstoreconnect/private_keys/
             
             # Try uploading with Fastlane
-            bundle exec fastlane upload || echo "Fastlane upload failed, trying altool"
+            bundle exec fastlane upload || FASTLANE_FAILED=1
             
             # If Fastlane fails, try altool
-            if [ $? -ne 0 ]; then
+            if [ "$FASTLANE_FAILED" = "1" ]; then
               echo "Trying direct upload with altool..."
-              # Create API key JSON file for altool
-              cat > api_key.json << EOF
-              {
-                "key_id": "$APP_STORE_CONNECT_API_KEY_ID",
-                "issuer_id": "$APP_STORE_CONNECT_API_KEY_ISSUER_ID",
-                "key": "$(cat ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8)",
-                "in_house": false
-              }
-              EOF
               
+              # Use direct command line arguments instead of a JSON file
               xcrun altool --upload-app \
                 --type ios \
                 --file ./build/WomenBusinessDirectory.ipa \
-                --apiKey $APP_STORE_CONNECT_API_KEY_ID \
-                --apiIssuer $APP_STORE_CONNECT_API_KEY_ISSUER_ID \
+                --apiKey "$APP_STORE_CONNECT_API_KEY_ID" \
+                --apiIssuer "$APP_STORE_CONNECT_API_KEY_ISSUER_ID" \
                 || echo "Upload failed with altool"
             fi
           else
