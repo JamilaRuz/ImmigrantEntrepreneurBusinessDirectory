@@ -45,45 +45,47 @@ jobs:
       - name: Create Fastlane test lane
         run: |
           mkdir -p fastlane
-          echo 'default_platform(:ios)' > fastlane/Fastfile
-          echo '' >> fastlane/Fastfile
-          echo 'platform :ios do' >> fastlane/Fastfile
-          echo '  lane :test do' >> fastlane/Fastfile
-          echo '    scan(' >> fastlane/Fastfile
-          echo '      project: "WomenBusinessDirectory.xcodeproj",' >> fastlane/Fastfile
-          echo '      scheme: "WomenBusinessDirectory",' >> fastlane/Fastfile
-          echo '      device: "iPhone 15 Pro",' >> fastlane/Fastfile
-          echo '      clean: true' >> fastlane/Fastfile
-          echo '    )' >> fastlane/Fastfile
-          echo '  end' >> fastlane/Fastfile
-          echo '' >> fastlane/Fastfile
-          echo '  lane :beta do' >> fastlane/Fastfile
-          echo '    # Ensure certificates and profiles are set up' >> fastlane/Fastfile
-          echo '    setup_ci if is_ci' >> fastlane/Fastfile
-          echo '' >> fastlane/Fastfile
-          echo '    # Build the app' >> fastlane/Fastfile
-          echo '    build_app(' >> fastlane/Fastfile
-          echo '      project: "WomenBusinessDirectory.xcodeproj",' >> fastlane/Fastfile
-          echo '      scheme: "WomenBusinessDirectory",' >> fastlane/Fastfile
-          echo '      export_method: "app-store",' >> fastlane/Fastfile
-          echo '      export_options: {' >> fastlane/Fastfile
-          echo '        provisioningProfiles: {' >> fastlane/Fastfile
-          echo '          "com.jamilaruzimetova.WomenBusinessDirectory" => "match AppStore com.jamilaruzimetova.WomenBusinessDirectory"' >> fastlane/Fastfile
-          echo '        }' >> fastlane/Fastfile
-          echo '      }' >> fastlane/Fastfile
-          echo '    )' >> fastlane/Fastfile
-          echo '' >> fastlane/Fastfile
-          echo '    # Upload to TestFlight' >> fastlane/Fastfile
-          echo '    upload_to_testflight(' >> fastlane/Fastfile
-          echo '      api_key_path: "~/.appstoreconnect/private_keys/AuthKey_#{ENV[\"APP_STORE_CONNECT_API_KEY_ID\"]}.p8",' >> fastlane/Fastfile
-          echo '      api_key: {' >> fastlane/Fastfile
-          echo '        key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],' >> fastlane/Fastfile
-          echo '        issuer_id: ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"]' >> fastlane/Fastfile
-          echo '      },' >> fastlane/Fastfile
-          echo '      skip_waiting_for_build_processing: true' >> fastlane/Fastfile
-          echo '    )' >> fastlane/Fastfile
-          echo '  end' >> fastlane/Fastfile
-          echo 'end' >> fastlane/Fastfile
+          cat > fastlane/Fastfile << 'EOF'
+          default_platform(:ios)
+
+          platform :ios do
+            lane :test do
+              scan(
+                project: "WomenBusinessDirectory.xcodeproj",
+                scheme: "WomenBusinessDirectory",
+                device: "iPhone 15 Pro",
+                clean: true
+              )
+            end
+            
+            lane :beta do
+              # Ensure certificates and profiles are set up
+              setup_ci if is_ci
+              
+              # Build the app
+              build_app(
+                project: "WomenBusinessDirectory.xcodeproj",
+                scheme: "WomenBusinessDirectory",
+                export_method: "app-store",
+                export_options: {
+                  provisioningProfiles: {
+                    "com.jamilaruzimetova.WomenBusinessDirectory" => "match AppStore com.jamilaruzimetova.WomenBusinessDirectory"
+                  }
+                }
+              )
+              
+              # Upload to TestFlight
+              upload_to_testflight(
+                api_key_path: "~/.appstoreconnect/private_keys/AuthKey_#{ENV['APP_STORE_CONNECT_API_KEY_ID']}.p8",
+                api_key: {
+                  key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
+                  issuer_id: ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"]
+                },
+                skip_waiting_for_build_processing: true
+              )
+            end
+          end
+          EOF
           cat fastlane/Fastfile
       
       - name: Run tests with Fastlane
