@@ -22,16 +22,7 @@ struct SplashScreen: View {
                     .ignoresSafeArea()
                 
                 VStack {
-                    Image("main_logo")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 150, height: 150)
-                        .background(Color.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 20))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 20)
-                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                        )
+                    LogoView(width: 150, height: 150, cornerRadius: 20)
                     
                     Text("Immigrant\nEntrepreneur Canada")
                         .font(.title)

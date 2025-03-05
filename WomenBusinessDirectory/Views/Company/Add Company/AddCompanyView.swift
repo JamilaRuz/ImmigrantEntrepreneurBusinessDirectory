@@ -111,15 +111,15 @@ struct AddCompanyView: View {
           ForEach(0..<3) { index in
             VStack(spacing: 8) {
               Circle()
-                .fill(index == currentPage ? Color.blue : Color.gray.opacity(0.3))
+                .fill(index == currentPage ? Color.yellow : Color.gray.opacity(0.3))
                 .frame(width: 12, height: 12)
               Text(stepTitle(for: index))
                 .font(.caption2)
-                .foregroundColor(index == currentPage ? .blue : .gray)
+                .foregroundColor(index == currentPage ? .yellow : .gray)
             }
             if index < 2 {
               Rectangle()
-                .fill(index < currentPage ? Color.blue : Color.gray.opacity(0.3))
+                .fill(index < currentPage ? Color.yellow : Color.gray.opacity(0.3))
                 .frame(height: 2)
                 .frame(maxWidth: 50)
             }
@@ -160,16 +160,17 @@ struct AddCompanyView: View {
           }
         }) {
           HStack {
-            Text(currentPage < 2 ? "Next" : (editingCompany != nil ? "Save Changes" : "Save Company"))
-              .fontWeight(.semibold)
-            Image(systemName: currentPage < 2 ? "arrow.right" : "checkmark")
+            Text(currentPage < 2 ? "Next" : (editingCompany != nil ? "Update" : "Save"))
+              .fontWeight(.regular)
           }
-          .frame(maxWidth: .infinity)
-          .padding()
-          .background(isFormValid ? Color.blue : Color.gray)
-          .foregroundColor(.white)
-          .cornerRadius(12)
-          .shadow(radius: 2)
+          .frame(width: 100, height: 40)
+          .foregroundColor(.yellow)
+          .background(Color.white)
+          .cornerRadius(10)
+          .overlay(
+            RoundedRectangle(cornerRadius: 10)
+              .stroke(Color.gray, lineWidth: 1)
+          )
         }
         .disabled(!isFormValid)
         .padding(.horizontal)
@@ -192,10 +193,10 @@ struct AddCompanyView: View {
           VStack(spacing: 16) {
             ProgressView()
               .scaleEffect(1.5)
-              .tint(.white)
+              .tint(.yellow)
             Text(editingCompany != nil ? "Updating company..." : "Saving company...")
               .font(.headline)
-              .foregroundColor(.white)
+              .foregroundColor(.yellow)
           }
         }
       }
@@ -267,7 +268,9 @@ struct AddCompanyView: View {
       Button(action: { isPortfolioPickerPresented = true }) {
         HStack {
           Image(systemName: "photo.stack.fill")
+            .foregroundColor(.yellow)
           Text(portfolioImages.isEmpty ? "Add Portfolio Images" : "Add More Images")
+            .foregroundColor(.yellow)
           Spacer()
           Text("\(portfolioImages.count)/6")
             .font(.caption)
@@ -275,9 +278,8 @@ struct AddCompanyView: View {
             .fontWeight(portfolioImages.count == 6 ? .bold : .regular)
         }
         .padding(8)
-        .background(Color.gray.opacity(0.1))
+        .background(Color.yellow.opacity(0.1))
         .cornerRadius(8)
-        .padding(.horizontal)
       }
       .disabled(portfolioImages.count >= 6)
       
@@ -295,8 +297,8 @@ struct AddCompanyView: View {
                     portfolioImages.remove(at: index)
                   }) {
                     Image(systemName: "xmark.circle.fill")
-                      .foregroundColor(.white)
-                      .background(Color.black.opacity(0.6))
+                      .foregroundColor(.yellow)
+                      .background(Color.yellow.opacity(0.6))
                       .clipShape(Circle())
                   }
                   .padding(4),
@@ -430,7 +432,7 @@ struct AddCompanyView: View {
                 }
               }) {
                 Image(systemName: "plus.circle.fill")
-                  .foregroundColor(.blue)
+                  .foregroundColor(.yellow)
                   .font(.title3)
               }
               .disabled(socialMediaLinkInput.isEmpty)
@@ -449,11 +451,11 @@ struct AddCompanyView: View {
                     // Platform icon in a circular background
                     ZStack {
                       Circle()
-                        .fill(Color.blue.opacity(0.1))
+                        .fill(Color.yellow.opacity(0.1))
                         .frame(width: 28, height: 28)
                       
                       Image(systemName: socialMediaLinks[index].platform.icon)
-                        .foregroundColor(.blue)
+                        .foregroundColor(.yellow)
                         .font(.system(size: 14))
                     }
                     
@@ -630,7 +632,9 @@ struct CompanyInfoSection: View {
                             Button(action: { isPortfolioPickerPresented = true }) {
                                 HStack {
                                     Image(systemName: "photo.stack.fill")
+                                        .foregroundColor(.yellow)
                                     Text(portfolioImages.isEmpty ? "Add Portfolio Images" : "Add More Images")
+                                        .foregroundColor(.yellow)
                                     Spacer()
                                     Text("\(portfolioImages.count)/6")
                                         .font(.caption)
@@ -638,7 +642,7 @@ struct CompanyInfoSection: View {
                                         .fontWeight(portfolioImages.count == 6 ? .bold : .regular)
                                 }
                                 .padding(8)
-                                .background(Color.gray.opacity(0.1))
+                                .background(Color.yellow.opacity(0.1))
                                 .cornerRadius(8)
                             }
                             .disabled(portfolioImages.count >= 6)
@@ -657,8 +661,8 @@ struct CompanyInfoSection: View {
                                                         portfolioImages.remove(at: index)
                                                     }) {
                                                         Image(systemName: "xmark.circle.fill")
-                                                            .foregroundColor(.white)
-                                                            .background(Color.black.opacity(0.6))
+                                                            .foregroundColor(.yellow)
+                                                            .background(Color.yellow.opacity(0.6))
                                                             .clipShape(Circle())
                                                     }
                                                     .padding(4),
@@ -742,8 +746,8 @@ struct ImagePickerButton: View {
             }
             .frame(maxWidth: .infinity)
             .padding()
-            .background(Color.blue.opacity(0.1))
-            .foregroundColor(.blue)
+            .background(Color.yellow.opacity(0.1))
+            .foregroundColor(.yellow)
             .cornerRadius(8)
         }
     }
@@ -1162,7 +1166,7 @@ struct CategorySelectionGrid: View {
                             .font(.caption2)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
-                            .background(Color.green1.opacity(0.2))
+                            .background(Color.green.opacity(0.2))
                             .cornerRadius(6)
                     }
                 }
@@ -1189,7 +1193,7 @@ struct OwnershipTypeGrid: View {
                 }) {
                     HStack {
                         Image(systemName: selectedTypes.contains(type) ? "checkmark.circle.fill" : "circle")
-                            .foregroundColor(selectedTypes.contains(type) ? .blue : .gray)
+                            .foregroundColor(selectedTypes.contains(type) ? .yellow : .gray)
                         Text(type.rawValue)
                             .font(.caption)
                             .foregroundColor(.primary)
@@ -1221,7 +1225,7 @@ struct SocialMediaToggle: View {
                 Spacer()
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.blue)
+                        .foregroundColor(.yellow)
                 }
             }
             .frame(maxWidth: .infinity)

@@ -27,7 +27,7 @@ struct SignUpEmailView: View {
       if let errorCode = AuthErrorCode(rawValue: (error as NSError).code) {
           switch errorCode {
           case .emailAlreadyInUse:
-              alertMessage = "This email is already registered. Please try signing in instead."
+              alertMessage = "This email is already registered. Please sign in instead."
           case .invalidEmail:
               alertMessage = "Please enter a valid email address."
           case .weakPassword:
@@ -35,11 +35,11 @@ struct SignUpEmailView: View {
           case .networkError:
               alertMessage = "Unable to connect. Please check your internet connection and try again."
           case .invalidCredential:
-              alertMessage = "These credentials do not exist. Please check your email and try again."
+              alertMessage = "Your email or password is incorrect. Please try again."
           case .userNotFound:
-              alertMessage = "Account not found. Please check your email or sign up for a new account."
+              alertMessage = "No account exists with this email. Please sign up first."
           case .wrongPassword:
-              alertMessage = "Incorrect password. Please try again."
+              alertMessage = "Your email or password is incorrect. Please try again."
           default:
               alertMessage = "Something went wrong. Please try again."
           }
@@ -52,10 +52,7 @@ struct SignUpEmailView: View {
     ZStack {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 0) {
-                Image("main_logo")
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 100, height: 120)
+                LogoView(width: 100, height: 120)
                     .padding(.vertical, 20)
                 
                 // form fields
@@ -127,6 +124,7 @@ struct SignUpEmailView: View {
                     }
                 } label: {
                     Text("Sign up")
+                        .fontWeight(.semibold)
                         .foregroundColor(.white)
                 }
                 .padding()

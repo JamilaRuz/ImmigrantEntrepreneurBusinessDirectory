@@ -29,7 +29,7 @@ struct MapView: View {
             .frame(height: 300)
             .cornerRadius(10)
 
-            Text(company.address)
+            Text(formatFullAddress())
                 .font(.subheadline)
                 .multilineTextAlignment(.leading)
                 .padding(.horizontal)
@@ -39,9 +39,14 @@ struct MapView: View {
         }
     }
 
+    private func formatFullAddress() -> String {
+        return "\(company.address), \(company.city)"
+    }
+
     private func geocodeAddress() {
         let geocoder = CLGeocoder()
-        geocoder.geocodeAddressString(company.address) { placemarks, error in
+        let fullAddress = "\(company.address), \(company.city)"
+        geocoder.geocodeAddressString(fullAddress) { placemarks, error in
             if let error = error {
                 print("Geocoding error: \(error.localizedDescription)")
                 return
@@ -56,7 +61,7 @@ struct MapView: View {
             annotation = CompanyAnnotation(
                 coordinate: location.coordinate,
                 title: company.name,
-                subtitle: company.address
+                subtitle: formatFullAddress()
             )
 
             region = MKCoordinateRegion(
