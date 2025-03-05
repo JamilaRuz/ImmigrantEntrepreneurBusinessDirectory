@@ -102,16 +102,46 @@ jobs:
           mkdir -p ~/.appstoreconnect/private_keys/
           echo "$APP_STORE_CONNECT_API_KEY_CONTENT" > ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8
       
+      - name: Create Workspace
+        run: |
+          # Create a workspace file to avoid file system synchronization issues
+          mkdir -p WomenBusinessDirectory.xcworkspace/xcshareddata
+          cat > WomenBusinessDirectory.xcworkspace/contents.xcworkspacedata << 'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <Workspace
+             version = "1.0">
+             <FileRef
+                location = "group:WomenBusinessDirectory.xcodeproj">
+             </FileRef>
+          </Workspace>
+          EOF
+          
+          # Create workspace settings to disable package resolution
+          cat > WomenBusinessDirectory.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings << 'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>IDEPackageSupportUseBuiltinSCM</key>
+              <true/>
+              <key>DisableBuildSystemDeprecationWarning</key>
+              <true/>
+          </dict>
+          </plist>
+          EOF
+      
       - name: Build and Archive
         run: |
-          # Build directly with xcodebuild instead of using Fastlane
-          xcodebuild -project WomenBusinessDirectory.xcodeproj \
+          # Build with workspace instead of project and disable automatic package resolution
+          xcodebuild -workspace WomenBusinessDirectory.xcworkspace \
                      -scheme WomenBusinessDirectory \
                      -sdk iphoneos \
                      -configuration Release \
                      -allowProvisioningUpdates \
                      -derivedDataPath DerivedData \
                      -archivePath ./WomenBusinessDirectory.xcarchive \
+                     -disableAutomaticPackageResolution \
+                     -IDEPackageSupportUseBuiltinSCM=YES \
                      archive
       
       - name: Export IPA
