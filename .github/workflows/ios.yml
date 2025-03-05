@@ -12,10 +12,6 @@ jobs:
     name: Build and Deploy to TestFlight
     runs-on: macos-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
-    env:
-      DEVELOPER_DIR: /Applications/Xcode_15.3.app/Contents/Developer
-      DISABLE_FILE_SYSTEM_SYNCHRONIZATION: 1
-      DISABLE_XCODE_PROJECT_VALIDATION: 1
     
     steps:
       - name: Checkout repository
@@ -31,11 +27,12 @@ jobs:
         run: |
           gem install bundler
           bundle install
+          gem install xcpretty
       
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '15.3'
+          xcode-version: '15.2'
       
       - name: Check for Firebase configuration
         run: |
@@ -106,64 +103,62 @@ jobs:
           mkdir -p ~/.appstoreconnect/private_keys/
           echo "$APP_STORE_CONNECT_API_KEY_CONTENT" > ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8
       
-      - name: Create Legacy Build Settings
+      - name: Try Alternative Build Approach
         run: |
-          # Create a .xcodebuild.env file with environment variables
-          cat > .xcodebuild.env << 'EOF'
-          DISABLE_FILE_SYSTEM_SYNCHRONIZATION=1
-          DISABLE_XCODE_PROJECT_VALIDATION=1
-          EOF
+          # Try a different approach using fastlane directly
+          echo "app_identifier(\"com.jamilaruzimetova.WomenBusinessDirectory\")" > fastlane/Appfile
+          echo "apple_id(\"${{ secrets.APPLE_ID }}\")" >> fastlane/Appfile
+          echo "team_id(\"${{ secrets.TEAM_ID }}\")" >> fastlane/Appfile
           
-          # Create a shared data directory with build settings
-          mkdir -p WomenBusinessDirectory.xcodeproj/project.xcworkspace/xcshareddata
-          cat > WomenBusinessDirectory.xcodeproj/project.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings << 'EOF'
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-              <key>BuildSystemType</key>
-              <string>Original</string>
-              <key>DisableBuildSystemDeprecationWarning</key>
-              <true/>
-              <key>IDEPackageSupportUseBuiltinSCM</key>
-              <true/>
-          </dict>
-          </plist>
+          mkdir -p fastlane
+          cat > fastlane/Fastfile << 'EOF'
+          default_platform(:ios)
+          
+          platform :ios do
+            desc "Build and upload to TestFlight"
+            lane :beta do
+              build_app(
+                project: "WomenBusinessDirectory.xcodeproj",
+                scheme: "WomenBusinessDirectory",
+                clean: true,
+                output_directory: "./build",
+                output_name: "WomenBusinessDirectory.ipa",
+                export_method: "app-store",
+                export_options: {
+                  provisioningProfiles: { 
+                    "com.jamilaruzimetova.WomenBusinessDirectory" => "match AppStore com.jamilaruzimetova.WomenBusinessDirectory"
+                  },
+                  signingCertificate: "Apple Distribution",
+                  signingStyle: "manual",
+                  teamID: ENV["TEAM_ID"]
+                },
+                skip_profile_detection: true,
+                skip_package_dependencies_resolution: true,
+                disable_package_automatic_updates: true,
+                xcargs: "COMPILER_INDEX_STORE_ENABLE=NO IDEPackageSupportUseBuiltinSCM=YES DISABLE_FILE_SYSTEM_SYNCHRONIZATION=1"
+              )
+              
+              upload_to_testflight(
+                api_key_path: "~/.appstoreconnect/private_keys/AuthKey_#{ENV['APP_STORE_CONNECT_API_KEY_ID']}.p8",
+                api_key: {
+                  key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
+                  issuer_id: ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"]
+                },
+                skip_waiting_for_build_processing: true
+              )
+            end
+          end
           EOF
       
-      - name: Build and Archive
-        run: |
-          # Use env file and direct project reference with legacy build system
-          source .xcodebuild.env
-          
-          # Try building with xcpretty for better output formatting
-          set -o pipefail && xcodebuild clean archive \
-            -project WomenBusinessDirectory.xcodeproj \
-            -scheme WomenBusinessDirectory \
-            -sdk iphoneos \
-            -configuration Release \
-            -allowProvisioningUpdates \
-            -derivedDataPath DerivedData \
-            -archivePath ./WomenBusinessDirectory.xcarchive \
-            COMPILER_INDEX_STORE_ENABLE=NO \
-            | xcpretty
-      
-      - name: Export IPA
-        run: |
-          # Export IPA using the ExportOptions.plist
-          xcodebuild -exportArchive \
-                     -archivePath ./WomenBusinessDirectory.xcarchive \
-                     -exportOptionsPlist ExportOptions.plist \
-                     -exportPath ./build
-      
-      - name: Upload to TestFlight
+      - name: Run Fastlane
         env:
+          TEAM_ID: ${{ secrets.TEAM_ID }}
           APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
+          FASTLANE_DISABLE_COLORS: 1
+          FASTLANE_SKIP_UPDATE_CHECK: 1
+          DISABLE_FILE_SYSTEM_SYNCHRONIZATION: 1
+          DISABLE_XCODE_PROJECT_VALIDATION: 1
         run: |
-          # Use altool to upload the IPA to TestFlight
-          xcrun altool --upload-app \
-                       --type ios \
-                       --file ./build/WomenBusinessDirectory.ipa \
-                       --apiKey $APP_STORE_CONNECT_API_KEY_ID \
-                       --apiIssuer $APP_STORE_CONNECT_API_KEY_ISSUER_ID
+          # Run fastlane with environment variables
+          bundle exec fastlane beta
