@@ -104,13 +104,26 @@ jobs:
         run: |
           # Create App Store Connect API key file with proper permissions
           mkdir -p ~/.appstoreconnect/private_keys/
-          echo -n "$APP_STORE_CONNECT_API_KEY_CONTENT" > ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8
+          
+          # Debug: Check if the API key content is available (without revealing it)
+          if [ -z "$APP_STORE_CONNECT_API_KEY_CONTENT" ]; then
+            echo "ERROR: APP_STORE_CONNECT_API_KEY_CONTENT is empty or not set!"
+            exit 1
+          else
+            echo "API key content is available"
+          fi
+          
+          # Write the key content to the file, ensuring it's properly formatted
+          # Use printf instead of echo to avoid issues with newlines
+          printf "%s" "$APP_STORE_CONNECT_API_KEY_CONTENT" > ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8
           chmod 600 ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8
           
           # Verify the key file exists and has content
           ls -la ~/.appstoreconnect/private_keys/
           if [ -s ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8 ]; then
-            echo "API key file created successfully"
+            echo "API key file created successfully with content"
+            # Check file size to ensure it has content (without revealing it)
+            stat -f "File size: %z bytes" ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8
           else
             echo "API key file is empty or not created properly"
             exit 1
@@ -384,22 +397,58 @@ jobs:
             echo "IPA file found, uploading to TestFlight..."
             
             # Verify API key file again
-            ls -la ~/.appstoreconnect/private_keys/
+            echo "Verifying API key file..."
+            if [ ! -f ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8 ]; then
+              echo "ERROR: API key file not found!"
+              exit 1
+            fi
             
-            # Try uploading with Fastlane
+            if [ ! -s ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8 ]; then
+              echo "ERROR: API key file exists but is empty!"
+              exit 1
+            fi
+            
+            # Display file info without revealing content
+            ls -la ~/.appstoreconnect/private_keys/
+            stat -f "API key file size: %z bytes" ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8
+            
+            # Try uploading with Fastlane with detailed error output
+            echo "Attempting upload with Fastlane..."
             bundle exec fastlane upload || FASTLANE_FAILED=1
             
             # If Fastlane fails, try altool
             if [ "$FASTLANE_FAILED" = "1" ]; then
-              echo "Trying direct upload with altool..."
+              echo "Fastlane upload failed, trying direct upload with altool..."
               
-              # Use direct command line arguments instead of a JSON file
+              # Create a temporary JSON file for altool authentication
+              echo "Creating API key JSON file for altool..."
+              cat > apiKey.json << EOF
+              {
+                "key_id": "$APP_STORE_CONNECT_API_KEY_ID",
+                "issuer_id": "$APP_STORE_CONNECT_API_KEY_ISSUER_ID",
+                "key": "$(cat ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8 | sed -E ':a;N;$!ba;s/\r{0,1}\n/\\n/g')"
+              }
+              EOF
+              
+              # Verify JSON file was created
+              if [ -s apiKey.json ]; then
+                echo "API key JSON file created successfully"
+              else
+                echo "ERROR: Failed to create API key JSON file"
+                exit 1
+              fi
+              
+              # Use altool with the JSON file
+              echo "Uploading with altool..."
               xcrun altool --upload-app \
                 --type ios \
                 --file ./build/WomenBusinessDirectory.ipa \
-                --apiKey "$APP_STORE_CONNECT_API_KEY_ID" \
-                --apiIssuer "$APP_STORE_CONNECT_API_KEY_ISSUER_ID" \
+                --apiKey @apiKey.json \
+                --verbose \
                 || echo "Upload failed with altool"
+                
+              # Clean up the JSON file
+              rm -f apiKey.json
             fi
           else
             echo "IPA file not found. Build process failed to create an IPA file."
