@@ -113,9 +113,8 @@ jobs:
             echo "API key content is available"
           fi
           
-          # Write the key content to the file, ensuring it's properly formatted
-          # Use printf instead of echo to avoid issues with newlines
-          printf "%s" "$APP_STORE_CONNECT_API_KEY_CONTENT" > ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8
+          # Create a temporary file with the raw key content (not Base64 encoded)
+          echo "$APP_STORE_CONNECT_API_KEY_CONTENT" | base64 --decode > ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8
           chmod 600 ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8
           
           # Verify the key file exists and has content
@@ -124,6 +123,13 @@ jobs:
             echo "API key file created successfully with content"
             # Check file size to ensure it has content (without revealing it)
             stat -f "File size: %z bytes" ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8
+            
+            # Verify the key format
+            if grep -q "^-----BEGIN PRIVATE KEY-----" ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8; then
+              echo "Key has correct header"
+            else
+              echo "WARNING: Key does not have the expected header"
+            fi
           else
             echo "API key file is empty or not created properly"
             exit 1
@@ -166,19 +172,8 @@ jobs:
           platform :ios do
             desc "Upload to TestFlight"
             lane :upload do
-              api_key = app_store_connect_api_key(
-                key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
-                issuer_id: ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"],
-                key_filepath: "~/.appstoreconnect/private_keys/AuthKey_#{ENV['APP_STORE_CONNECT_API_KEY_ID']}.p8",
-                duration: 1200,
-                in_house: false
-              )
-              
-              upload_to_testflight(
-                api_key: api_key,
-                ipa: "./build/WomenBusinessDirectory.ipa",
-                skip_waiting_for_build_processing: true
-              )
+              # Use altool directly instead of app_store_connect_api_key
+              sh("xcrun altool --upload-app --type ios --file ./build/WomenBusinessDirectory.ipa --apiKey #{ENV['APP_STORE_CONNECT_API_KEY_ID']} --apiIssuer #{ENV['APP_STORE_CONNECT_API_KEY_ISSUER_ID']} --verbose")
             end
           end
           EOF
