@@ -28,16 +28,30 @@ jobs:
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: latest-stable
+          xcode-version: '15.3'
       
       - name: Install dependencies
         run: |
           gem install bundler
           bundle install
       
+      - name: Check for Firebase configuration
+        run: |
+          # Check if GoogleService-Info.plist exists
+          if [ ! -f "WomenBusinessDirectory/GoogleService-Info.plist" ]; then
+            echo "Warning: GoogleService-Info.plist not found. Firebase functionality may not work in tests."
+            # For CI, we can create a dummy file if needed
+            echo "Creating dummy GoogleService-Info.plist for CI"
+            echo '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>API_KEY</key><string>dummy_api_key</string><key>GCM_SENDER_ID</key><string>dummy_sender_id</string><key>PLIST_VERSION</key><string>1</string><key>BUNDLE_ID</key><string>com.example.WomenBusinessDirectory</string><key>PROJECT_ID</key><string>dummy-project-id</string><key>STORAGE_BUCKET</key><string>dummy-bucket.appspot.com</string><key>IS_ADS_ENABLED</key><false></false><key>IS_ANALYTICS_ENABLED</key><false></false><key>IS_APPINVITE_ENABLED</key><true></true><key>IS_GCM_ENABLED</key><true></true><key>IS_SIGNIN_ENABLED</key><true></true><key>GOOGLE_APP_ID</key><string>1:123456789012:ios:1234567890abcdef</string></dict></plist>' > WomenBusinessDirectory/GoogleService-Info.plist
+          fi
+      
+      - name: Resolve Swift Package Manager dependencies
+        run: |
+          xcodebuild -resolvePackageDependencies -project WomenBusinessDirectory.xcodeproj
+      
       - name: Build and test
         run: |
-          xcodebuild clean build test -project WomenBusinessDirectory.xcodeproj -scheme WomenBusinessDirectory -destination 'platform=iOS Simulator,name=iPhone 15'
+          xcodebuild clean test -project WomenBusinessDirectory.xcodeproj -scheme WomenBusinessDirectory -destination 'platform=iOS Simulator,name=iPhone 15 Pro,OS=17.4' -allowProvisioningUpdates
   
   deploy-testflight:
     name: Deploy to TestFlight
@@ -61,7 +75,11 @@ jobs:
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: latest-stable
+          xcode-version: '15.3'
+      
+      - name: Resolve Swift Package Manager dependencies
+        run: |
+          xcodebuild -resolvePackageDependencies -project WomenBusinessDirectory.xcodeproj
       
       - name: Setup Provisioning Profiles
         env:
