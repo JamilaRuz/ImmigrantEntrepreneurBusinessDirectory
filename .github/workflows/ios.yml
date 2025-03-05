@@ -22,18 +22,15 @@ jobs:
           ruby-version: '3.0'
           bundler-cache: true
       
-      - name: Install Fastlane
-        run: gem install fastlane
-
-      - name: Set up Xcode
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: '15.3'
-      
       - name: Install dependencies
         run: |
           gem install bundler
           bundle install
+      
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '15.3'
       
       - name: Check for Firebase configuration
         run: |
@@ -45,13 +42,58 @@ jobs:
             echo '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>API_KEY</key><string>dummy_api_key</string><key>GCM_SENDER_ID</key><string>dummy_sender_id</string><key>PLIST_VERSION</key><string>1</string><key>BUNDLE_ID</key><string>com.example.WomenBusinessDirectory</string><key>PROJECT_ID</key><string>dummy-project-id</string><key>STORAGE_BUCKET</key><string>dummy-bucket.appspot.com</string><key>IS_ADS_ENABLED</key><false></false><key>IS_ANALYTICS_ENABLED</key><false></false><key>IS_APPINVITE_ENABLED</key><true></true><key>IS_GCM_ENABLED</key><true></true><key>IS_SIGNIN_ENABLED</key><true></true><key>GOOGLE_APP_ID</key><string>1:123456789012:ios:1234567890abcdef</string></dict></plist>' > WomenBusinessDirectory/GoogleService-Info.plist
           fi
       
-      # Skip the separate resolvePackageDependencies step as it's causing issues
-      # Swift packages will be resolved during the build step
-      
-      - name: Build and test
+      - name: Create Fastlane test lane if it doesn't exist
         run: |
-          # The -resolvePackageDependencies flag is included in the build command
-          xcodebuild clean test -project WomenBusinessDirectory.xcodeproj -scheme WomenBusinessDirectory -destination 'platform=iOS Simulator,name=iPhone 15 Pro,OS=17.4' -allowProvisioningUpdates
+          if ! grep -q "lane :test" fastlane/Fastfile 2>/dev/null; then
+            mkdir -p fastlane
+            cat > fastlane/Fastfile << 'EOF'
+            default_platform(:ios)
+
+            platform :ios do
+              lane :test do
+                scan(
+                  project: "WomenBusinessDirectory.xcodeproj",
+                  scheme: "WomenBusinessDirectory",
+                  device: "iPhone 15 Pro",
+                  clean: true
+                )
+              end
+              
+              lane :beta do
+                # Ensure certificates and profiles are set up
+                setup_ci if is_ci
+                
+                # Build the app
+                build_app(
+                  project: "WomenBusinessDirectory.xcodeproj",
+                  scheme: "WomenBusinessDirectory",
+                  export_method: "app-store",
+                  export_options: {
+                    provisioningProfiles: {
+                      "com.jamilaruzimetova.WomenBusinessDirectory" => "match AppStore com.jamilaruzimetova.WomenBusinessDirectory"
+                    }
+                  }
+                )
+                
+                # Upload to TestFlight
+                upload_to_testflight(
+                  api_key_path: "~/.appstoreconnect/private_keys/AuthKey_#{ENV['APP_STORE_CONNECT_API_KEY_ID']}.p8",
+                  api_key: {
+                    key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
+                    issuer_id: ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"],
+                  },
+                  skip_waiting_for_build_processing: true
+                )
+              end
+            end
+            EOF
+            echo "Created Fastfile with test and beta lanes"
+          else
+            echo "Fastfile with test lane already exists"
+          fi
+      
+      - name: Run tests with Fastlane
+        run: bundle exec fastlane test
   
   deploy-testflight:
     name: Deploy to TestFlight
@@ -69,16 +111,15 @@ jobs:
           ruby-version: '3.0'
           bundler-cache: true
       
-      - name: Install Fastlane
-        run: gem install fastlane
+      - name: Install dependencies
+        run: |
+          gem install bundler
+          bundle install
       
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: '15.3'
-      
-      # Skip the separate resolvePackageDependencies step as it's causing issues
-      # Swift packages will be resolved during the build step with Fastlane
       
       - name: Setup Provisioning Profiles
         env:
@@ -116,4 +157,4 @@ jobs:
           echo "$APP_STORE_CONNECT_API_KEY_CONTENT" > ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8
           
           # Build and upload to TestFlight
-          fastlane beta
+          bundle exec fastlane beta
