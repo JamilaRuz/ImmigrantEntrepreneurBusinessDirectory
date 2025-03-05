@@ -42,55 +42,49 @@ jobs:
             echo '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>API_KEY</key><string>dummy_api_key</string><key>GCM_SENDER_ID</key><string>dummy_sender_id</string><key>PLIST_VERSION</key><string>1</string><key>BUNDLE_ID</key><string>com.example.WomenBusinessDirectory</string><key>PROJECT_ID</key><string>dummy-project-id</string><key>STORAGE_BUCKET</key><string>dummy-bucket.appspot.com</string><key>IS_ADS_ENABLED</key><false></false><key>IS_ANALYTICS_ENABLED</key><false></false><key>IS_APPINVITE_ENABLED</key><true></true><key>IS_GCM_ENABLED</key><true></true><key>IS_SIGNIN_ENABLED</key><true></true><key>GOOGLE_APP_ID</key><string>1:123456789012:ios:1234567890abcdef</string></dict></plist>' > WomenBusinessDirectory/GoogleService-Info.plist
           fi
       
-      - name: Create Fastlane test lane if it doesn't exist
+      - name: Create Fastlane test lane
         run: |
-          if ! grep -q "lane :test" fastlane/Fastfile 2>/dev/null; then
-            mkdir -p fastlane
-            cat > fastlane/Fastfile << 'EOFMARKER'
-            default_platform(:ios)
-
-            platform :ios do
-              lane :test do
-                scan(
-                  project: "WomenBusinessDirectory.xcodeproj",
-                  scheme: "WomenBusinessDirectory",
-                  device: "iPhone 15 Pro",
-                  clean: true
-                )
-              end
-              
-              lane :beta do
-                # Ensure certificates and profiles are set up
-                setup_ci if is_ci
-                
-                # Build the app
-                build_app(
-                  project: "WomenBusinessDirectory.xcodeproj",
-                  scheme: "WomenBusinessDirectory",
-                  export_method: "app-store",
-                  export_options: {
-                    provisioningProfiles: {
-                      "com.jamilaruzimetova.WomenBusinessDirectory" => "match AppStore com.jamilaruzimetova.WomenBusinessDirectory"
-                    }
-                  }
-                )
-                
-                # Upload to TestFlight
-                upload_to_testflight(
-                  api_key_path: "~/.appstoreconnect/private_keys/AuthKey_#{ENV['APP_STORE_CONNECT_API_KEY_ID']}.p8",
-                  api_key: {
-                    key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
-                    issuer_id: ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"],
-                  },
-                  skip_waiting_for_build_processing: true
-                )
-              end
-            end
-            EOFMARKER
-            echo "Created Fastfile with test and beta lanes"
-          else
-            echo "Fastfile with test lane already exists"
-          fi
+          mkdir -p fastlane
+          echo 'default_platform(:ios)' > fastlane/Fastfile
+          echo '' >> fastlane/Fastfile
+          echo 'platform :ios do' >> fastlane/Fastfile
+          echo '  lane :test do' >> fastlane/Fastfile
+          echo '    scan(' >> fastlane/Fastfile
+          echo '      project: "WomenBusinessDirectory.xcodeproj",' >> fastlane/Fastfile
+          echo '      scheme: "WomenBusinessDirectory",' >> fastlane/Fastfile
+          echo '      device: "iPhone 15 Pro",' >> fastlane/Fastfile
+          echo '      clean: true' >> fastlane/Fastfile
+          echo '    )' >> fastlane/Fastfile
+          echo '  end' >> fastlane/Fastfile
+          echo '' >> fastlane/Fastfile
+          echo '  lane :beta do' >> fastlane/Fastfile
+          echo '    # Ensure certificates and profiles are set up' >> fastlane/Fastfile
+          echo '    setup_ci if is_ci' >> fastlane/Fastfile
+          echo '' >> fastlane/Fastfile
+          echo '    # Build the app' >> fastlane/Fastfile
+          echo '    build_app(' >> fastlane/Fastfile
+          echo '      project: "WomenBusinessDirectory.xcodeproj",' >> fastlane/Fastfile
+          echo '      scheme: "WomenBusinessDirectory",' >> fastlane/Fastfile
+          echo '      export_method: "app-store",' >> fastlane/Fastfile
+          echo '      export_options: {' >> fastlane/Fastfile
+          echo '        provisioningProfiles: {' >> fastlane/Fastfile
+          echo '          "com.jamilaruzimetova.WomenBusinessDirectory" => "match AppStore com.jamilaruzimetova.WomenBusinessDirectory"' >> fastlane/Fastfile
+          echo '        }' >> fastlane/Fastfile
+          echo '      }' >> fastlane/Fastfile
+          echo '    )' >> fastlane/Fastfile
+          echo '' >> fastlane/Fastfile
+          echo '    # Upload to TestFlight' >> fastlane/Fastfile
+          echo '    upload_to_testflight(' >> fastlane/Fastfile
+          echo '      api_key_path: "~/.appstoreconnect/private_keys/AuthKey_#{ENV[\"APP_STORE_CONNECT_API_KEY_ID\"]}.p8",' >> fastlane/Fastfile
+          echo '      api_key: {' >> fastlane/Fastfile
+          echo '        key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],' >> fastlane/Fastfile
+          echo '        issuer_id: ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"]' >> fastlane/Fastfile
+          echo '      },' >> fastlane/Fastfile
+          echo '      skip_waiting_for_build_processing: true' >> fastlane/Fastfile
+          echo '    )' >> fastlane/Fastfile
+          echo '  end' >> fastlane/Fastfile
+          echo 'end' >> fastlane/Fastfile
+          cat fastlane/Fastfile
       
       - name: Run tests with Fastlane
         run: bundle exec fastlane test
