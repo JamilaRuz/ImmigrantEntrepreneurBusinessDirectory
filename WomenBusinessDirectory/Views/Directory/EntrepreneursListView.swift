@@ -8,6 +8,7 @@ final class EntrepreneursListViewModel: ObservableObject {
     @Published var searchTerm = ""
     @Published var isLoading = true
     @Published var error: String?
+    @Published var cacheStats: String = ""
     
     var filteredEntrepreneurs: [Entrepreneur] {
         if searchTerm.isEmpty {
@@ -63,6 +64,15 @@ final class EntrepreneursListViewModel: ObservableObject {
     func getCompanies(for entrepreneur: Entrepreneur) -> [Company] {
         return entrepreneurCompanies[entrepreneur.entrepId] ?? []
     }
+    
+    func updateCacheStats() {
+        cacheStats = ImageCache.shared.getCacheStats()
+    }
+    
+    func clearImageCache() {
+        ImageCache.shared.clearCache()
+        updateCacheStats()
+    }
 }
 
 struct EntrepreneurRowView: View {
@@ -74,7 +84,7 @@ struct EntrepreneurRowView: View {
             // Profile image
             if let profileUrlString = entrepreneur.profileUrl,
                let profileUrl = URL(string: profileUrlString) {
-                AsyncImage(url: profileUrl) { phase in
+                CachedAsyncImage(url: profileUrl) { phase in
                     switch phase {
                     case .empty:
                         DefaultProfileImage(size: 50)
@@ -85,8 +95,6 @@ struct EntrepreneurRowView: View {
                             .frame(width: 50, height: 50)
                             .clipShape(Circle())
                     case .failure:
-                        DefaultProfileImage(size: 50)
-                    @unknown default:
                         DefaultProfileImage(size: 50)
                     }
                 }
@@ -114,7 +122,7 @@ struct EntrepreneurRowView: View {
                         HStack(spacing: 8) {
                             ForEach(companies, id: \.companyId) { company in
                                 HStack(spacing: 4) {
-                                    AsyncImage(url: URL(string: company.logoImg ?? "")) { phase in
+                                    CachedAsyncImage(url: URL(string: company.logoImg ?? "")) { phase in
                                         switch phase {
                                         case .empty, .failure:
                                             Image(systemName: "building.2.fill")
@@ -128,12 +136,6 @@ struct EntrepreneurRowView: View {
                                                 .aspectRatio(contentMode: .fill)
                                                 .frame(width: 16, height: 16)
                                                 .clipShape(Circle())
-                                        @unknown default:
-                                            Image(systemName: "building.2.fill")
-                                                .resizable()
-                                                .aspectRatio(contentMode: .fit)
-                                                .frame(width: 16, height: 16)
-                                                .foregroundColor(.gray.opacity(0.5))
                                         }
                                     }
                                     .frame(width: 16, height: 16)
@@ -163,6 +165,7 @@ struct EntrepreneurRowView: View {
 struct EntrepreneursListView: View {
     @StateObject private var viewModel = EntrepreneursListViewModel()
     @Environment(\.dismiss) private var dismiss
+    @State private var showCacheStats = false
     
     var body: some View {
         NavigationStack {
@@ -172,6 +175,36 @@ struct EntrepreneursListView: View {
                     .padding(.horizontal)
                     .padding(.vertical, 8)
                     .background(Color.white)
+                
+                // Debug cache info (only in DEBUG mode)
+                #if DEBUG
+                if showCacheStats {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Cache Statistics")
+                            .font(.headline)
+                        
+                        Text(viewModel.cacheStats)
+                            .font(.caption)
+                        
+                        HStack {
+                            Button("Refresh Stats") {
+                                viewModel.updateCacheStats()
+                            }
+                            .buttonStyle(.bordered)
+                            
+                            Button("Clear Cache") {
+                                viewModel.clearImageCache()
+                            }
+                            .buttonStyle(.bordered)
+                            .tint(.red)
+                        }
+                    }
+                    .padding()
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(8)
+                    .padding(.horizontal)
+                }
+                #endif
                 
                 if viewModel.isLoading {
                     ProgressView()
@@ -235,7 +268,18 @@ struct EntrepreneursListView: View {
             .navigationTitle("Entrepreneurs")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                // Empty toolbar to override any default buttons
+                #if DEBUG
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        showCacheStats.toggle()
+                        if showCacheStats {
+                            viewModel.updateCacheStats()
+                        }
+                    }) {
+                        Image(systemName: "info.circle")
+                    }
+                }
+                #endif
             }
         }
         .tint(Color.orange1)
