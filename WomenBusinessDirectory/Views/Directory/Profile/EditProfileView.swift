@@ -77,19 +77,18 @@ struct EditProfileView: View {
                         .scaledToFit()
                         .frame(height: 200)
                 } else if let profileUrl = entrepreneur.profileUrl, let url = URL(string: profileUrl) {
-                    AsyncImage(url: url) { phase in
+                    CachedAsyncImage(url: url) { phase in
                         switch phase {
                         case .empty:
-                            ProgressView()
+                            DefaultProfileImage(size: 120)
                         case .success(let image):
                             image
                                 .resizable()
-                                .scaledToFit()
-                                .frame(height: 200)
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: 120, height: 120)
+                                .clipShape(Circle())
                         case .failure:
-                            DefaultProfileImage(size: 200)
-                        @unknown default:
-                            DefaultProfileImage(size: 200)
+                            DefaultProfileImage(size: 120)
                         }
                     }
                 } else {

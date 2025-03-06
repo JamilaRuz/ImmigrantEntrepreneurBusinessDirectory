@@ -147,26 +147,19 @@ struct ProfileView: View {
         HStack(spacing: 15) {
             // Profile image with edit button overlay
             ZStack(alignment: .topTrailing) {
-                if let profileUrlString = viewModel.entrepreneur.profileUrl, let profileUrl = URL(string: profileUrlString) {
-                    AsyncImage(url: profileUrl) { phase in
-                        switch phase {
-                        case .empty:
-                            DefaultProfileImage(size: 80)
-                        case .success(let image):
-                            image
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: 80, height: 80)
-                                .clipShape(Circle())
-                        case .failure:
-                            DefaultProfileImage(size: 80)
-                        @unknown default:
-                            DefaultProfileImage(size: 80)
-                        }
+                CachedAsyncImage(url: URL(string: viewModel.entrepreneur.profileUrl ?? "")) { phase in
+                    switch phase {
+                    case .empty:
+                        DefaultProfileImage(size: 120)
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 120, height: 120)
+                            .clipShape(Circle())
+                    case .failure:
+                        DefaultProfileImage(size: 120)
                     }
-                    .frame(width: 80, height: 80)
-                } else {
-                    DefaultProfileImage(size: 80)
                 }
                 
                 if isEditable {

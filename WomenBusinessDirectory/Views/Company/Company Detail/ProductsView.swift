@@ -60,7 +60,7 @@ struct ProductsView: View {
                                 RoundedRectangle(cornerRadius: 10)
                                     .fill(Color.clear)
                                 
-                                AsyncImage(url: URL(string: imageUrl)) { phase in
+                                CachedAsyncImage(url: URL(string: imageUrl)) { phase in
                                     switch phase {
                                     case .empty:
                                         ProgressView()
@@ -73,9 +73,6 @@ struct ProductsView: View {
                                         Image(systemName: "photo")
                                             .resizable()
                                             .aspectRatio(contentMode: .fit)
-                                            .foregroundColor(.yellow)
-                                    @unknown default:
-                                        EmptyView()
                                     }
                                 }
                                 .clipShape(RoundedRectangle(cornerRadius: 10))
@@ -92,7 +89,7 @@ struct ProductsView: View {
         }
         .sheet(item: $selectedImage) { imageUrl in
             ZoomableScrollView {
-                AsyncImage(url: URL(string: imageUrl)) { phase in
+                CachedAsyncImage(url: URL(string: imageUrl)) { phase in
                     switch phase {
                     case .empty:
                         ProgressView()
@@ -104,8 +101,6 @@ struct ProductsView: View {
                         Image(systemName: "photo")
                             .resizable()
                             .aspectRatio(contentMode: .fit)
-                    @unknown default:
-                        EmptyView()
                     }
                 }
             }
