@@ -25,6 +25,16 @@ struct AuthenticationView: View {
         showAlert = true
         alertTitle = "Sign In Error"
         
+        // Check for email verification error
+        let nsError = error as NSError
+        if nsError.domain == "EmailVerificationError" && nsError.code == 1001 {
+            alertTitle = "Email Not Verified"
+            alertMessage = nsError.localizedDescription
+            // Add option to resend verification email
+            alertMessage += "\n\nWould you like to resend the verification email?"
+            return
+        }
+        
         if let errorCode = AuthErrorCode(rawValue: (error as NSError).code) {
             switch errorCode {
             case .wrongPassword:
@@ -120,6 +130,39 @@ struct AuthenticationView: View {
                     }
                     .padding(.horizontal)
                     
+                    // Add Forgot Password button
+                    HStack {
+                        Spacer()
+                        Button(action: {
+                            if email.isEmpty {
+                                showAlert = true
+                                alertTitle = "Email Required"
+                                alertMessage = "Please enter your email address to reset your password."
+                            } else {
+                                isLoading = true
+                                Task {
+                                    do {
+                                        try await AuthenticationManager.shared.resetPassword(email: email)
+                                        showAlert = true
+                                        alertTitle = "Password Reset Email Sent"
+                                        alertMessage = "Check your email for instructions to reset your password."
+                                    } catch {
+                                        showAlert = true
+                                        alertTitle = "Password Reset Failed"
+                                        alertMessage = "Failed to send password reset email. Please check your email address and try again."
+                                        print("Password reset error: \(error)")
+                                    }
+                                    isLoading = false
+                                }
+                            }
+                        }) {
+                            Text("Forgot Password?")
+                                .font(.subheadline)
+                                .foregroundColor(.blue)
+                        }
+                        .padding(.trailing)
+                    }
+                    
                     Button(action: {
                         isLoading = true
                         Task {
@@ -148,11 +191,37 @@ struct AuthenticationView: View {
                     }
                     .padding(.horizontal)
                     .alert(isPresented: $showAlert) {
-                        Alert(
-                            title: Text(alertTitle),
-                            message: Text(alertMessage),
-                            dismissButton: .default(Text("OK"))
-                        )
+                        // Check if this is a verification error
+                        if alertTitle == "Email Not Verified" {
+                            return Alert(
+                                title: Text(alertTitle),
+                                message: Text(alertMessage),
+                                primaryButton: .default(Text("Resend Email")) {
+                                    // Resend verification email
+                                    isLoading = true
+                                    Task {
+                                        do {
+                                            try await viewModel.resendVerificationEmail()
+                                            showAlert = true
+                                            alertTitle = "Verification Email Sent"
+                                            alertMessage = "Please check your inbox for the verification link."
+                                        } catch {
+                                            showAlert = true
+                                            alertTitle = "Error"
+                                            alertMessage = "Failed to send verification email. Please try again later."
+                                        }
+                                        isLoading = false
+                                    }
+                                },
+                                secondaryButton: .cancel(Text("OK"))
+                            )
+                        } else {
+                            return Alert(
+                                title: Text(alertTitle),
+                                message: Text(alertMessage),
+                                dismissButton: .default(Text("OK"))
+                            )
+                        }
                     }
                     
                     NavigationLink(destination: SignUpEmailView(showSignInView: $showSignInView)) {

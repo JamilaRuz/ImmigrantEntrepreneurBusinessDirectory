@@ -108,13 +108,12 @@ struct SignUpEmailView: View {
                     Task {
                         do {
                             try await viewModel.signUp()
-                            // After successful signup, sign in automatically
-                            try await viewModel.signIn()
+                            // After successful signup, show verification message
                             isSuccess = true
-                            showSignInView = false  // Update parent view
-                            alertTitle = "Success"
-                            alertMessage = "You have successfully signed up!"
+                            alertTitle = "Verification Email Sent"
+                            alertMessage = "Please check your email and verify your account before signing in."
                             showAlert = true
+                            // Don't automatically sign in - require email verification first
                         } catch {
                             isSuccess = false
                             handleAuthError(error)
