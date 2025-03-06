@@ -39,6 +39,10 @@ final class AuthenticationManager {
   @discardableResult
   func createUser(email: String, password: String) async throws -> AuthDataResultModel {
     let authDataResult = try await Auth.auth().createUser(withEmail: email, password: password)
+    
+    // Send email verification
+    try await sendEmailVerification()
+    
     return AuthDataResultModel(user: authDataResult.user)
   }
   
@@ -90,5 +94,26 @@ final class AuthenticationManager {
     
     let credential = EmailAuthProvider.credential(withEmail: email, password: password)
     try await user.reauthenticate(with: credential)
+  }
+  
+  func sendEmailVerification() async throws {
+    guard let user = Auth.auth().currentUser else {
+      throw URLError(.badServerResponse)
+    }
+    try await user.sendEmailVerification()
+  }
+  
+  func isEmailVerified() -> Bool {
+    guard let user = Auth.auth().currentUser else {
+      return false
+    }
+    return user.isEmailVerified
+  }
+  
+  func reloadUser() async throws {
+    guard let user = Auth.auth().currentUser else {
+      throw URLError(.badServerResponse)
+    }
+    try await user.reload()
   }
 }
