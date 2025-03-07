@@ -9,9 +9,12 @@ import SwiftUI
 import FirebaseAuth
 
 struct ContentView: View {
-    @State private var showSignInView = false  // Changed initial value to false
+    @State private var showSignInView = false
     @State private var userIsLoggedIn = false
     @StateObject private var directoryListViewModel = DirectoryListViewModel()
+    
+    // Add a state variable to force view refresh
+    @State private var forceRefresh: Bool = false
     
     var body: some View {
         Group {
@@ -27,26 +30,48 @@ struct ContentView: View {
         }
         .onAppear {
             // Check authentication state when app appears
+            print("ContentView: onAppear - Checking auth state")
             checkAuthState()
+            
+            // Add notification observer for sign-in events
+            NotificationCenter.default.addObserver(forName: NSNotification.Name("UserDidSignIn"), object: nil, queue: .main) { _ in
+                print("ContentView: Received UserDidSignIn notification")
+                DispatchQueue.main.async {
+                    self.userIsLoggedIn = true
+                    self.showSignInView = false
+                    self.forceRefresh.toggle() // Force view refresh
+                    print("ContentView: Updated state after notification - userIsLoggedIn: \(self.userIsLoggedIn), showSignInView: \(self.showSignInView)")
+                }
+            }
+        }
+        .onDisappear {
+            // Remove notification observer
+            NotificationCenter.default.removeObserver(self, name: NSNotification.Name("UserDidSignIn"), object: nil)
         }
         .onChange(of: Auth.auth().currentUser) { _, newUser in
             // Update login status whenever auth state changes
+            print("ContentView: Auth state changed - User: \(newUser?.uid ?? "nil")")
             userIsLoggedIn = newUser != nil
+            if userIsLoggedIn {
+                showSignInView = false
+            }
         }
+        .id(forceRefresh) // Force view to refresh when this changes
     }
     
     private func checkAuthState() {
-        if Auth.auth().currentUser != nil {
+        if let user = Auth.auth().currentUser {
             // User is signed in
+            print("ContentView: User is signed in with UID: \(user.uid)")
             userIsLoggedIn = true
             showSignInView = false
         } else {
             // No user is signed in
+            print("ContentView: No user is signed in")
             userIsLoggedIn = false
             showSignInView = true
         }
     }
-    
 }
 
 struct MainTabView: View {
@@ -54,6 +79,9 @@ struct MainTabView: View {
     @Binding var userIsLoggedIn: Bool
     @ObservedObject var directoryListViewModel: DirectoryListViewModel
     @State private var selectedTab = 0
+    
+    // Add a state variable to force view refresh
+    @State private var forceRefresh: Bool = false
     
     init(showSignInView: Binding<Bool>, userIsLoggedIn: Binding<Bool>, directoryListViewModel: DirectoryListViewModel) {
         self._showSignInView = showSignInView
@@ -65,6 +93,8 @@ struct MainTabView: View {
         tabBarAppearance.configureWithOpaqueBackground()
         UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
         UITabBar.appearance().standardAppearance = tabBarAppearance
+        
+        print("MainTabView: Initialized with userIsLoggedIn = \(userIsLoggedIn.wrappedValue)")
     }
     
     var body: some View {
@@ -102,6 +132,23 @@ struct MainTabView: View {
             }
         }
         .accentColor(tabColor)
+        .onAppear {
+            print("MainTabView: onAppear - userIsLoggedIn = \(userIsLoggedIn)")
+            
+            // Add notification observer for sign-in events
+            NotificationCenter.default.addObserver(forName: NSNotification.Name("UserDidSignIn"), object: nil, queue: .main) { _ in
+                print("MainTabView: Received UserDidSignIn notification")
+                DispatchQueue.main.async {
+                    self.forceRefresh.toggle() // Force view refresh
+                    print("MainTabView: Updated state after notification - userIsLoggedIn: \(self.userIsLoggedIn)")
+                }
+            }
+        }
+        .onDisappear {
+            // Remove notification observer
+            NotificationCenter.default.removeObserver(self, name: NSNotification.Name("UserDidSignIn"), object: nil)
+        }
+        .id(forceRefresh) // Force view to refresh when this changes
     }
     
     private var tabColor: Color {

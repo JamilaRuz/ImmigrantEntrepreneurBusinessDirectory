@@ -31,14 +31,24 @@ final class EntrepreneursListViewModel: ObservableObject {
                 isLoading = true
                 error = nil
                 
+                print("EntrepreneursListViewModel: Loading entrepreneurs...")
                 self.entrepreneurs = try await EntrepreneurManager.shared.getAllEntrepreneurs()
+                print("EntrepreneursListViewModel: Successfully loaded \(entrepreneurs.count) entrepreneurs")
                 
                 // Load companies for each entrepreneur
                 for entrepreneur in entrepreneurs {
-                    let companies = try await entrepreneur.companyIds.asyncMap { companyId in
-                        try await RealCompanyManager.shared.getCompany(companyId: companyId)
+                    print("EntrepreneursListViewModel: Loading companies for entrepreneur: \(entrepreneur.entrepId)")
+                    do {
+                        let companies = try await entrepreneur.companyIds.asyncMap { companyId in
+                            try await RealCompanyManager.shared.getCompany(companyId: companyId)
+                        }
+                        entrepreneurCompanies[entrepreneur.entrepId] = companies
+                        print("EntrepreneursListViewModel: Loaded \(companies.count) companies for entrepreneur: \(entrepreneur.entrepId)")
+                    } catch {
+                        print("EntrepreneursListViewModel: Error loading companies for entrepreneur \(entrepreneur.entrepId): \(error)")
+                        // Continue with other entrepreneurs even if one fails
+                        entrepreneurCompanies[entrepreneur.entrepId] = []
                     }
-                    entrepreneurCompanies[entrepreneur.entrepId] = companies
                 }
                 
                 isLoading = false

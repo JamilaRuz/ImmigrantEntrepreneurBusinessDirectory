@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import FirebaseAuth
 
 struct SplashScreen: View {
     @State private var isActive = false
@@ -33,6 +34,7 @@ struct SplashScreen: View {
                 .scaleEffect(size)
                 .opacity(opacity)
                 .onAppear {
+                    print("SplashScreen: Animation starting")
                     withAnimation(.easeIn(duration: 1.2)) {
                         self.size = 0.9
                         self.opacity = 1.0
@@ -40,7 +42,16 @@ struct SplashScreen: View {
                 }
             }
             .onAppear {
+                // Check if user is already signed in
+                if let user = Auth.auth().currentUser {
+                    print("SplashScreen: User already signed in with UID: \(user.uid)")
+                } else {
+                    print("SplashScreen: No user is signed in")
+                }
+                
+                print("SplashScreen: Setting timer to transition to ContentView")
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                    print("SplashScreen: Timer fired, transitioning to ContentView")
                     withAnimation {
                         self.isActive = true
                     }
