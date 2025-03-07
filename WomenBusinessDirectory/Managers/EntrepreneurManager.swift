@@ -24,6 +24,8 @@ struct Entrepreneur: Codable, Hashable {
     self.fullName = auth.fullName
     self.email = auth.email
     self.dateCreated = Date()
+    self.bioDescr = ""
+    self.profileUrl = nil
   }
   
   init(entrepId: String, fullName: String, profileUrl: String?, email: String, bioDescr: String, companyIds: [String]) {
@@ -34,6 +36,19 @@ struct Entrepreneur: Codable, Hashable {
     self.bioDescr = bioDescr
     self.companyIds = companyIds
     self.dateCreated = Date()
+  }
+  
+  // Add a custom decoder initializer to handle potential null values
+  init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    
+    self.entrepId = try container.decode(String.self, forKey: .entrepId)
+    self.fullName = try container.decodeIfPresent(String.self, forKey: .fullName)
+    self.profileUrl = try container.decodeIfPresent(String.self, forKey: .profileUrl)
+    self.dateCreated = try container.decode(Date.self, forKey: .dateCreated)
+    self.email = try container.decodeIfPresent(String.self, forKey: .email)
+    self.bioDescr = try container.decodeIfPresent(String.self, forKey: .bioDescr)
+    self.companyIds = try container.decodeIfPresent([String].self, forKey: .companyIds) ?? []
   }
 }
 
@@ -58,8 +73,19 @@ func createEntrepreneur(fullName: String, email: String) async throws {
     print("Creating entrepreneur with uid: \(uid)")
     let entrepreneur = Entrepreneur(entrepId: uid, fullName: fullName, profileUrl: nil, email: email, bioDescr: "", companyIds: [])
     print("Entrepreneur created: \(entrepreneur)")
-    let encodedEntrepreneur = try Firestore.Encoder().encode(entrepreneur)
-    try await entrepDocument(entrepId: uid).setData(encodedEntrepreneur)
+    
+    // Create a dictionary with all the fields to ensure they're all properly set
+    let data: [String: Any] = [
+        "entrepId": entrepreneur.entrepId,
+        "fullName": entrepreneur.fullName ?? "",
+        "profileUrl": NSNull(), // Use NSNull instead of nil
+        "dateCreated": entrepreneur.dateCreated,
+        "email": entrepreneur.email ?? "",
+        "bioDescr": entrepreneur.bioDescr ?? "",
+        "companyIds": entrepreneur.companyIds
+    ]
+    
+    try await entrepDocument(entrepId: uid).setData(data)
 }
 
   func getEntrepreneur(entrepId: String) async throws -> Entrepreneur {
@@ -126,17 +152,108 @@ func createEntrepreneur(fullName: String, email: String) async throws {
     guard !entrepreneur.entrepId.isEmpty else {
         throw NSError(domain: "EntrepreneurManager", code: 1, userInfo: [NSLocalizedDescriptionKey: "Entrepreneur ID cannot be empty"])
     }
-    try entrepDocument(entrepId: entrepreneur.entrepId).setData(from: entrepreneur, merge: true)
+    print("Updating entrepreneur: \(entrepreneur.entrepId)")
+    print("Bio being saved: \(entrepreneur.bioDescr ?? "nil")")
+    
+    // Create a dictionary with all the fields to ensure they're all updated
+    var data: [String: Any] = [
+        "entrepId": entrepreneur.entrepId,
+        "dateCreated": entrepreneur.dateCreated,
+        "companyIds": entrepreneur.companyIds
+    ]
+    
+    // Add optional fields, using NSNull for nil values
+    if let fullName = entrepreneur.fullName {
+        data["fullName"] = fullName
+    } else {
+        data["fullName"] = ""
+    }
+    
+    if let profileUrl = entrepreneur.profileUrl {
+        data["profileUrl"] = profileUrl
+    } else {
+        data["profileUrl"] = NSNull()
+    }
+    
+    if let email = entrepreneur.email {
+        data["email"] = email
+    } else {
+        data["email"] = ""
+    }
+    
+    if let bioDescr = entrepreneur.bioDescr {
+        data["bioDescr"] = bioDescr
+    } else {
+        data["bioDescr"] = ""
+    }
+    
+    try await entrepDocument(entrepId: entrepreneur.entrepId).setData(data, merge: false)
+    print("Entrepreneur updated successfully")
   }
 
   func getAllEntrepreneurs() async throws -> [Entrepreneur] {
     print("Fetching all entrepreneurs...")
     let snapshot = try await entrepCollection.getDocuments()
-    let entrepreneurs = try snapshot.documents.compactMap { document in
-        try document.data(as: Entrepreneur.self)
+    
+    var entrepreneurs: [Entrepreneur] = []
+    
+    for document in snapshot.documents {
+        do {
+            // Try to decode the document as an Entrepreneur
+            let entrepreneur = try document.data(as: Entrepreneur.self)
+            entrepreneurs.append(entrepreneur)
+        } catch let error as DecodingError {
+            // If there's a decoding error, try to migrate the document
+            print("Error decoding entrepreneur document: \(error)")
+            if let migratedEntrepreneur = try? await migrateEntrepreneurDocument(document) {
+                entrepreneurs.append(migratedEntrepreneur)
+            }
+        } catch {
+            print("Unknown error processing entrepreneur document: \(error)")
+        }
     }
+    
     print("Successfully fetched \(entrepreneurs.count) entrepreneurs")
     return entrepreneurs
+  }
+  
+  // Function to migrate entrepreneur documents with wrong field names
+  private func migrateEntrepreneurDocument(_ document: QueryDocumentSnapshot) async throws -> Entrepreneur {
+    print("Attempting to migrate entrepreneur document: \(document.documentID)")
+    
+    let data = document.data()
+    
+    // Check if this is a document with the old schema (uid instead of entrepId)
+    if let uid = data["uid"] as? String {
+        print("Found document with old schema (uid instead of entrepId)")
+        
+        // Create a new document with the correct field names
+        let updatedData: [String: Any] = [
+            "entrepId": uid,
+            "email": data["email"] as? String ?? "",
+            "fullName": data["fullName"] as? String ?? "",
+            "dateCreated": data["createdAt"] as? Timestamp ?? Timestamp(),
+            "bioDescr": data["bioDescr"] as? String ?? "",
+            "companyIds": data["companyIds"] as? [String] ?? [],
+            "profileUrl": data["profileUrl"] as? String ?? NSNull()
+        ]
+        
+        // Update the document with the correct field names
+        try await entrepCollection.document(document.documentID).setData(updatedData)
+        print("Successfully migrated entrepreneur document: \(document.documentID)")
+        
+        // Create and return an Entrepreneur object
+        return Entrepreneur(
+            entrepId: uid,
+            fullName: updatedData["fullName"] as? String ?? "",
+            profileUrl: updatedData["profileUrl"] as? String,
+            email: updatedData["email"] as? String ?? "",
+            bioDescr: updatedData["bioDescr"] as? String ?? "",
+            companyIds: updatedData["companyIds"] as? [String] ?? []
+        )
+    } else {
+        throw NSError(domain: "EntrepreneurManager", code: 2, userInfo: [NSLocalizedDescriptionKey: "Document does not have expected fields for migration"])
+    }
   }
 
   func deleteEntrepreneur(entrepId: String) async throws {

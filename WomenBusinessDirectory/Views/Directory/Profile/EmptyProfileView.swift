@@ -11,31 +11,30 @@ struct EmptyProfileView: View {
     @Binding var showSignInView: Bool // Binding to control navigation to AuthenticationView
 
     var body: some View {
-        VStack(spacing: 20) {
-            Text("Please log in first to create your profile.")
-                .font(.title2)
+        VStack(spacing: 16) {
+            Text("Please sign in first\nto create your profile.")
+                .font(.body)
                 .foregroundColor(Color.pink1)
                 .multilineTextAlignment(.center)
-                .padding()
-
+                
             Button(action: {
                 showSignInView = true // Navigate to AuthenticationView
             }) {
-                Text("Log In")
+                Text("Sign In")
                     .font(.headline)
                     .foregroundColor(Color.pink1)
-                    .padding()
-                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .padding(.horizontal, 40)
                     .background(Color.white)
                     .cornerRadius(10)
                     .overlay(
                         RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.pink1, lineWidth: 1)
+                            .stroke(Color.gray, lineWidth: 1)
                     )
             }
-            .padding(.horizontal)
         }
-        .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .offset(y: -30)
     }
 }
 

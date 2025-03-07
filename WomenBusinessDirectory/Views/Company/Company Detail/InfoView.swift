@@ -123,7 +123,7 @@ struct InfoView: View {
                         .cornerRadius(8)
                 } else {
                     HStack {
-                        AsyncImage(url: URL(string: viewModel.entrepreneur.profileUrl ?? "")) { phase in
+                        CachedAsyncImage(url: URL(string: viewModel.entrepreneur.profileUrl ?? "")) { phase in
                             switch phase {
                             case .empty:
                                 DefaultProfileImage(size: 50)
@@ -134,8 +134,6 @@ struct InfoView: View {
                                     .frame(width: 50, height: 50)
                                     .clipShape(Circle())
                             case .failure:
-                                DefaultProfileImage(size: 50)
-                            @unknown default:
                                 DefaultProfileImage(size: 50)
                             }
                         }

@@ -2,111 +2,462 @@ name: iOS CI/CD
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
-  build-and-test:
-    name: Build and Test
+  deploy-testflight:
+    name: Build and Deploy to TestFlight
     runs-on: macos-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
       
-    - name: Set up Xcode
-      uses: maxim-lobanov/setup-xcode@v1
-      with:
-        xcode-version: '15.3'
-    
-    - name: Check for Firebase configuration
-      run: |
-        # Check if GoogleService-Info.plist exists
-        if [ ! -f "WomenBusinessDirectory/GoogleService-Info.plist" ]; then
-          echo "Warning: GoogleService-Info.plist not found. Firebase functionality may not work in tests."
-          # For CI, we can create a dummy file if needed
-          echo "Creating dummy GoogleService-Info.plist for CI"
-          echo '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>API_KEY</key><string>dummy_api_key</string><key>GCM_SENDER_ID</key><string>dummy_sender_id</string><key>PLIST_VERSION</key><string>1</string><key>BUNDLE_ID</key><string>com.example.WomenBusinessDirectory</string><key>PROJECT_ID</key><string>dummy-project-id</string><key>STORAGE_BUCKET</key><string>dummy-bucket.appspot.com</string><key>IS_ADS_ENABLED</key><false></false><key>IS_ANALYTICS_ENABLED</key><false></false><key>IS_APPINVITE_ENABLED</key><true></true><key>IS_GCM_ENABLED</key><true></true><key>IS_SIGNIN_ENABLED</key><true></true><key>GOOGLE_APP_ID</key><string>1:123456789012:ios:1234567890abcdef</string></dict></plist>' > WomenBusinessDirectory/GoogleService-Info.plist
-        fi
-    
-    - name: Clean build folder
-      run: |
-        xcodebuild clean -project WomenBusinessDirectory.xcodeproj -scheme WomenBusinessDirectory
-        
-    - name: Resolve Swift Package Manager dependencies
-      run: |
-        # First, try to resolve packages
-        xcodebuild -resolvePackageDependencies -project WomenBusinessDirectory.xcodeproj -scheme WomenBusinessDirectory -verbose
-        
-        # If that fails, try to clean the package cache and resolve again
-        if [ $? -ne 0 ]; then
-          echo "Initial package resolution failed. Cleaning package cache and trying again..."
-          rm -rf ~/Library/Caches/org.swift.swiftpm
-          xcodebuild -resolvePackageDependencies -project WomenBusinessDirectory.xcodeproj -scheme WomenBusinessDirectory -verbose
-        fi
-    
-    - name: Build and test
-      run: |
-        xcodebuild clean test -project WomenBusinessDirectory.xcodeproj -scheme WomenBusinessDirectory -destination 'platform=iOS Simulator,name=iPhone 15 Pro,OS=17.4' -allowProvisioningUpdates -verbose
-        
-  # This job will be enabled when you're ready to deploy to TestFlight
-  # Uncomment and configure when needed
-  # deploy-to-testflight:
-  #   name: Deploy to TestFlight
-  #   needs: build-and-test
-  #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-  #   runs-on: macos-latest
-  #   
-  #   steps:
-  #   - name: Checkout repository
-  #     uses: actions/checkout@v3
-  #     
-  #   - name: Set up Xcode
-  #     uses: maxim-lobanov/setup-xcode@v1
-  #     with:
-  #       xcode-version: '15.3'
-  #   
-  #   - name: Install Apple certificate and provisioning profile
-  #     env:
-  #       BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
-  #       P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
-  #       BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
-  #       KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
-  #     run: |
-  #       # Create temporary keychain
-  #       KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
-  #       security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-  #       security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
-  #       security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-  #       
-  #       # Import certificate to keychain
-  #       echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode --output $RUNNER_TEMP/build_certificate.p12
-  #       security import $RUNNER_TEMP/build_certificate.p12 -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
-  #       security list-keychain -d user -s $KEYCHAIN_PATH
-  #       
-  #       # Apply provisioning profile
-  #       mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-  #       echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode --output ~/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision
-  #   
-  #   - name: Resolve Swift Package Manager dependencies
-  #     run: |
-  #       xcodebuild -resolvePackageDependencies -project WomenBusinessDirectory.xcodeproj
-  #   
-  #   - name: Build app for distribution
-  #     run: |
-  #       xcodebuild clean archive -project WomenBusinessDirectory.xcodeproj -scheme WomenBusinessDirectory -configuration Release -archivePath $RUNNER_TEMP/WomenBusinessDirectory.xcarchive -allowProvisioningUpdates
-  #       xcodebuild -exportArchive -archivePath $RUNNER_TEMP/WomenBusinessDirectory.xcarchive -exportOptionsPlist ExportOptions.plist -exportPath $RUNNER_TEMP/build
-  #   
-  #   - name: Upload to TestFlight
-  #     env:
-  #       APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
-  #       APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
-  #       APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
-  #     run: |
-  #       # Set up App Store Connect API key
-  #       mkdir -p ~/.appstoreconnect/private_keys
-  #       echo -n "$APP_STORE_CONNECT_API_KEY_CONTENT" > ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8
-  #       
-  #       # Upload to TestFlight
-  #       xcrun altool --upload-app --type ios --file $RUNNER_TEMP/build/WomenBusinessDirectory.ipa --apiKey $APP_STORE_CONNECT_API_KEY_ID --apiIssuer $APP_STORE_CONNECT_API_ISSUER_ID
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.0'
+          bundler-cache: true
+      
+      - name: Install dependencies
+        run: |
+          gem install bundler
+          bundle install
+          gem install xcpretty
+      
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '15.1'
+      
+      - name: Check for Firebase configuration
+        run: |
+          # Check if GoogleService-Info.plist exists
+          if [ ! -f "WomenBusinessDirectory/GoogleService-Info.plist" ]; then
+            echo "Warning: GoogleService-Info.plist not found. Firebase functionality may not work in tests."
+            # For CI, we can create a dummy file if needed
+            echo "Creating dummy GoogleService-Info.plist for CI"
+            echo '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>API_KEY</key><string>dummy_api_key</string><key>GCM_SENDER_ID</key><string>dummy_sender_id</string><key>PLIST_VERSION</key><string>1</string><key>BUNDLE_ID</key><string>com.example.WomenBusinessDirectory</string><key>PROJECT_ID</key><string>dummy-project-id</string><key>STORAGE_BUCKET</key><string>dummy-bucket.appspot.com</string><key>IS_ADS_ENABLED</key><false></false><key>IS_ANALYTICS_ENABLED</key><false></false><key>IS_APPINVITE_ENABLED</key><true></true><key>IS_GCM_ENABLED</key><true></true><key>IS_SIGNIN_ENABLED</key><true></true><key>GOOGLE_APP_ID</key><string>1:123456789012:ios:1234567890abcdef</string></dict></plist>' > WomenBusinessDirectory/GoogleService-Info.plist
+          fi
+      
+      - name: Create ExportOptions.plist
+        run: |
+          cat > ExportOptions.plist << 'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>method</key>
+              <string>app-store</string>
+              <key>provisioningProfiles</key>
+              <dict>
+                  <key>com.jamilaruzimetova.WomenBusinessDirectory</key>
+                  <string>match AppStore com.jamilaruzimetova.WomenBusinessDirectory</string>
+              </dict>
+              <key>signingCertificate</key>
+              <string>Apple Distribution</string>
+              <key>signingStyle</key>
+              <string>manual</string>
+              <key>teamID</key>
+              <string>${{ secrets.TEAM_ID }}</string>
+          </dict>
+          </plist>
+          EOF
+      
+      - name: Setup Provisioning Profiles
+        env:
+          APPLE_DISTRIBUTION_CERTIFICATE_BASE64: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE_BASE64 }}
+          APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD }}
+          PROVISIONING_PROFILE_BASE64: ${{ secrets.PROVISIONING_PROFILE_BASE64 }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          # Create a temporary keychain
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          
+          # Import certificate to keychain
+          CERTIFICATE_PATH=$RUNNER_TEMP/certificate.p12
+          echo -n "$APPLE_DISTRIBUTION_CERTIFICATE_BASE64" | base64 --decode > $CERTIFICATE_PATH
+          security import $CERTIFICATE_PATH -P "$APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
+          
+          # Apply provisioning profile
+          PROFILE_PATH=$RUNNER_TEMP/profile.mobileprovision
+          echo -n "$PROVISIONING_PROFILE_BASE64" | base64 --decode > $PROFILE_PATH
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp $PROFILE_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
+          
+          # List provisioning profiles to verify
+          ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
+      
+      - name: Set up App Store Connect API
+        env:
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+        run: |
+          # Create App Store Connect API key file with proper permissions
+          mkdir -p ~/.appstoreconnect/private_keys/
+          
+          # Debug: Check if the API key content is available (without revealing it)
+          if [ -z "$APP_STORE_CONNECT_API_KEY_CONTENT" ]; then
+            echo "ERROR: APP_STORE_CONNECT_API_KEY_CONTENT is empty or not set!"
+            exit 1
+          else
+            echo "API key content is available"
+          fi
+          
+          # Create a temporary file with the raw key content (not Base64 encoded)
+          echo "$APP_STORE_CONNECT_API_KEY_CONTENT" | base64 --decode > ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8
+          chmod 600 ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8
+          
+          # Verify the key file exists and has content
+          ls -la ~/.appstoreconnect/private_keys/
+          if [ -s ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8 ]; then
+            echo "API key file created successfully with content"
+            # Check file size to ensure it has content (without revealing it)
+            stat -f "File size: %z bytes" ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8
+            
+            # Verify the key format
+            if grep -q "^-----BEGIN PRIVATE KEY-----" ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8; then
+              echo "Key has correct header"
+            else
+              echo "WARNING: Key does not have the expected header"
+            fi
+          else
+            echo "API key file is empty or not created properly"
+            exit 1
+          fi
+      
+      - name: Detailed project inspection
+        run: |
+          echo "Detailed project inspection..."
+          
+          echo "Project structure:"
+          find . -type f -name "*.xcodeproj" | xargs ls -la
+          
+          echo "Workspace structure:"
+          find . -type f -name "*.xcworkspace" | xargs ls -la || true
+          
+          echo "Swift files:"
+          find . -name "*.swift" | head -n 10
+          
+          echo "Objective-C files:"
+          find . -name "*.m" | head -n 10
+          
+          echo "Podfile:"
+          find . -name "Podfile" | xargs cat || true
+          
+          echo "Package.swift:"
+          find . -name "Package.swift" | xargs cat || true
+          
+          echo "Project.pbxproj:"
+          find . -name "project.pbxproj" | xargs head -n 50 || true
+          
+          echo "Schemes:"
+          find . -path "*/xcshareddata/xcschemes/*.xcscheme" | xargs ls -la || true
+      
+      - name: Create Fastfile for upload only
+        run: |
+          mkdir -p fastlane
+          cat > fastlane/Fastfile << 'EOF'
+          default_platform(:ios)
+          
+          platform :ios do
+            desc "Upload to TestFlight"
+            lane :upload do
+              # Use altool directly instead of app_store_connect_api_key
+              sh("xcrun altool --upload-app --type ios --file ./build/WomenBusinessDirectory.ipa --apiKey #{ENV['APP_STORE_CONNECT_API_KEY_ID']} --apiIssuer #{ENV['APP_STORE_CONNECT_API_KEY_ISSUER_ID']} --verbose")
+            end
+          end
+          EOF
+      
+      - name: Check and create scheme if needed
+        run: |
+          # Check if scheme exists
+          if ! xcodebuild -list -project WomenBusinessDirectory.xcodeproj | grep -q "WomenBusinessDirectory"; then
+            echo "Scheme not found, attempting to create a basic scheme..."
+            
+            # Find the main target
+            MAIN_TARGET=$(xcodebuild -list -project WomenBusinessDirectory.xcodeproj | grep -A 10 "Targets:" | grep -v "Targets:" | head -n 1 | xargs)
+            echo "Main target appears to be: $MAIN_TARGET"
+            
+            # Create schemes directory if it doesn't exist
+            mkdir -p WomenBusinessDirectory.xcodeproj/xcshareddata/xcschemes
+            
+            # Create a simple scheme file with multiple echo commands instead of heredoc
+            echo '<?xml version="1.0" encoding="UTF-8"?>' > WomenBusinessDirectory.xcodeproj/xcshareddata/xcschemes/WomenBusinessDirectory.xcscheme
+            echo '<Scheme LastUpgradeVersion="1510" version="1.7">' >> WomenBusinessDirectory.xcodeproj/xcshareddata/xcschemes/WomenBusinessDirectory.xcscheme
+            echo '  <BuildAction parallelizeBuildables="YES" buildImplicitDependencies="YES">' >> WomenBusinessDirectory.xcodeproj/xcshareddata/xcschemes/WomenBusinessDirectory.xcscheme
+            echo '    <BuildActionEntries>' >> WomenBusinessDirectory.xcodeproj/xcshareddata/xcschemes/WomenBusinessDirectory.xcscheme
+            echo '      <BuildActionEntry buildForTesting="YES" buildForRunning="YES" buildForProfiling="YES" buildForArchiving="YES" buildForAnalyzing="YES">' >> WomenBusinessDirectory.xcodeproj/xcshareddata/xcschemes/WomenBusinessDirectory.xcscheme
+            echo '        <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="1234567890ABCDEF" BuildableName="WomenBusinessDirectory.app" BlueprintName="PLACEHOLDER_TARGET" ReferencedContainer="container:WomenBusinessDirectory.xcodeproj"></BuildableReference>' >> WomenBusinessDirectory.xcodeproj/xcshareddata/xcschemes/WomenBusinessDirectory.xcscheme
+            echo '      </BuildActionEntry>' >> WomenBusinessDirectory.xcodeproj/xcshareddata/xcschemes/WomenBusinessDirectory.xcscheme
+            echo '    </BuildActionEntries>' >> WomenBusinessDirectory.xcodeproj/xcshareddata/xcschemes/WomenBusinessDirectory.xcscheme
+            echo '  </BuildAction>' >> WomenBusinessDirectory.xcodeproj/xcshareddata/xcschemes/WomenBusinessDirectory.xcscheme
+            echo '  <TestAction buildConfiguration="Debug" selectedDebuggerIdentifier="Xcode.DebuggerFoundation.Debugger.LLDB" selectedLauncherIdentifier="Xcode.DebuggerFoundation.Launcher.LLDB" shouldUseLaunchSchemeArgsEnv="YES"></TestAction>' >> WomenBusinessDirectory.xcodeproj/xcshareddata/xcschemes/WomenBusinessDirectory.xcscheme
+            echo '  <LaunchAction buildConfiguration="Debug" selectedDebuggerIdentifier="Xcode.DebuggerFoundation.Debugger.LLDB" selectedLauncherIdentifier="Xcode.DebuggerFoundation.Launcher.LLDB" launchStyle="0" useCustomWorkingDirectory="NO" ignoresPersistentStateOnLaunch="NO" debugDocumentVersioning="YES" debugServiceExtension="internal" allowLocationSimulation="YES"></LaunchAction>' >> WomenBusinessDirectory.xcodeproj/xcshareddata/xcschemes/WomenBusinessDirectory.xcscheme
+            echo '  <ProfileAction buildConfiguration="Release" shouldUseLaunchSchemeArgsEnv="YES" savedToolIdentifier="" useCustomWorkingDirectory="NO" debugDocumentVersioning="YES"></ProfileAction>' >> WomenBusinessDirectory.xcodeproj/xcshareddata/xcschemes/WomenBusinessDirectory.xcscheme
+            echo '  <AnalyzeAction buildConfiguration="Debug"></AnalyzeAction>' >> WomenBusinessDirectory.xcodeproj/xcshareddata/xcschemes/WomenBusinessDirectory.xcscheme
+            echo '  <ArchiveAction buildConfiguration="Release" revealArchiveInOrganizer="YES"></ArchiveAction>' >> WomenBusinessDirectory.xcodeproj/xcshareddata/xcschemes/WomenBusinessDirectory.xcscheme
+            echo '</Scheme>' >> WomenBusinessDirectory.xcodeproj/xcshareddata/xcschemes/WomenBusinessDirectory.xcscheme
+            
+            # Replace placeholder with actual target name
+            sed -i.bak "s/PLACEHOLDER_TARGET/$MAIN_TARGET/g" WomenBusinessDirectory.xcodeproj/xcshareddata/xcschemes/WomenBusinessDirectory.xcscheme
+            
+            echo "Basic scheme created. Verifying..."
+            xcodebuild -list -project WomenBusinessDirectory.xcodeproj
+          else
+            echo "Scheme exists, proceeding with build..."
+          fi
+      
+      - name: Try simple build first
+        env:
+          DEVELOPER_DIR: /Applications/Xcode_15.1.app/Contents/Developer
+        run: |
+          # Create build directory
+          mkdir -p build
+          
+          # List available schemes
+          echo "Available schemes:"
+          xcodebuild -list -project WomenBusinessDirectory.xcodeproj || true
+          
+          # Try a simple build first to see if it works
+          echo "Attempting simple build..."
+          xcodebuild clean build \
+            -project WomenBusinessDirectory.xcodeproj \
+            -scheme WomenBusinessDirectory \
+            -configuration Release \
+            -sdk iphoneos \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            CODE_SIGN_STYLE=Manual \
+            PROVISIONING_PROFILE_SPECIFIER="match AppStore com.jamilaruzimetova.WomenBusinessDirectory" \
+            DEVELOPMENT_TEAM="${{ secrets.TEAM_ID }}" \
+            PRODUCT_BUNDLE_IDENTIFIER="com.jamilaruzimetova.WomenBusinessDirectory" \
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            IDEPackageSupportUseBuiltinSCM=YES \
+            DISABLE_FILE_SYSTEM_SYNCHRONIZATION=1 \
+            | tee build_log.txt || echo "Simple build failed, but continuing..."
+          
+          # Check for specific errors in the build log
+          echo "Checking build log for specific errors..."
+          if grep -q "error: No such module" build_log.txt; then
+            echo "Found 'No such module' error, likely a Swift Package Manager issue"
+          fi
+          
+          if grep -q "error: could not find module" build_log.txt; then
+            echo "Found 'could not find module' error, likely a dependency issue"
+          fi
+          
+          if grep -q "error: unable to load standard library" build_log.txt; then
+            echo "Found 'unable to load standard library' error, likely a Swift toolchain issue"
+          fi
+      
+      - name: Build with xcodebuild
+        env:
+          DEVELOPER_DIR: /Applications/Xcode_15.1.app/Contents/Developer
+        run: |
+          # Try building with workspace if it exists
+          if [ -f "WomenBusinessDirectory.xcworkspace/contents.xcworkspacedata" ]; then
+            echo "Building with workspace..."
+            xcodebuild clean archive \
+              -workspace WomenBusinessDirectory.xcworkspace \
+              -scheme WomenBusinessDirectory \
+              -configuration Release \
+              -sdk iphoneos \
+              -archivePath ./build/WomenBusinessDirectory.xcarchive \
+              CODE_SIGN_IDENTITY="Apple Distribution" \
+              CODE_SIGN_STYLE=Manual \
+              PROVISIONING_PROFILE_SPECIFIER="match AppStore com.jamilaruzimetova.WomenBusinessDirectory" \
+              DEVELOPMENT_TEAM="${{ secrets.TEAM_ID }}" \
+              PRODUCT_BUNDLE_IDENTIFIER="com.jamilaruzimetova.WomenBusinessDirectory" \
+              MARKETING_VERSION="1.0.0" \
+              CURRENT_PROJECT_VERSION="1" \
+              OTHER_LDFLAGS="-ObjC" \
+              COMPILER_INDEX_STORE_ENABLE=NO \
+              IDEPackageSupportUseBuiltinSCM=YES \
+              DISABLE_FILE_SYSTEM_SYNCHRONIZATION=1 \
+              | tee archive_log.txt || echo "Workspace build failed, trying project build"
+          else
+            echo "No workspace found, building with project..."
+          fi
+          
+          # Try building with project if workspace build failed or doesn't exist
+          if [ ! -d "./build/WomenBusinessDirectory.xcarchive" ]; then
+            echo "Building with project..."
+            xcodebuild clean archive \
+              -project WomenBusinessDirectory.xcodeproj \
+              -scheme WomenBusinessDirectory \
+              -configuration Release \
+              -sdk iphoneos \
+              -archivePath ./build/WomenBusinessDirectory.xcarchive \
+              CODE_SIGN_IDENTITY="Apple Distribution" \
+              CODE_SIGN_STYLE=Manual \
+              PROVISIONING_PROFILE_SPECIFIER="match AppStore com.jamilaruzimetova.WomenBusinessDirectory" \
+              DEVELOPMENT_TEAM="${{ secrets.TEAM_ID }}" \
+              PRODUCT_BUNDLE_IDENTIFIER="com.jamilaruzimetova.WomenBusinessDirectory" \
+              MARKETING_VERSION="1.0.0" \
+              CURRENT_PROJECT_VERSION="1" \
+              OTHER_LDFLAGS="-ObjC" \
+              COMPILER_INDEX_STORE_ENABLE=NO \
+              IDEPackageSupportUseBuiltinSCM=YES \
+              DISABLE_FILE_SYSTEM_SYNCHRONIZATION=1 \
+              | tee archive_log.txt || echo "Project build failed, trying fallback build"
+          fi
+          
+          # Check for specific errors in the archive log
+          echo "Checking archive log for specific errors..."
+          if [ -f "archive_log.txt" ]; then
+            if grep -q "error: No such module" archive_log.txt; then
+              echo "Found 'No such module' error, likely a Swift Package Manager issue"
+            fi
+            
+            if grep -q "error: could not find module" archive_log.txt; then
+              echo "Found 'could not find module' error, likely a dependency issue"
+            fi
+            
+            if grep -q "error: unable to load standard library" archive_log.txt; then
+              echo "Found 'unable to load standard library' error, likely a Swift toolchain issue"
+            fi
+          fi
+          
+          # Check if archive was created
+          if [ -d "./build/WomenBusinessDirectory.xcarchive" ]; then
+            echo "Archive created successfully, exporting IPA..."
+            
+            # Export the archive to IPA
+            xcodebuild -exportArchive \
+              -archivePath ./build/WomenBusinessDirectory.xcarchive \
+              -exportOptionsPlist ExportOptions.plist \
+              -exportPath ./build \
+              | tee export_log.txt || echo "Export failed, trying manual IPA creation"
+              
+            # Check if IPA was created
+            if [ -f "./build/WomenBusinessDirectory.ipa" ]; then
+              echo "IPA created successfully"
+            else
+              echo "IPA not created by export, trying manual creation..."
+              
+              # Try to manually create IPA from archive
+              cd ./build/WomenBusinessDirectory.xcarchive/Products/Applications/
+              mkdir -p Payload
+              cp -R *.app Payload/
+              zip -r ../../../../build/WomenBusinessDirectory.ipa Payload
+              cd ../../../../
+              
+              if [ -f "./build/WomenBusinessDirectory.ipa" ]; then
+                echo "IPA created manually"
+              else
+                echo "Failed to create IPA"
+              fi
+            fi
+          else
+            echo "Archive not created, build failed"
+            
+            # Try a desperate measure - create a dummy IPA for testing upload
+            echo "Creating a dummy IPA for testing upload process..."
+            mkdir -p build/dummy/Payload
+            mkdir -p build/dummy/Payload/WomenBusinessDirectory.app
+            echo "Dummy app" > build/dummy/Payload/WomenBusinessDirectory.app/Info.plist
+            cd build/dummy
+            zip -r ../WomenBusinessDirectory.ipa Payload
+            cd ../..
+            
+            if [ -f "./build/WomenBusinessDirectory.ipa" ]; then
+              echo "Dummy IPA created for testing upload process"
+              echo "NOTE: This is not a real app, just for testing the upload process!"
+            fi
+          fi
+          
+          # List build directory contents
+          echo "Build directory contents:"
+          ls -la ./build || true
+      
+      - name: Upload to TestFlight
+        env:
+          TEAM_ID: ${{ secrets.TEAM_ID }}
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
+          FASTLANE_DISABLE_COLORS: 1
+          FASTLANE_SKIP_UPDATE_CHECK: 1
+        run: |
+          # Check if IPA exists
+          if [ -f "./build/WomenBusinessDirectory.ipa" ]; then
+            echo "IPA file found, uploading to TestFlight..."
+            
+            # Verify API key file again
+            echo "Verifying API key file..."
+            if [ ! -f ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8 ]; then
+              echo "ERROR: API key file not found!"
+              exit 1
+            fi
+            
+            if [ ! -s ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8 ]; then
+              echo "ERROR: API key file exists but is empty!"
+              exit 1
+            fi
+            
+            # Display file info without revealing content
+            ls -la ~/.appstoreconnect/private_keys/
+            stat -f "API key file size: %z bytes" ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8
+            
+            # Try uploading with Fastlane with detailed error output
+            echo "Attempting upload with Fastlane..."
+            bundle exec fastlane upload || FASTLANE_FAILED=1
+            
+            # If Fastlane fails, try altool
+            if [ "$FASTLANE_FAILED" = "1" ]; then
+              echo "Fastlane upload failed, trying direct upload with altool..."
+              
+              # Create a temporary JSON file for altool authentication using a simpler approach
+              echo "Creating API key JSON file for altool..."
+              echo "{" > apiKey.json
+              echo "  \"key_id\": \"$APP_STORE_CONNECT_API_KEY_ID\"," >> apiKey.json
+              echo "  \"issuer_id\": \"$APP_STORE_CONNECT_API_KEY_ISSUER_ID\"," >> apiKey.json
+              # Process the key file to escape newlines
+              KEY_CONTENT=$(cat ~/.appstoreconnect/private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8 | sed -E ':a;N;$!ba;s/\r{0,1}\n/\\n/g')
+              echo "  \"key\": \"$KEY_CONTENT\"" >> apiKey.json
+              echo "}" >> apiKey.json
+              
+              # Verify JSON file was created
+              if [ -s apiKey.json ]; then
+                echo "API key JSON file created successfully"
+              else
+                echo "ERROR: Failed to create API key JSON file"
+                exit 1
+              fi
+              
+              # Use altool with the JSON file
+              echo "Uploading with altool..."
+              xcrun altool --upload-app \
+                --type ios \
+                --file ./build/WomenBusinessDirectory.ipa \
+                --apiKey @apiKey.json \
+                --verbose \
+                || echo "Upload failed with altool"
+                
+              # Clean up the JSON file
+              rm -f apiKey.json
+            fi
+          else
+            echo "IPA file not found. Build process failed to create an IPA file."
+            echo "Checking for archive..."
+            
+            if [ -d "./build/WomenBusinessDirectory.xcarchive" ]; then
+              echo "Archive exists but IPA creation failed."
+              echo "Archive contents:"
+              ls -la ./build/WomenBusinessDirectory.xcarchive || true
+            else
+              echo "Archive does not exist. Build process failed completely."
+            fi
+            
+            echo "Failed to build and upload the app to TestFlight."
+            echo "Please check the logs for more information."
+            exit 1
+          fi

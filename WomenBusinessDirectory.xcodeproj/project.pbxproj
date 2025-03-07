@@ -15,6 +15,8 @@
 		8D4DECA82D67A580001BCA71 /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = 8D4DECA72D67A580001BCA71 /* FirebaseDatabase */; };
 		8D4DECAA2D67A580001BCA71 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 8D4DECA92D67A580001BCA71 /* FirebaseFirestore */; };
 		8D4DECAC2D67A580001BCA71 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 8D4DECAB2D67A580001BCA71 /* FirebaseStorage */; };
+		8DD71C6D2D791EEE00A85396 /* AlamofireImage in Frameworks */ = {isa = PBXBuildFile; productRef = 8DD71C6C2D791EEE00A85396 /* AlamofireImage */; };
+		8DD71C702D791F5900A85396 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 8DD71C6F2D791F5900A85396 /* Alamofire */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -76,7 +78,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8DD71C702D791F5900A85396 /* Alamofire in Frameworks */,
 				8D4DECA82D67A580001BCA71 /* FirebaseDatabase in Frameworks */,
+				8DD71C6D2D791EEE00A85396 /* AlamofireImage in Frameworks */,
 				8D4DECA02D67A580001BCA71 /* FirebaseAnalytics in Frameworks */,
 				8D4DECA62D67A580001BCA71 /* FirebaseCrashlytics in Frameworks */,
 				8D4DECA42D67A580001BCA71 /* FirebaseCore in Frameworks */,
@@ -175,6 +179,8 @@
 				8D4DECA72D67A580001BCA71 /* FirebaseDatabase */,
 				8D4DECA92D67A580001BCA71 /* FirebaseFirestore */,
 				8D4DECAB2D67A580001BCA71 /* FirebaseStorage */,
+				8DD71C6C2D791EEE00A85396 /* AlamofireImage */,
+				8DD71C6F2D791F5900A85396 /* Alamofire */,
 			);
 			productName = WomenBusinessDirectory;
 			productReference = 8D47A8722D3EA772004FCF20 /* WomenBusinessDirectory.app */;
@@ -214,6 +220,8 @@
 			mainGroup = 8DDB66F02BC9981D00D9A2C8;
 			packageReferences = (
 				8D4DEC9E2D67A580001BCA71 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				8DD71C6B2D791EEE00A85396 /* XCRemoteSwiftPackageReference "AlamofireImage" */,
+				8DD71C6E2D791F5900A85396 /* XCRemoteSwiftPackageReference "Alamofire" */,
 			);
 			productRefGroup = 8DDB66F02BC9981D00D9A2C8;
 			projectDirPath = "";
@@ -487,6 +495,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = WomenBusinessDirectory/WomenBusinessDirectory.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -524,6 +533,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = WomenBusinessDirectory/WomenBusinessDirectory.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -605,6 +615,22 @@
 				minimumVersion = 11.8.1;
 			};
 		};
+		8DD71C6B2D791EEE00A85396 /* XCRemoteSwiftPackageReference "AlamofireImage" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Alamofire/AlamofireImage.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.3.0;
+			};
+		};
+		8DD71C6E2D791F5900A85396 /* XCRemoteSwiftPackageReference "Alamofire" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Alamofire/Alamofire.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.10.2;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -642,6 +668,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 8D4DEC9E2D67A580001BCA71 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseStorage;
+		};
+		8DD71C6C2D791EEE00A85396 /* AlamofireImage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8DD71C6B2D791EEE00A85396 /* XCRemoteSwiftPackageReference "AlamofireImage" */;
+			productName = AlamofireImage;
+		};
+		8DD71C6F2D791F5900A85396 /* Alamofire */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8DD71C6E2D791F5900A85396 /* XCRemoteSwiftPackageReference "Alamofire" */;
+			productName = Alamofire;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

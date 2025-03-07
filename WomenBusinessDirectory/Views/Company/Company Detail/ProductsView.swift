@@ -12,9 +12,9 @@ struct ProductsView: View {
     let portfolioImages: [String]
     
     let columns = [
-        GridItem(.flexible()),
-        GridItem(.flexible()),
-        GridItem(.flexible())
+        GridItem(.flexible(), spacing: 5),
+        GridItem(.flexible(), spacing: 5),
+        GridItem(.flexible(), spacing: 5)
     ]
     
     @State private var selectedImage: String?
@@ -41,14 +41,14 @@ struct ProductsView: View {
                     .font(.headline)
                     .padding(.top, 10)
                 
-                LazyVGrid(columns: columns, spacing: 15) {
+                LazyVGrid(columns: columns, spacing: 5) {
                     if portfolioImages.isEmpty {
                         // Show 3 placeholder rectangles when no images
                         ForEach(0..<3) { _ in
                             ZStack {
                                 RoundedRectangle(cornerRadius: 10)
                                     .fill(Color.gray.opacity(0.3))
-                                    .frame(width: 100, height: 100)
+                                    .aspectRatio(1, contentMode: .fit)
                                 Text("No image")
                                     .font(.caption)
                                     .foregroundColor(.gray)
@@ -56,27 +56,28 @@ struct ProductsView: View {
                         }
                     } else {
                         ForEach(portfolioImages, id: \.self) { imageUrl in
-                            AsyncImage(url: URL(string: imageUrl)) { phase in
-                                switch phase {
-                                case .empty:
-                                    ProgressView()
-                                case .success(let image):
-                                    image
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fill)
-                                        .frame(width: 100, height: 100)
-                                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                                case .failure:
-                                    Image(systemName: "photo")
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                        .frame(width: 100, height: 100)
-                                        .foregroundColor(.yellow)
-                                @unknown default:
-                                    EmptyView()
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(Color.clear)
+                                
+                                CachedAsyncImage(url: URL(string: imageUrl)) { phase in
+                                    switch phase {
+                                    case .empty:
+                                        ProgressView()
+                                    case .success(let image):
+                                        image
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fill)
+                                            .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
+                                    case .failure:
+                                        Image(systemName: "photo")
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fit)
+                                    }
                                 }
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
                             }
-                            .frame(width: 100, height: 100)
+                            .aspectRatio(1, contentMode: .fit)
                             .onTapGesture {
                                 selectedImage = imageUrl
                             }
@@ -88,7 +89,7 @@ struct ProductsView: View {
         }
         .sheet(item: $selectedImage) { imageUrl in
             ZoomableScrollView {
-                AsyncImage(url: URL(string: imageUrl)) { phase in
+                CachedAsyncImage(url: URL(string: imageUrl)) { phase in
                     switch phase {
                     case .empty:
                         ProgressView()
@@ -100,8 +101,6 @@ struct ProductsView: View {
                         Image(systemName: "photo")
                             .resizable()
                             .aspectRatio(contentMode: .fit)
-                    @unknown default:
-                        EmptyView()
                     }
                 }
             }

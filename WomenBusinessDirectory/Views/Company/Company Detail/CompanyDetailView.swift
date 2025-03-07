@@ -23,7 +23,7 @@ struct CompanyDetailView: View {
       ScrollView(showsIndicators: false) {
         VStack(spacing: 0) {
           // Header Image with Gradient
-          AsyncImage(url: URL(string: company.headerImg ?? "")) { phase in
+          CachedAsyncImage(url: URL(string: company.headerImg ?? "")) { phase in
             switch phase {
             case .empty:
               Rectangle()
@@ -42,8 +42,6 @@ struct CompanyDetailView: View {
                 .fill(Color.gray.opacity(0.3))
                 .frame(height: 300)
                 .frame(maxWidth: .infinity)
-            @unknown default:
-              EmptyView()
             }
           }
           .overlay(
@@ -57,7 +55,7 @@ struct CompanyDetailView: View {
             VStack(spacing: 16) {
               Spacer()
               // Logo
-              AsyncImage(url: URL(string: company.logoImg ?? "")) { phase in
+              CachedAsyncImage(url: URL(string: company.logoImg ?? "")) { phase in
                 switch phase {
                 case .empty:
                   Circle()
@@ -72,11 +70,6 @@ struct CompanyDetailView: View {
                     .clipShape(Circle())
                     .overlay(Circle().stroke(Color.gray.opacity(0.3), lineWidth: 1))
                 case .failure:
-                  Circle()
-                    .fill(Color.gray.opacity(0.3))
-                    .frame(width: 80, height: 80)
-                    .overlay(Circle().stroke(Color.gray.opacity(0.3), lineWidth: 1))
-                @unknown default:
                   Circle()
                     .fill(Color.gray.opacity(0.3))
                     .frame(width: 80, height: 80)
@@ -211,10 +204,11 @@ struct CompanyDetailView: View {
                   }
                   .frame(maxWidth: .infinity)
                   .padding()
-                  .background(Color.blue.opacity(0.2))
-                  .foregroundColor(.blue)
+                  .background(company.phoneNum.isEmpty ? Color.gray.opacity(0.2) : Color.blue.opacity(0.2))
+                  .foregroundColor(company.phoneNum.isEmpty ? Color.gray : Color.blue)
                   .cornerRadius(12)
                 }
+                .disabled(company.phoneNum.isEmpty)
               }
               .padding(.horizontal)
               .padding(.vertical, 16)

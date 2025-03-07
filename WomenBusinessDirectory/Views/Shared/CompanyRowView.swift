@@ -21,9 +21,9 @@ struct CompanyRowView: View {
             VStack(alignment: .leading, spacing: 8) {
                 HStack(alignment: .top, spacing: 12) {
                     // Company Logo
-                    AsyncImage(url: URL(string: company.logoImg ?? "")) { phase in
+                    CachedAsyncImage(url: URL(string: company.logoImg ?? "")) { phase in
                         switch phase {
-                        case .empty, .failure:
+                        case .empty:
                             RoundedRectangle(cornerRadius: 12)
                                 .fill(Color.gray.opacity(0.3))
                                 .frame(width: 60, height: 60)
@@ -41,7 +41,7 @@ struct CompanyRowView: View {
                                     RoundedRectangle(cornerRadius: 12)
                                         .stroke(Color.gray.opacity(0.3), lineWidth: 1)
                                 )
-                        @unknown default:
+                        case .failure:
                             RoundedRectangle(cornerRadius: 12)
                                 .fill(Color.gray.opacity(0.3))
                                 .frame(width: 60, height: 60)
