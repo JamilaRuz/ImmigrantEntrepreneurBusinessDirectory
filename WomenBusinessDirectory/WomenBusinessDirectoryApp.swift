@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Firebase
+import AuthenticationServices
 import Alamofire
 import AlamofireImage
 
@@ -61,6 +62,24 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     print("Setting up image caching with Alamofire...")
     _ = NetworkManager.shared
     print("URLCache configured with \(URLCache.shared.memoryCapacity / 1_000_000) MB memory capacity")
+    
+    
+    // Set up ASAuthorizationController delegate for Sign in with Apple
+    ASAuthorizationAppleIDProvider().getCredentialState(forUserID: UserDefaults.standard.string(forKey: "appleUserID") ?? "") { (credentialState, error) in
+      switch credentialState {
+      case .authorized:
+        // The Apple ID credential is valid
+        print("Apple ID Credential is valid")
+      case .revoked:
+        // The Apple ID credential was revoked, sign the user out
+        print("Apple ID Credential was revoked")
+      case .notFound:
+        // No Apple ID credential was found, show the sign-in UI
+        print("No Apple ID Credential was found")
+      default:
+        break
+      }
+    }
     
     return true
   }
