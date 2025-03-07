@@ -36,6 +36,8 @@ struct AddCompanyView: View {
   @State private var socialMediaLinks: [(platform: Company.SocialMedia, link: String)] = []
   @State private var selectedSocialMedia: Company.SocialMedia = .instagram
   @State private var socialMediaLinkInput: String = ""
+  @State private var socialMediaLinkError: String? = nil
+  @State private var socialMediaPlaceholder: String = "instagram.com/"
   
   @State private var selectedCategoryIds: Set<String> = []
   @State private var isImagePickerPresented = false
@@ -48,10 +50,11 @@ struct AddCompanyView: View {
   
   @StateObject private var addressCompleter = AddressCompleter()
   @State private var showAddressSuggestions = false
-  @State private var showCitySuggestions = false
   
   private let canadianPhonePattern = #"^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$"#
   @State private var isValidPhone = false
+  
+  @FocusState private var isAddressFieldFocused: Bool
   
   init(viewModel: AddCompanyViewModel, entrepreneur: Entrepreneur, editingCompany: Company? = nil) {
     self._viewModel = StateObject(wrappedValue: viewModel)
@@ -226,7 +229,6 @@ struct AddCompanyView: View {
       Text("Business Categories *")
         .font(.subheadline)
         .foregroundColor(.gray)
-        .padding(.horizontal)
       
       Text("You can select several categories")
         .font(.caption)
@@ -331,10 +333,7 @@ struct AddCompanyView: View {
           Group {
             PhoneNumberField(phoneNum: $phoneNum, isValidPhone: $isValidPhone, editingCompany: editingCompany)
             
-            VStack(alignment: .leading) {
-                CustomTextField(title: "Address *", text: $address)
-            }
-            CityField(city: $city)
+            AddressField(address: $address, city: $city)
             
             VStack(alignment: .leading) {
                 Text("Company Email *")
@@ -361,17 +360,24 @@ struct AddCompanyView: View {
                 Text("Website")
                     .font(.subheadline)
                     .foregroundColor(.gray)
-                TextField("Website", text: $website)
-                    .padding(.vertical, 8)
-                    .padding(.horizontal, 12)
-                    .background(Color.white)
-                    .autocorrectionDisabled(true)
-                    .textInputAutocapitalization(.never)
-                    .keyboardType(.URL)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                    )
+                
+                HStack(spacing: 0) {
+                    Text("https://")
+                        .foregroundColor(.gray)
+                        .padding(.leading, 8)
+                    
+                    TextField("website.com", text: $website)
+                        .autocorrectionDisabled(true)
+                        .textInputAutocapitalization(.never)
+                        .keyboardType(.URL)
+                }
+                .padding(.vertical, 8)
+                .padding(.trailing, 12)
+                .background(Color.white)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                )
             }
           }
           
@@ -391,6 +397,24 @@ struct AddCompanyView: View {
                 ForEach(Company.SocialMedia.allCases, id: \.self) { platform in
                   Button(platform.rawValue) {
                     selectedSocialMedia = platform
+                    socialMediaLinkError = nil // Clear error when changing platform
+                    socialMediaLinkInput = "" // Clear input when changing platform
+                    
+                    // Update placeholder based on selected platform
+                    switch platform {
+                    case .instagram:
+                      socialMediaPlaceholder = "instagram.com/"
+                    case .facebook:
+                      socialMediaPlaceholder = "facebook.com/"
+                    case .twitter:
+                      socialMediaPlaceholder = "twitter.com/"
+                    case .linkedin:
+                      socialMediaPlaceholder = "linkedin.com/in/"
+                    case .youtube:
+                      socialMediaPlaceholder = "youtube.com/c/"
+                    case .other:
+                      socialMediaPlaceholder = "Enter any social media URL"
+                    }
                   }
                 }
               } label: {
@@ -411,24 +435,35 @@ struct AddCompanyView: View {
                 )
               }
               
-              // Link text field
-              TextField("Enter profile link", text: $socialMediaLinkInput)
-                .padding(.vertical, 8)
-                .padding(.horizontal, 12)
-                .background(Color.white)
-                .autocorrectionDisabled(true)
-                .textInputAutocapitalization(.never)
-                .keyboardType(.URL)
-                .overlay(
-                  RoundedRectangle(cornerRadius: 8)
-                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                )
+              // Link text field with prefix
+              HStack(spacing: 0) {
+                Text("https://")
+                  .foregroundColor(.gray)
+                  .padding(.leading, 8)
+                
+                TextField(socialMediaPlaceholder, text: $socialMediaLinkInput)
+                  .autocorrectionDisabled(true)
+                  .textInputAutocapitalization(.never)
+                  .keyboardType(.URL)
+              }
+              .padding(.vertical, 8)
+              .padding(.trailing, 12)
+              .background(Color.white)
+              .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                  .stroke(socialMediaLinkError != nil ? Color.red : Color.gray.opacity(0.3), lineWidth: 1)
+              )
+              .onChange(of: socialMediaLinkInput) { _, _ in
+                socialMediaLinkError = nil // Clear error when typing
+              }
               
               // Add button
               Button(action: {
-                if !socialMediaLinkInput.isEmpty {
-                  socialMediaLinks.append((selectedSocialMedia, socialMediaLinkInput))
+                if validateSocialMediaLink(platform: selectedSocialMedia, link: socialMediaLinkInput) {
+                  let formattedLink = formatSocialMediaLink(platform: selectedSocialMedia, link: socialMediaLinkInput)
+                  socialMediaLinks.append((selectedSocialMedia, formattedLink))
                   socialMediaLinkInput = ""
+                  socialMediaLinkError = nil
                 }
               }) {
                 Image(systemName: "plus.circle.fill")
@@ -436,6 +471,14 @@ struct AddCompanyView: View {
                   .font(.title3)
               }
               .disabled(socialMediaLinkInput.isEmpty)
+            }
+            
+            // Display error if any
+            if let error = socialMediaLinkError {
+              Text(error)
+                .font(.caption)
+                .foregroundColor(.red)
+                .padding(.top, 4)
             }
             
             // Display added social media links
@@ -533,6 +576,9 @@ struct AddCompanyView: View {
   }
   
   private func saveOrUpdateCompany() async throws {
+    // Format website URL to ensure it has https:// prefix
+    let formattedWebsite = formatWebsiteURL(website)
+    
     if let editingCompany = editingCompany {
       try await viewModel.updateCompany(
         company: editingCompany,
@@ -549,7 +595,7 @@ struct AddCompanyView: View {
         city: city,
         phoneNum: phoneNum,
         email: email,
-        website: website,
+        website: formattedWebsite,
         socialMediaLinks: socialMediaLinks,
         selectedCategoryIds: selectedCategoryIds,
         selectedOwnershipTypes: selectedOwnershipTypes
@@ -570,13 +616,177 @@ struct AddCompanyView: View {
         city: city,
         phoneNum: phoneNum,
         email: email,
-        website: website,
+        website: formattedWebsite,
         socialMediaLinks: socialMediaLinks,
         selectedCategoryIds: selectedCategoryIds,
         selectedOwnershipTypes: selectedOwnershipTypes
       )
     }
     dismiss()
+  }
+  
+  // Helper function to format website URL
+  private func formatWebsiteURL(_ url: String) -> String {
+    var formattedURL = url.trimmingCharacters(in: .whitespacesAndNewlines)
+    
+    // If it's empty, return empty string
+    if formattedURL.isEmpty {
+        return ""
+    }
+    
+    // If it already has http:// or https://, keep it as is
+    if formattedURL.lowercased().hasPrefix("http://") || formattedURL.lowercased().hasPrefix("https://") {
+        return formattedURL
+    }
+    
+    // Otherwise, add https:// prefix
+    return "https://" + formattedURL
+  }
+  
+  // Update the validation function to handle prefilled URLs
+  private func validateSocialMediaLink(platform: Company.SocialMedia, link: String) -> Bool {
+    // If link is empty, it's not valid
+    if link.isEmpty {
+      socialMediaLinkError = "Please enter a link"
+      return false
+    }
+    
+    // Clean the link for validation
+    var cleanLink = link.trimmingCharacters(in: .whitespacesAndNewlines)
+    
+    // Remove http:// or https:// if the user added them
+    if cleanLink.lowercased().hasPrefix("http://") {
+      cleanLink = String(cleanLink.dropFirst(7))
+    } else if cleanLink.lowercased().hasPrefix("https://") {
+      cleanLink = String(cleanLink.dropFirst(8))
+    }
+    
+    // Remove www. if present
+    if cleanLink.lowercased().hasPrefix("www.") {
+      cleanLink = String(cleanLink.dropFirst(4))
+    }
+    
+    switch platform {
+    case .instagram:
+      // Check if it's a valid Instagram URL or username
+      if cleanLink.lowercased().hasPrefix("instagram.com/") {
+        let username = cleanLink.dropFirst(14)
+        if username.isEmpty {
+          socialMediaLinkError = "Please include a username after instagram.com/"
+          return false
+        }
+        // Username should not contain spaces or special characters except _ and .
+        if username.contains(where: { !$0.isLetter && !$0.isNumber && $0 != "_" && $0 != "." }) {
+          socialMediaLinkError = "Instagram username contains invalid characters"
+          return false
+        }
+        return true
+      } else if !cleanLink.contains("/") {
+        // Just a username - check if it's valid
+        if cleanLink.contains(where: { !$0.isLetter && !$0.isNumber && $0 != "_" && $0 != "." }) {
+          socialMediaLinkError = "Instagram username contains invalid characters"
+          return false
+        }
+        return true
+      } else {
+        socialMediaLinkError = "Invalid Instagram link format"
+        return false
+      }
+      
+    case .facebook:
+      // Check if it's a valid Facebook URL or username/page name
+      if cleanLink.lowercased().hasPrefix("facebook.com/") {
+        let path = cleanLink.dropFirst(13)
+        if path.isEmpty {
+          socialMediaLinkError = "Please include a username or page name after facebook.com/"
+          return false
+        }
+        return true
+      } else if !cleanLink.contains("/") {
+        // Just a username/page name
+        return true
+      } else {
+        socialMediaLinkError = "Invalid Facebook link format"
+        return false
+      }
+      
+    case .twitter:
+      // Check if it's a valid Twitter/X URL or username
+      if cleanLink.lowercased().hasPrefix("twitter.com/") || cleanLink.lowercased().hasPrefix("x.com/") {
+        let username = cleanLink.contains("twitter.com/") ? 
+                      cleanLink.dropFirst(12) : 
+                      cleanLink.dropFirst(6)
+        if username.isEmpty {
+          socialMediaLinkError = "Please include a username after the domain"
+          return false
+        }
+        return true
+      } else if !cleanLink.contains("/") {
+        // Just a username
+        return true
+      } else {
+        socialMediaLinkError = "Invalid Twitter/X link format"
+        return false
+      }
+      
+    case .linkedin:
+      // Check if it's a valid LinkedIn URL or profile ID
+      if cleanLink.lowercased().hasPrefix("linkedin.com/") {
+        let path = cleanLink.dropFirst(13)
+        if path.isEmpty {
+          socialMediaLinkError = "Please include a profile path after linkedin.com/"
+          return false
+        }
+        return true
+      } else {
+        socialMediaLinkError = "Invalid LinkedIn link format"
+        return false
+      }
+      
+    case .youtube:
+      // Check if it's a valid YouTube URL or channel name
+      if cleanLink.lowercased().hasPrefix("youtube.com/") {
+        let path = cleanLink.dropFirst(12)
+        if path.isEmpty {
+          socialMediaLinkError = "Please include a channel or video path after youtube.com/"
+          return false
+        }
+        return true
+      } else if cleanLink.lowercased().hasPrefix("youtu.be/") {
+        let videoId = cleanLink.dropFirst(9)
+        if videoId.isEmpty {
+          socialMediaLinkError = "Please include a video ID after youtu.be/"
+          return false
+        }
+        return true
+      } else {
+        socialMediaLinkError = "Invalid YouTube link format"
+        return false
+      }
+      
+    case .other:
+      // For other social media platforms (TikTok, etc.), just make sure it contains a domain
+      if !cleanLink.contains(".") {
+        socialMediaLinkError = "Please enter a valid URL with a domain name"
+        return false
+      }
+      return true
+    }
+  }
+  
+  // Update the formatting function to handle prefilled URLs
+  private func formatSocialMediaLink(platform: Company.SocialMedia, link: String) -> String {
+    var formattedLink = link.trimmingCharacters(in: .whitespacesAndNewlines)
+    
+    // If it already has http:// or https://, extract the actual URL
+    if formattedLink.lowercased().hasPrefix("http://") {
+      formattedLink = String(formattedLink.dropFirst(7))
+    } else if formattedLink.lowercased().hasPrefix("https://") {
+      formattedLink = String(formattedLink.dropFirst(8))
+    }
+    
+    // Add https:// prefix to all links
+    return "https://" + formattedLink
   }
 }
 
@@ -875,89 +1085,156 @@ struct AddressField: View {
     @Binding var city: String
     @StateObject private var addressCompleter = AddressCompleter()
     @State private var showAddressSuggestions = false
+    @FocusState private var isAddressFieldFocused: Bool
     
     var body: some View {
-        VStack(alignment: .leading) {
-            CustomTextField(title: "Address *", text: $address)
-                .onChange(of: address) {oldValue, newValue in
-                    addressCompleter.searchAddress(newValue)
-                    showAddressSuggestions = !newValue.isEmpty
-                }
-            
-            if showAddressSuggestions && !addressCompleter.suggestions.isEmpty {
-                SuggestionsList(suggestions: addressCompleter.suggestions) { suggestion in
-                    address = suggestion.title
-                    showAddressSuggestions = false
-                    if let cityProvince = addressCompleter.extractCityAndProvince(from: suggestion) {
-                        city = cityProvince
+        VStack(alignment: .leading, spacing: 12) {
+            // Address field
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Address *")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+                
+                TextField("Enter street address", text: $address)
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 12)
+                    .background(Color.white)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                    )
+                    .focused($isAddressFieldFocused)
+                    .onChange(of: address) { oldValue, newValue in
+                        addressCompleter.searchAddress(newValue)
+                        showAddressSuggestions = !newValue.isEmpty && isAddressFieldFocused
                     }
-                }
+                    .onChange(of: isAddressFieldFocused) { oldValue, newValue in
+                        if newValue {
+                            showAddressSuggestions = !address.isEmpty
+                        }
+                    }
             }
-        }
-        .onTapGesture {
-            showAddressSuggestions = false
-        }
-    }
-}
-
-struct CityField: View {
-    @Binding var city: String
-    @StateObject private var addressCompleter = AddressCompleter()
-    @State private var showCitySuggestions = false
-    
-    var body: some View {
-        VStack(alignment: .leading) {
-            CustomTextField(title: "City *", text: $city)
-                .onChange(of: city) { oldValue, newValue in
-                    addressCompleter.searchCity(newValue)
-                    showCitySuggestions = !newValue.isEmpty
-                }
             
-            if showCitySuggestions && !addressCompleter.citySuggestions.isEmpty {
-                SuggestionsList(suggestions: addressCompleter.citySuggestions) { suggestion in
-                    city = suggestion
-                    showCitySuggestions = false
-                }
-            }
-        }
-        .onTapGesture {
-            showCitySuggestions = false
-        }
-    }
-}
-
-struct SuggestionsList<T>: View {
-    let suggestions: [T]
-    let onSelect: (T) -> Void
-    
-    var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 8) {
-                ForEach(Array(suggestions.enumerated()), id: \.offset) { _, suggestion in
-                    Button(action: { onSelect(suggestion) }) {
-                        Text(String(describing: suggestion))
-                            .foregroundColor(.primary)
+            // Address suggestions
+            if showAddressSuggestions && !addressCompleter.suggestions.isEmpty {
+                VStack(alignment: .leading, spacing: 0) {
+                    ForEach(addressCompleter.suggestions, id: \.self) { suggestion in
+                        Button(action: {
+                            print("Selected address: \(suggestion.title)")
+                            address = suggestion.title
+                            showAddressSuggestions = false
+                            isAddressFieldFocused = false
+                            
+                            // Try to extract city from the suggestion
+                            if let cityProvince = addressCompleter.extractCityAndProvince(from: suggestion) {
+                                print("Setting city to: \(cityProvince)")
+                                city = cityProvince
+                            } else {
+                                // If we couldn't extract the city, try to use the subtitle
+                                let subtitleComponents = suggestion.subtitle.components(separatedBy: ",")
+                                if subtitleComponents.count >= 2 {
+                                    let possibleCity = subtitleComponents[0].trimmingCharacters(in: .whitespaces)
+                                    if !possibleCity.isEmpty {
+                                        print("Setting city from subtitle: \(possibleCity), ON")
+                                        city = "\(possibleCity), ON" // Default to Ontario
+                                    }
+                                }
+                                
+                                // Special case for Nepean addresses
+                                if suggestion.title.contains("Nepean") || suggestion.subtitle.contains("Nepean") {
+                                    print("Detected Nepean address, setting city to Nepean, ON")
+                                    city = "Nepean, ON"
+                                }
+                                // Special case for Ottawa addresses
+                                else if suggestion.title.contains("Ottawa") || suggestion.subtitle.contains("Ottawa") {
+                                    print("Detected Ottawa address, setting city to Ottawa, ON")
+                                    city = "Ottawa, ON"
+                                }
+                                
+                                // Final fallback - if city is still empty, use a default based on the address
+                                if city.isEmpty {
+                                    // Try to extract any location name from the address
+                                    let words = suggestion.title.components(separatedBy: " ")
+                                    if words.count >= 2 {
+                                        // Use the last word that's not a number as a possible city name
+                                        for word in words.reversed() {
+                                            let trimmedWord = word.trimmingCharacters(in: .punctuationCharacters)
+                                            if !trimmedWord.isEmpty && Int(trimmedWord) == nil && trimmedWord.count > 2 {
+                                                print("Using fallback city name: \(trimmedWord), ON")
+                                                city = "\(trimmedWord), ON"
+                                                break
+                                            }
+                                        }
+                                    }
+                                    
+                                    // If still empty, use a generic value
+                                    if city.isEmpty {
+                                        print("Using default city: Ottawa, ON")
+                                        city = "Ottawa, ON" // Default to Ottawa as a common Canadian city
+                                    }
+                                }
+                            }
+                        }) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(suggestion.title)
+                                    .font(.subheadline)
+                                    .foregroundColor(.primary)
+                                
+                                Text(suggestion.subtitle)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.vertical, 8)
+                            .padding(.horizontal, 12)
+                        }
+                        Divider()
                     }
-                    Divider()
                 }
+                .background(Color.white)
+                .cornerRadius(8)
+                .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+                .padding(.top, -8)
+                .zIndex(1)
+            }
+            
+            // Simplified City field
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text("City *")
+                        .font(.subheadline)
+                        .foregroundColor(.gray)
+                    
+                    Text("(Auto-filled from address when possible)")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                        .italic()
+                }
+                
+                TextField("Enter city", text: $city)
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 12)
+                    .background(Color.white)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                    )
             }
         }
-        .frame(maxHeight: 200)
-        .background(Color.white)
-        .cornerRadius(8)
-        .shadow(radius: 2)
+        .onTapGesture {
+            // This will close the suggestions when tapping outside the text field
+            if !isAddressFieldFocused {
+                showAddressSuggestions = false
+            }
+        }
     }
 }
 
 class AddressCompleter: NSObject, ObservableObject {
     @Published var suggestions: [MKLocalSearchCompletion] = []
-    @Published var citySuggestions: [String] = []
     private let completer = MKLocalSearchCompleter()
     
     @Published private var addressQuery = ""
-    @Published private var cityQuery = ""
     
     private var searchTask: Task<Void, Never>?
     
@@ -968,6 +1245,7 @@ class AddressCompleter: NSObject, ObservableObject {
             center: CLLocationCoordinate2D(latitude: 56.1304, longitude: -106.3468), // Center of Canada
             span: MKCoordinateSpan(latitudeDelta: 90, longitudeDelta: 140)
         )
+        completer.resultTypes = .address
         
         // Observe address changes
         Task {
@@ -975,37 +1253,17 @@ class AddressCompleter: NSObject, ObservableObject {
                 await debounceAddressSearch()
             }
         }
-        
-        // Observe city changes
-        Task {
-            for await _ in $cityQuery.values {
-                await debounceCitySearch()
-            }
-        }
     }
     
     private func debounceAddressSearch() async {
         searchTask?.cancel()
         searchTask = Task {
-            try? await Task.sleep(nanoseconds: 300_000_000) // 300ms
+            try? await Task.sleep(nanoseconds: 200_000_000) // 200ms - faster response
             guard !Task.isCancelled else { return }
             
             await MainActor.run {
                 completer.resultTypes = .address
-                completer.queryFragment = addressQuery + " Canada"
-            }
-        }
-    }
-    
-    private func debounceCitySearch() async {
-        searchTask?.cancel()
-        searchTask = Task {
-            try? await Task.sleep(nanoseconds: 300_000_000) // 300ms
-            guard !Task.isCancelled else { return }
-            
-            await MainActor.run {
-                completer.resultTypes = .query
-                completer.queryFragment = cityQuery + " Canada"
+                completer.queryFragment = addressQuery
             }
         }
     }
@@ -1014,43 +1272,95 @@ class AddressCompleter: NSObject, ObservableObject {
         addressQuery = query
     }
     
-    func searchCity(_ query: String) {
-        cityQuery = query
-    }
-    
     func extractCityAndProvince(from result: MKLocalSearchCompletion) -> String? {
-        let components = result.title.components(separatedBy: ",")
-        guard components.count >= 2 else { return nil }
+        print("Attempting to extract city from: \(result.title), subtitle: \(result.subtitle)")
         
-        // Get the city and province components
-        let cityComponent = components[0].trimmingCharacters(in: .whitespaces)
-        let provinceComponent = components[1].trimmingCharacters(in: .whitespaces)
+        // First try to extract from the title (which usually contains the address)
+        let titleComponents = result.title.components(separatedBy: ",")
         
-        // Check if it's a Canadian province
-        let provinces = ["AB", "BC", "MB", "NB", "NL", "NS", "NT", "NU", "ON", "PE", "QC", "SK", "YT"]
-        let foundProvince = provinces.first { provinceComponent.contains($0) }
+        // If we have at least 2 components in the title, try to extract city and province
+        if titleComponents.count >= 2 {
+            // The city is usually the second-to-last component
+            let possibleCityIndex = titleComponents.count >= 3 ? titleComponents.count - 2 : 0
+            let cityComponent = titleComponents[possibleCityIndex].trimmingCharacters(in: .whitespaces)
+            
+            // The province is usually the last component
+            let provinceComponent = titleComponents.last?.trimmingCharacters(in: .whitespaces) ?? ""
+            
+            // Check if it's a Canadian province
+            let provinces = ["AB", "BC", "MB", "NB", "NL", "NS", "NT", "NU", "ON", "PE", "QC", "SK", "YT"]
+            let foundProvince = provinces.first { provinceComponent.contains($0) }
+            
+            if let province = foundProvince {
+                let result = "\(cityComponent), \(province)"
+                print("Extracted city and province from title: \(result)")
+                return result
+            }
+        }
         
-        guard let province = foundProvince else { return nil }
-        return "\(cityComponent), \(province)"
+        // If we couldn't extract from the title, try the subtitle
+        let subtitleComponents = result.subtitle.components(separatedBy: ",")
+        
+        // Look for a component that contains a Canadian province
+        let provinces = ["Alberta", "British Columbia", "Manitoba", "New Brunswick", 
+                         "Newfoundland and Labrador", "Nova Scotia", "Northwest Territories", 
+                         "Nunavut", "Ontario", "Prince Edward Island", "Quebec", "Saskatchewan", "Yukon",
+                         "AB", "BC", "MB", "NB", "NL", "NS", "NT", "NU", "ON", "PE", "QC", "SK", "YT"]
+        
+        for (index, component) in subtitleComponents.enumerated() {
+            let trimmedComponent = component.trimmingCharacters(in: .whitespaces)
+            
+            // Check if this component contains a province
+            if provinces.contains(where: { trimmedComponent.contains($0) }) {
+                // If we found a province and there's a component before it, that's likely the city
+                if index > 0 {
+                    let cityComponent = subtitleComponents[index - 1].trimmingCharacters(in: .whitespaces)
+                    let result = "\(cityComponent), \(trimmedComponent)"
+                    print("Extracted city and province from subtitle: \(result)")
+                    return result
+                } else if subtitleComponents.count > 1 {
+                    // If the province is the first component, the city might be the next one
+                    let cityComponent = subtitleComponents[1].trimmingCharacters(in: .whitespaces)
+                    let result = "\(cityComponent), \(trimmedComponent)"
+                    print("Extracted city and province from subtitle (alternate order): \(result)")
+                    return result
+                }
+            }
+        }
+        
+        // If we still couldn't find a city and province, check if "Canada" is in the subtitle
+        // and use the component before it as the city with a generic "ON" province
+        if result.subtitle.contains("Canada") {
+            let components = result.subtitle.components(separatedBy: ",")
+            if components.count >= 2 {
+                // Try to find the component before "Canada"
+                for (index, component) in components.enumerated() {
+                    if component.trimmingCharacters(in: .whitespaces) == "Canada" && index > 0 {
+                        let cityComponent = components[index - 1].trimmingCharacters(in: .whitespaces)
+                        // Check if this component contains a province code
+                        let containsProvince = provinces.contains { cityComponent.contains($0) }
+                        
+                        if !containsProvince {
+                            let result = "\(cityComponent), ON" // Default to Ontario if unknown
+                            print("Extracted city with default province: \(result)")
+                            return result
+                        }
+                    }
+                }
+            }
+        }
+        
+        print("Failed to extract city and province")
+        return nil
     }
 }
 
 extension AddressCompleter: MKLocalSearchCompleterDelegate {
     func completerDidUpdateResults(_ completer: MKLocalSearchCompleter) {
         Task { @MainActor in
-            if completer.resultTypes == .address {
-                // Filter for Canadian addresses
-                self.suggestions = completer.results.filter { result in
-                    result.title.contains("Canada") || 
-                    result.subtitle.contains("Canada")
-                }
-            } else {
-                // Filter and format city suggestions
-                let canadianCities = completer.results
-                    .compactMap { extractCityAndProvince(from: $0) }
-                    .filter { !$0.isEmpty }
-                self.citySuggestions = Array(Set(canadianCities)) // Remove duplicates
-            }
+            // Don't filter strictly for Canadian addresses
+            // This allows more results to show up, including street addresses
+            self.suggestions = completer.results
         }
     }
     
