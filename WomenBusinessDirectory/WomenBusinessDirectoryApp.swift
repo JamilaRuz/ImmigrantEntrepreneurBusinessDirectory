@@ -8,6 +8,8 @@
 import SwiftUI
 import Firebase
 import AuthenticationServices
+import Alamofire
+import AlamofireImage
 
 @main
 struct WomenBusinessDirectoryApp: App {
