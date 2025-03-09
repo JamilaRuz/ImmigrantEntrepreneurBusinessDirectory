@@ -24,8 +24,9 @@ struct InfoView: View {
                         .foregroundColor(.gray)
                         .fixedSize(horizontal: false, vertical: true)
                         .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.vertical, 5)
                 }
-                .frame(height: 100)
+                .frame(minHeight: 200)
                 .padding()
                 .background(Color.gray.opacity(0.1))
                 .cornerRadius(10)
