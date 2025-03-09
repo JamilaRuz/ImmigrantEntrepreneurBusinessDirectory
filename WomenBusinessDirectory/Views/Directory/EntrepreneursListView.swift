@@ -8,7 +8,6 @@ final class EntrepreneursListViewModel: ObservableObject {
     @Published var searchTerm = ""
     @Published var isLoading = true
     @Published var error: String?
-    @Published var cacheStats: String = ""
     
     var filteredEntrepreneurs: [Entrepreneur] {
         if searchTerm.isEmpty {
@@ -63,15 +62,6 @@ final class EntrepreneursListViewModel: ObservableObject {
     
     func getCompanies(for entrepreneur: Entrepreneur) -> [Company] {
         return entrepreneurCompanies[entrepreneur.entrepId] ?? []
-    }
-    
-    func updateCacheStats() {
-        cacheStats = ImageCache.shared.getCacheStats()
-    }
-    
-    func clearImageCache() {
-        ImageCache.shared.clearCache()
-        updateCacheStats()
     }
 }
 
@@ -165,7 +155,6 @@ struct EntrepreneurRowView: View {
 struct EntrepreneursListView: View {
     @StateObject private var viewModel = EntrepreneursListViewModel()
     @Environment(\.dismiss) private var dismiss
-    @State private var showCacheStats = false
     
     var body: some View {
         NavigationStack {
@@ -175,36 +164,6 @@ struct EntrepreneursListView: View {
                     .padding(.horizontal)
                     .padding(.vertical, 8)
                     .background(Color.white)
-                
-                // Debug cache info (only in DEBUG mode)
-                #if DEBUG
-                if showCacheStats {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Cache Statistics")
-                            .font(.headline)
-                        
-                        Text(viewModel.cacheStats)
-                            .font(.caption)
-                        
-                        HStack {
-                            Button("Refresh Stats") {
-                                viewModel.updateCacheStats()
-                            }
-                            .buttonStyle(.bordered)
-                            
-                            Button("Clear Cache") {
-                                viewModel.clearImageCache()
-                            }
-                            .buttonStyle(.bordered)
-                            .tint(.red)
-                        }
-                    }
-                    .padding()
-                    .background(Color.gray.opacity(0.1))
-                    .cornerRadius(8)
-                    .padding(.horizontal)
-                }
-                #endif
                 
                 if viewModel.isLoading {
                     ProgressView()
@@ -267,20 +226,6 @@ struct EntrepreneursListView: View {
             .background(Color(.systemGroupedBackground))
             .navigationTitle("Entrepreneurs")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                #if DEBUG
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        showCacheStats.toggle()
-                        if showCacheStats {
-                            viewModel.updateCacheStats()
-                        }
-                    }) {
-                        Image(systemName: "info.circle")
-                    }
-                }
-                #endif
-            }
         }
         .tint(Color.orange1)
         .task {
