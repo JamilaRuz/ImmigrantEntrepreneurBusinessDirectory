@@ -18,6 +18,8 @@ struct EmptyProfileView: View {
                 .multilineTextAlignment(.center)
                 
             Button(action: {
+                // Reset the skipped authentication state when user explicitly chooses to sign in
+                UserDefaults.standard.set(false, forKey: "hasSkippedAuthentication")
                 showSignInView = true // Navigate to AuthenticationView
             }) {
                 Text("Sign In")

@@ -15,6 +15,9 @@ final class SettingsViewModel: ObservableObject {
   
   func signOut() throws {
     try AuthenticationManager.shared.signOut()
+    
+    // Reset the skipped authentication state when user signs out
+    UserDefaults.standard.set(false, forKey: "hasSkippedAuthentication")
   }
   
   func deleteAccount() async throws {
@@ -37,6 +40,9 @@ final class SettingsViewModel: ObservableObject {
       
       // Finally, delete the Firebase Auth account
       try await AuthenticationManager.shared.deleteAccount()
+      
+      // Reset the skipped authentication state when account is deleted
+      UserDefaults.standard.set(false, forKey: "hasSkippedAuthentication")
     } catch let error as NSError {
       if error.domain == "FIRAuthErrorDomain" && error.code == 17014 {
         // Need re-authentication

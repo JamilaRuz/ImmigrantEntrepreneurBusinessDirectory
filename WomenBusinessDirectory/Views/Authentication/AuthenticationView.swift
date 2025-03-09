@@ -419,6 +419,9 @@ struct AuthenticationView: View {
                     Button("Skip") {
                         showSignInView = false
                         userIsLoggedIn = false // Ensure user is not logged in
+                        
+                        // Save the skipped authentication state in UserDefaults
+                        UserDefaults.standard.set(true, forKey: "hasSkippedAuthentication")
                     }
                     .frame(width: 100, height: 40)
                     .foregroundColor(.orange1)

@@ -69,7 +69,12 @@ struct ContentView: View {
             // No user is signed in
             print("ContentView: No user is signed in")
             userIsLoggedIn = false
-            showSignInView = true
+            
+            // Check if user has previously skipped authentication
+            let hasSkippedAuth = UserDefaults.standard.bool(forKey: "hasSkippedAuthentication")
+            showSignInView = !hasSkippedAuth
+            
+            print("ContentView: User has skipped authentication: \(hasSkippedAuth)")
         }
     }
 }
