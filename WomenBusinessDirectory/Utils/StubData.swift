@@ -7,13 +7,14 @@
 
 import Foundation
 import UIKit
+import FirebaseFirestore
 
 class StubCompanyManager: CompanyManager {
-  func getCompanies() async throws -> [Company] {
+  func getCompanies(source: FirestoreSource = .default) async throws -> [Company] {
     createStubCompanies()
   }
   
-  func getCompaniesByCategory(categoryId: String) async throws -> [Company] {
+  func getCompaniesByCategory(categoryId: String, source: FirestoreSource = .default) async throws -> [Company] {
     createStubCompanies()
   }
   
