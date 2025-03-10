@@ -84,6 +84,30 @@ final class CompaniesListViewModel: ObservableObject {
             }
         }
     }
+    
+    // Add a method to force reload data from server
+    func forceReload() {
+        print("CompaniesListViewModel: Force reloading companies from server...")
+        
+        Task {
+            do {
+                isLoading = true
+                print("CompaniesListViewModel: Loading companies for category \(category.id) from server...")
+                
+                async let companiesTask = RealCompanyManager.shared.getCompaniesByCategory(categoryId: category.id, source: .server)
+                async let categoriesTask = CategoryManager.shared.getCategories()
+                
+                self.companies = try await companiesTask
+                self.categories = try await categoriesTask
+                
+                isLoading = false
+                print("CompaniesListViewModel: Finished loading \(self.companies.count) companies from server")
+            } catch {
+                print("CompaniesListViewModel: Failed to load companies from server: \(error)")
+                isLoading = false
+            }
+        }
+    }
 }
 
 struct CompaniesListView: View {
@@ -138,7 +162,7 @@ struct CompaniesListView: View {
                         }
                         .scrollContentBackground(.hidden)
                         .refreshable {
-                            viewModel.loadCompanies()
+                            viewModel.forceReload()
                         }
                     }
                 }

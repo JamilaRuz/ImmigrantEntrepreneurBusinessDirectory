@@ -115,8 +115,26 @@ final class DirectoryListViewModel: ObservableObject {
     print("DirectoryListView: Force reloading data...")
     // Reset loading state
     isLoading = false
-    // Call loadData
-    loadData()
+    // Call loadData with force refresh
+    Task {
+      do {
+        print("DirectoryListView: Starting to force reload data...")
+        isLoading = true
+        
+        // Load all data concurrently with cache policy to fetch from server
+        async let categoriesTask = CategoryManager.shared.getCategories()
+        async let companiesTask = RealCompanyManager.shared.getCompanies(source: .server)
+        
+        self.categories = try await categoriesTask
+        self.allCompanies = try await companiesTask
+        hasInitialLoad = true
+        isLoading = false
+        print("DirectoryListView: Finished force reloading data")
+      } catch {
+        print("DirectoryListView: Failed to force reload data: \(error)")
+        isLoading = false
+      }
+    }
   }
 }
 

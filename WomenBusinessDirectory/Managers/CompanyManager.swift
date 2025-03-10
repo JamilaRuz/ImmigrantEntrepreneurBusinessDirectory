@@ -129,8 +129,8 @@ class Company: Codable, Hashable, Equatable, Identifiable {
 }
 
 protocol CompanyManager {
-    func getCompanies() async throws -> [Company]
-    func getCompaniesByCategory(categoryId: String) async throws -> [Company]
+    func getCompanies(source: FirestoreSource) async throws -> [Company]
+    func getCompaniesByCategory(categoryId: String, source: FirestoreSource) async throws -> [Company]
     func getCompany(companyId: String) async throws -> Company
     func createCompany(company: Company) async throws
     func updateCompany(company: Company) async throws
@@ -157,10 +157,10 @@ final class RealCompanyManager: CompanyManager {
         return companiesCollection.document(companyId)
     }
     
-    func getCompanies() async throws -> [Company] {
-        print("RealCompanyManager: Fetching all companies...")
+    func getCompanies(source: FirestoreSource = .default) async throws -> [Company] {
+        print("RealCompanyManager: Fetching all companies with source: \(source)...")
         do {
-            let querySnapshot = try await companiesCollection.getDocuments()
+            let querySnapshot = try await companiesCollection.getDocuments(source: source)
             print("RealCompanyManager: Received document snapshot with \(querySnapshot.documents.count) documents")
             
             let companies = try querySnapshot.documents.map { document -> Company in
@@ -184,11 +184,11 @@ final class RealCompanyManager: CompanyManager {
         }
     }
     
-    func getCompaniesByCategory(categoryId: String) async throws -> [Company] {
-        print("Fetching companies for category: \(categoryId)")
+    func getCompaniesByCategory(categoryId: String, source: FirestoreSource = .default) async throws -> [Company] {
+        print("Fetching companies for category: \(categoryId) with source: \(source)")
         let querySnapshot = try await companiesCollection
             .whereField("categoryIds", arrayContains: categoryId)
-            .getDocuments()
+            .getDocuments(source: source)
         let companies = try querySnapshot.documents.map { try $0.data(as: Company.self) }
         print("Fetched \(companies.count) companies for category \(categoryId)")
         print("Company details for category \(categoryId):")
