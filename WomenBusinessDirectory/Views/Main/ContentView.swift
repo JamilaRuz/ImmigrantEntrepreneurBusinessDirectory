@@ -84,6 +84,7 @@ struct MainTabView: View {
     @Binding var userIsLoggedIn: Bool
     @ObservedObject var directoryListViewModel: DirectoryListViewModel
     @State private var selectedTab = 0
+    @ObservedObject private var completionManager = ProfileCompletionManager.shared
     
     // Add a state variable to force view refresh
     @State private var forceRefresh: Bool = false
@@ -110,26 +111,26 @@ struct MainTabView: View {
                 }
                 .tag(0)
             
-            BookmarkedListView()
+            BookmarkedListView(showSignInView: $showSignInView, userIsLoggedIn: $userIsLoggedIn)
                 .tabItem {
                     Label("Bookmarked", systemImage: "star.square")
                 }
                 .tag(1)
             
-            EntrepreneursListView()
+            EntrepreneursListView(showSignInView: $showSignInView, userIsLoggedIn: $userIsLoggedIn)
                 .tabItem {
                     Label("Entrepreneurs", systemImage: "person.2.fill")
                 }
                 .tag(2)
             
             if userIsLoggedIn {
-                ProfileView(showSignInView: $showSignInView)
+                ProfileView(showSignInView: $showSignInView, userIsLoggedIn: $userIsLoggedIn)
                     .tabItem {
                         Label("Profile", systemImage: "person.fill")
                     }
                     .tag(3)
             } else {
-                EmptyProfileView(showSignInView: $showSignInView)
+                EmptyProfileView(showSignInView: $showSignInView, userIsLoggedIn: $userIsLoggedIn)
                     .tabItem {
                         Label("Profile", systemImage: "person.fill")
                     }
@@ -137,6 +138,21 @@ struct MainTabView: View {
             }
         }
         .accentColor(tabColor)
+        .onChange(of: userIsLoggedIn) { _, _ in
+            print("MainTabView: userIsLoggedIn changed to: \(userIsLoggedIn)")
+
+            // Check if user is logged in but profile is incomplete
+            if userIsLoggedIn {
+                completionManager.checkProfileCompletion()
+                
+                // If profile is incomplete, direct user to Profile tab
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    if !completionManager.isProfileComplete {
+                        selectedTab = 3 // Profile tab
+                    }
+                }
+            }
+        }
         .onAppear {
             print("MainTabView: onAppear - userIsLoggedIn = \(userIsLoggedIn)")
             
@@ -145,13 +161,32 @@ struct MainTabView: View {
                 print("MainTabView: Received UserDidSignIn notification")
                 DispatchQueue.main.async {
                     self.forceRefresh.toggle() // Force view refresh
+                    if userIsLoggedIn {
+                        completionManager.checkProfileCompletion()
+                        
+                        // If profile is incomplete, direct user to Profile tab
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            if !completionManager.isProfileComplete {
+                                selectedTab = 3 // Profile tab
+                            }
+                        }
+                    }
                     print("MainTabView: Updated state after notification - userIsLoggedIn: \(self.userIsLoggedIn)")
+                }
+            }
+            
+            // Listen for profile completion status changes
+            NotificationCenter.default.addObserver(forName: NSNotification.Name("ProfileCompletionStatusChanged"), object: nil, queue: .main) { notification in
+                if let isComplete = notification.userInfo?["isComplete"] as? Bool, !isComplete {
+                    // If profile becomes incomplete, direct user to Profile tab
+                    selectedTab = 3
                 }
             }
         }
         .onDisappear {
-            // Remove notification observer
+            // Remove notification observers
             NotificationCenter.default.removeObserver(self, name: NSNotification.Name("UserDidSignIn"), object: nil)
+            NotificationCenter.default.removeObserver(self, name: NSNotification.Name("ProfileCompletionStatusChanged"), object: nil)
         }
         .id(forceRefresh) // Force view to refresh when this changes
     }

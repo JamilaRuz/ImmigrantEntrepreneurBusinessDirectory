@@ -10,10 +10,23 @@ final class EntrepreneursListViewModel: ObservableObject {
     @Published var error: String?
     
     var filteredEntrepreneurs: [Entrepreneur] {
-        if searchTerm.isEmpty {
-            return entrepreneurs
+        // First filter out entrepreneurs with incomplete profiles
+        let completedEntrepreneurs = entrepreneurs.filter { entrepreneur in
+            // Check if profile has basic information
+            let hasName = (entrepreneur.fullName?.isEmpty == false)
+            let hasBio = (entrepreneur.bioDescr?.isEmpty == false)
+            let hasProfileImage = (entrepreneur.profileUrl?.isEmpty == false)
+            let hasCompanies = !entrepreneur.companyIds.isEmpty
+            
+            // Profile is complete if it has name, either bio or profile image, and at least one company
+            return hasName && (hasBio || hasProfileImage) && hasCompanies
         }
-        return entrepreneurs.filter { entrepreneur in
+        
+        // Then apply search filter
+        if searchTerm.isEmpty {
+            return completedEntrepreneurs
+        }
+        return completedEntrepreneurs.filter { entrepreneur in
             let name = entrepreneur.fullName?.lowercased() ?? ""
             let bio = entrepreneur.bioDescr?.lowercased() ?? ""
             let companies = entrepreneurCompanies[entrepreneur.entrepId]?.map { $0.name.lowercased() } ?? []
@@ -155,16 +168,12 @@ struct EntrepreneurRowView: View {
 struct EntrepreneursListView: View {
     @StateObject private var viewModel = EntrepreneursListViewModel()
     @Environment(\.dismiss) private var dismiss
-    
+    @Binding var showSignInView: Bool
+    @Binding var userIsLoggedIn: Bool
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                // Search bar
-                SearchBar(text: $viewModel.searchTerm)
-                    .padding(.horizontal)
-                    .padding(.vertical, 8)
-                    .background(Color.white)
-                
                 if viewModel.isLoading {
                     ProgressView()
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -195,6 +204,12 @@ struct EntrepreneursListView: View {
                                 .font(.title2)
                                 .fontWeight(.semibold)
                                 .foregroundColor(Color.orange1)
+                            
+                            Text("Only entrepreneurs with complete profiles are shown in the directory")
+                                .font(.subheadline)
+                                .multilineTextAlignment(.center)
+                                .foregroundColor(.secondary)
+                                .padding(.horizontal)
                         } else {
                             Text("No entrepreneurs match your search")
                                 .font(.title2)
@@ -204,18 +219,18 @@ struct EntrepreneursListView: View {
                     }
                     .padding()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color(.systemGroupedBackground))
                 } else {
                     List {
                         ForEach(viewModel.filteredEntrepreneurs, id: \.entrepId) { entrepreneur in
-                            NavigationLink(destination: ProfileView(showSignInView: .constant(false), isEditable: false, entrepreneur: entrepreneur)) {
+                            NavigationLink(destination: ProfileView(showSignInView: $showSignInView, userIsLoggedIn: $userIsLoggedIn, isEditable: false, entrepreneur: entrepreneur)) {
                                 EntrepreneurRowView(entrepreneur: entrepreneur, viewModel: viewModel)
                             }
                             .listRowSeparator(.visible)
                             .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
                         }
                     }
-                    .listStyle(.plain)
+                    .listStyle(.automatic)
+                    .background(Color.white)
                     .refreshable {
                         await Task { 
                             viewModel.loadEntrepreneurs() 
@@ -223,17 +238,26 @@ struct EntrepreneursListView: View {
                     }
                 }
             }
-            .background(Color(.systemGroupedBackground))
+            .background(Color(.systemGray6))
             .navigationTitle("Entrepreneurs")
             .navigationBarTitleDisplayMode(.inline)
+            .customNavigationBar(
+                showSignInView: $showSignInView,
+                isLoggedIn: $userIsLoggedIn
+            )
         }
         .tint(Color.orange1)
         .task {
             viewModel.loadEntrepreneurs()
+            
+            // Update login status
+            if let _ = try? AuthenticationManager.shared.getAuthenticatedUser() {
+                userIsLoggedIn = true
+            }
         }
     }
 }
 
 #Preview {
-    EntrepreneursListView()
+    EntrepreneursListView(showSignInView: .constant(false), userIsLoggedIn: .constant(false))
 } 

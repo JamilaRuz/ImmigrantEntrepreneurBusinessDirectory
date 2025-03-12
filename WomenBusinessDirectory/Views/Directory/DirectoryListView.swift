@@ -139,9 +139,12 @@ final class DirectoryListViewModel: ObservableObject {
 }
 
 struct DirectoryListView: View {
-  @StateObject var viewModel = DirectoryListViewModel()
+  @ObservedObject var viewModel: DirectoryListViewModel
   @Binding var showSignInView: Bool
   @Binding var userIsLoggedIn: Bool
+  @State private var showFilterSheet = false
+  @State private var showToast = false
+  @State private var showDeleteConfirmation = false
   
   var body: some View {
     NavigationStack {
@@ -184,6 +187,11 @@ struct DirectoryListView: View {
       }
       .navigationTitle("Business Directory")
       .navigationBarTitleDisplayMode(.inline)
+      .customNavigationBar(
+        showSignInView: $showSignInView,
+        isLoggedIn: $userIsLoggedIn,
+        activeFiltersCount: viewModel.activeFiltersCount
+      )
       .onAppear {
         viewModel.setViewActive(true)
       }
@@ -191,10 +199,17 @@ struct DirectoryListView: View {
         viewModel.setViewActive(false)
       }
     }
-    .customNavigationBar(showSignInView: $showSignInView, isLoggedIn: $userIsLoggedIn, activeFiltersCount: viewModel.activeFiltersCount)
+    .alert("Delete Account", isPresented: $showDeleteConfirmation) {
+      Button("Cancel", role: .cancel) {}
+      Button("Delete", role: .destructive) {
+        // Handle account deletion
+      }
+    } message: {
+      Text("Are you sure you want to delete your account? This will permanently delete all your data including your profile, companies, and all associated images. This action cannot be undone.")
+    }
   }
 }
 
 #Preview {
-  DirectoryListView(showSignInView: .constant(false), userIsLoggedIn: .constant(false))
+  DirectoryListView(viewModel: DirectoryListViewModel(), showSignInView: .constant(false), userIsLoggedIn: .constant(false))
 }

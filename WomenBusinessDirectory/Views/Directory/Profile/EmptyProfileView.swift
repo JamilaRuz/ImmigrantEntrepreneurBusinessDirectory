@@ -8,7 +8,8 @@
 import SwiftUI
 
 struct EmptyProfileView: View {
-    @Binding var showSignInView: Bool // Binding to control navigation to AuthenticationView
+    @Binding var showSignInView: Bool
+    @Binding var userIsLoggedIn: Bool
 
     var body: some View {
         VStack(spacing: 16) {
@@ -40,8 +41,6 @@ struct EmptyProfileView: View {
     }
 }
 
-struct EmptyView_Previews: PreviewProvider {
-    static var previews: some View {
-        EmptyProfileView(showSignInView: .constant(false))
-    }
+#Preview {
+    EmptyProfileView(showSignInView: .constant(false), userIsLoggedIn: .constant(false))
 }

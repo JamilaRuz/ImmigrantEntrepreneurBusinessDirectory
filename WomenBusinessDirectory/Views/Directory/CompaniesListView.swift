@@ -112,11 +112,18 @@ final class CompaniesListViewModel: ObservableObject {
 
 struct CompaniesListView: View {
     @StateObject private var viewModel: CompaniesListViewModel
+    @State private var showSignInView = false
+    @State private var userIsLoggedIn = false
     let category: Category
     
     init(category: Category) {
         self.category = category
         self._viewModel = StateObject(wrappedValue: CompaniesListViewModel(category: category))
+        
+        // Check if user is logged in
+        if let _ = try? AuthenticationManager.shared.getAuthenticatedUser() {
+            self._userIsLoggedIn = State(initialValue: true)
+        }
     }
     
     var body: some View {
@@ -173,6 +180,11 @@ struct CompaniesListView: View {
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             viewModel.setViewActive(true)
+            
+            // Update login status
+            if let _ = try? AuthenticationManager.shared.getAuthenticatedUser() {
+                userIsLoggedIn = true
+            }
         }
         .onDisappear {
             viewModel.setViewActive(false)
@@ -180,9 +192,6 @@ struct CompaniesListView: View {
     }
 }
 
-
 #Preview {
-    NavigationStack {
-        CompaniesListView(category: Category(id: "1", name: "Test Category", systemIconName: "star"))
-    }
+    CompaniesListView(category: Category(id: "1", name: "Test Category", systemIconName: "star"))
 } 

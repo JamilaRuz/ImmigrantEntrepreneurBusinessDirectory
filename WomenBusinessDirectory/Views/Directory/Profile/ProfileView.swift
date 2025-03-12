@@ -75,16 +75,24 @@ final class ProfileViewModel: ObservableObject {
 
 struct ProfileView: View {
     @StateObject private var viewModel = ProfileViewModel()
+    @StateObject private var completionManager = ProfileCompletionManager.shared
     @State private var showingEditProfile = false
     @State private var showSettingsView = false
     @State private var showingDeleteAlert = false
     @State private var selectedCompanyToEdit: Company?
     @Binding var showSignInView: Bool
+    @Binding var userIsLoggedIn: Bool
     let isEditable: Bool
     let entrepreneur: Entrepreneur?
     
-    init(showSignInView: Binding<Bool>, isEditable: Bool = true, entrepreneur: Entrepreneur? = nil) {
+    // Computed property to determine if this is the current user's profile
+    private var isOwnProfile: Bool {
+        return entrepreneur == nil
+    }
+    
+    init(showSignInView: Binding<Bool>, userIsLoggedIn: Binding<Bool>, isEditable: Bool = true, entrepreneur: Entrepreneur? = nil) {
         self._showSignInView = showSignInView
+        self._userIsLoggedIn = userIsLoggedIn
         self.isEditable = isEditable
         self.entrepreneur = entrepreneur
     }
@@ -92,16 +100,8 @@ struct ProfileView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                LinearGradient(
-                    gradient: Gradient(colors: [
-                        Color.purple1.opacity(0.1),
-                        Color.pink1.opacity(0.1),
-                        Color.white.opacity(0.1)
-                    ]),
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .edgesIgnoringSafeArea(.all)
+                Color(.systemGray6)
+                    .edgesIgnoringSafeArea(.bottom)
 
                 VStack {
                     ScrollView {
@@ -120,11 +120,23 @@ struct ProfileView: View {
                     }
                 }
             }
+            .background(Color(.systemGray6))
             .navigationTitle("Profile")
+            .navigationBarTitleDisplayMode(.inline)
+            .customNavigationBar(
+                showSignInView: $showSignInView,
+                isLoggedIn: $userIsLoggedIn
+            )
+            .withProfileCompletionBanner(isOwnProfile: isOwnProfile, action: {
+                showingEditProfile = true
+            })
         }
         .task {
             do {
                 try await viewModel.loadData(for: entrepreneur)
+                if isEditable && isOwnProfile {
+                    completionManager.checkProfileCompletion()
+                }
             } catch {
                 print("Failed to load data: \(error)")
             }
@@ -135,6 +147,9 @@ struct ProfileView: View {
                 Task {
                     do {
                         try await viewModel.loadData(for: entrepreneur)
+                        if isEditable && isOwnProfile {
+                            completionManager.checkProfileCompletion()
+                        }
                     } catch {
                         print("Failed to refresh data after edit: \(error)")
                     }
@@ -362,6 +377,9 @@ struct ProfileView: View {
             Task { @MainActor in
                 do {
                     try await viewModel.loadData(for: entrepreneur)
+                    if isEditable && isOwnProfile {
+                        completionManager.checkProfileCompletion()
+                    }
                 } catch {
                     print("Failed to refresh data after adding company: \(error)")
                 }
@@ -371,7 +389,5 @@ struct ProfileView: View {
 }
 
 #Preview {
-    NavigationStack {
-        ProfileView(showSignInView: .constant(false))
-    }
+    ProfileView(showSignInView: .constant(false), userIsLoggedIn: .constant(false))
 }

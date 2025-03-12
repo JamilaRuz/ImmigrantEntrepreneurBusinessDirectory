@@ -34,9 +34,11 @@ class BookmarkedListViewModel: ObservableObject {
 
 struct BookmarkedListView: View {
     @StateObject private var viewModel = BookmarkedListViewModel()
-    
+    @Binding var showSignInView: Bool
+    @Binding var userIsLoggedIn: Bool
+
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Group {
                 if viewModel.bookmarkedCompanies.isEmpty {
                     VStack(spacing: 16) {
@@ -69,8 +71,19 @@ struct BookmarkedListView: View {
                 }
             }
             .background(Color(.systemGray6))
+            .navigationTitle("Bookmarked")
+            .navigationBarTitleDisplayMode(.inline)
+            .customNavigationBar(
+                showSignInView: $showSignInView,
+                isLoggedIn: $userIsLoggedIn
+            )
             .onAppear {
                 viewModel.loadBookmarkedCompanies()
+                
+                // Update login status
+                if let _ = try? AuthenticationManager.shared.getAuthenticatedUser() {
+                    userIsLoggedIn = true
+                }
             }
         }
         .tint(Color.green1)
@@ -78,5 +91,5 @@ struct BookmarkedListView: View {
 }
 
 #Preview {
-    BookmarkedListView()
+    BookmarkedListView(showSignInView: .constant(false), userIsLoggedIn: .constant(false))
 }

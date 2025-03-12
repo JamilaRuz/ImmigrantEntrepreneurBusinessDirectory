@@ -64,6 +64,10 @@ final class AuthenticationManager {
     
     // If the email exists, return the authenticated user
     if !querySnapshot.isEmpty {
+        // Check profile completion status
+        DispatchQueue.main.async {
+            ProfileCompletionManager.shared.checkProfileCompletion()
+        }
         return AuthDataResultModel(user: authDataResult.user)
     } else {
         // Handle the case where the email does not exist in Firestore
@@ -227,6 +231,11 @@ final class AuthenticationManager {
         print("AuthenticationManager: User data saved to Firestore")
       } else {
         print("AuthenticationManager: User already exists in Firestore")
+      }
+      
+      // Check profile completion status
+      DispatchQueue.main.async {
+        ProfileCompletionManager.shared.checkProfileCompletion()
       }
       
       print("AuthenticationManager: Apple sign in process completed successfully")

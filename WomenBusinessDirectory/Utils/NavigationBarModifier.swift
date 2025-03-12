@@ -27,7 +27,8 @@ struct NavigationBarModifier: ViewModifier {
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    HStack {
+                    HStack(spacing: 12) {
+                        // Filter button
                         Button {
                             showFilterSheet = true
                         } label: {
@@ -48,6 +49,7 @@ struct NavigationBarModifier: ViewModifier {
                             }
                         }
                         
+                        // Settings button
                         Menu {
                             if isLoggedIn {
                                 Section("Account") {
