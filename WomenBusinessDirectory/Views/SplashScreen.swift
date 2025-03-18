@@ -13,6 +13,9 @@ struct SplashScreen: View {
     @State private var size = 0.8
     @State private var opacity = 0.5
     
+    // Add color scheme environment to detect dark mode
+    @Environment(\.colorScheme) private var colorScheme
+    
     var body: some View {
         if isActive {
             ContentView()
@@ -29,7 +32,8 @@ struct SplashScreen: View {
                         .font(.title)
                         .fontWeight(.medium)
                         .multilineTextAlignment(.center)
-                        .foregroundColor(.black)
+                        // Adjust text color based on color scheme
+                        .foregroundColor(colorScheme == .dark ? .white : .black)
                 }
                 .scaleEffect(size)
                 .opacity(opacity)
