@@ -29,9 +29,17 @@ final class CompaniesListViewModel: ObservableObject {
             }
         }
         
-        // Apply city filter if selected
-        if let selectedCity = filterManager.getSelectedCities().first {
-            filtered = filtered.filter { $0.city == selectedCity }
+        // Apply city filter if cities are selected
+        let selectedCities = filterManager.getSelectedCities()
+        if !selectedCities.isEmpty {
+            // Standardize the selected cities
+            let standardizedSelectedCities = Set(selectedCities.map { filterManager.standardizeCity($0) })
+            
+            filtered = filtered.filter { company in
+                // Standardize company city before comparison
+                let standardizedCompanyCity = filterManager.standardizeCity(company.city)
+                return standardizedSelectedCities.contains(standardizedCompanyCity)
+            }
         }
         
         // Apply ownership types filter if selected

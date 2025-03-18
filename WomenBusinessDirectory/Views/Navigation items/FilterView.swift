@@ -2,6 +2,7 @@ import SwiftUI
 
 struct FilterView: View {
     @Environment(\.dismiss) var dismiss
+    @Environment(\.colorScheme) private var colorScheme
     @StateObject private var viewModel = FilterViewModel()
     
     // Grid layout with 2 columns of flexible width
@@ -26,20 +27,26 @@ struct FilterView: View {
                     Button("Reset") {
                         viewModel.clearFilters()
                     }
+                    .foregroundColor(.red)
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") {
                         dismiss()
                     }
+                    .foregroundColor(colorScheme == .dark ? .white : .blue)
                 }
             }
         }
+        .background(colorScheme == .dark ? Color.black : Color(.systemGray6))
+        .preferredColorScheme(colorScheme)
     }
 }
 
 // MARK: - Loading View
 private struct LoadingView: View {
+    @Environment(\.colorScheme) private var colorScheme
+    
     var body: some View {
         VStack {
             ProgressView()
@@ -49,12 +56,14 @@ private struct LoadingView: View {
                 .padding(.top, 8)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(colorScheme == .dark ? Color.black : Color(.systemGray6))
     }
 }
 
 // MARK: - Filter Content View
 private struct FilterContentView: View {
     @ObservedObject var viewModel: FilterViewModel
+    @Environment(\.colorScheme) private var colorScheme
     
     private let columns = [
         GridItem(.flexible()),
@@ -84,6 +93,7 @@ private struct FilterContentView: View {
             }
             .padding(.vertical)
         }
+        .background(colorScheme == .dark ? Color.black : Color(.systemGray6))
     }
 }
 
@@ -94,6 +104,7 @@ private struct FilterSection<T: Hashable>: View {
     let selectedItems: Set<T>
     let itemTitle: (T) -> String
     let onToggle: (T) -> Void
+    @Environment(\.colorScheme) private var colorScheme
     
     private let columns = [
         GridItem(.flexible()),
@@ -126,13 +137,14 @@ struct CheckboxButton: View {
     let title: String
     let isChecked: Bool
     let action: () -> Void
+    @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
         Button(action: action) {
             HStack(spacing: 8) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 4)
-                        .stroke(Color.gray, lineWidth: 1)
+                        .stroke(colorScheme == .dark ? Color.gray.opacity(0.6) : Color.gray, lineWidth: 1)
                         .frame(width: 20, height: 20)
                     
                     if isChecked {
@@ -143,7 +155,7 @@ struct CheckboxButton: View {
                 }
                 
                 Text(title)
-                    .foregroundColor(.primary)
+                    .foregroundColor(colorScheme == .dark ? .white : .primary)
                     .font(.system(size: 14))
                 
                 Spacer()

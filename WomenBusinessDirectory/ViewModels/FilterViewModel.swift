@@ -30,6 +30,7 @@ class FilterViewModel: ObservableObject {
         do {
             // Fetch cities asynchronously
             let fetchedCities = try await filterManager.fetchCities()
+            print("Debug - Cities from Firestore: \(fetchedCities)")
             
             // Get ownership types synchronously
             let fetchedOwnershipTypes = filterManager.fetchOwnershipTypes()
@@ -45,11 +46,24 @@ class FilterViewModel: ObservableObject {
     }
     
     func toggleCity(_ city: String) {
-        if selectedCities.contains(city) {
-            selectedCities.remove(city)
-        } else {
-            selectedCities.insert(city)
+        // Get the standardized version of the city name
+        let standardizedCity = filterManager.standardizeCity(city)
+        
+        // Check if any version of this city is already selected
+        let alreadySelected = selectedCities.contains { 
+            filterManager.standardizeCity($0) == standardizedCity
         }
+        
+        if alreadySelected {
+            // Remove any versions of this city that match the standardized name
+            selectedCities = selectedCities.filter { 
+                filterManager.standardizeCity($0) != standardizedCity
+            }
+        } else {
+            // Add the standardized city name
+            selectedCities.insert(standardizedCity)
+        }
+        
         filterManager.saveSelectedCities(selectedCities)
     }
     

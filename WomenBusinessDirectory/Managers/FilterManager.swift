@@ -18,6 +18,7 @@ protocol FilterManaging {
     func fetchOwnershipTypes() -> [Company.OwnershipType]
     func applyFilters(to companies: [Company]) -> [Company]
     func clearCache()
+    func standardizeCity(_ city: String) -> String
 }
 
 @MainActor
@@ -34,6 +35,17 @@ class FilterManager: FilterManaging {
     
     // Cache for available options
     private var availableCitiesCache: [String]?
+    
+    // MARK: - Helper Methods
+    
+    func standardizeCity(_ city: String) -> String {
+        // Remove any commas and everything that follows
+        // This way "Ottawa", "Ottawa, ON", and "Ottawa, Ontario" will all become just "Ottawa"
+        if let commaRange = city.range(of: ",") {
+            return String(city[..<commaRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        return city.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
     
     // MARK: - Filter State Management
     
@@ -65,6 +77,7 @@ class FilterManager: FilterManaging {
     
     func fetchCities() async throws -> [String] {
         if let cached = availableCitiesCache {
+            print("Debug - Using cached cities: \(cached)")
             return cached
         }
         
@@ -73,14 +86,28 @@ class FilterManager: FilterManaging {
             .collection("companies")
             .getDocuments()
         
+        print("Debug - Firestore documents count: \(snapshot.documents.count)")
+        
         let cities = snapshot.documents
             .compactMap { document -> String? in
                 let data = document.data()
-                return data["city"] as? String
+                let city = data["city"] as? String
+                print("Debug - Found city in document \(document.documentID): \(city ?? "nil")")
+                return city
             }
+            .filter { !$0.isEmpty } // Filter out empty strings
+        
+        print("Debug - All cities before deduplication: \(cities)")
+        
+        // Standardize city names before deduplication
+        let standardizedCities = cities.map(standardizeCity)
+        
+        print("Debug - Cities after standardization: \(standardizedCities)")
         
         // Remove duplicates and sort
-        let uniqueCities = Array(Set(cities)).sorted()
+        let uniqueCities = Array(Set(standardizedCities)).sorted()
+        print("Debug - Unique cities after deduplication: \(uniqueCities)")
+        
         availableCitiesCache = uniqueCities
         return uniqueCities
     }
@@ -92,15 +119,22 @@ class FilterManager: FilterManaging {
     // MARK: - Filter Application
     
     func applyFilters(to companies: [Company]) -> [Company] {
-        let selectedCities = getSelectedCities()
+        let selectedCitiesRaw = getSelectedCities()
         let selectedTypes = getSelectedOwnershipTypes()
+        
+        // Standardize the selected cities the same way we do for the displayed cities
+        let standardizedSelectedCities = Set(selectedCitiesRaw.map(standardizeCity))
+        print("Debug - Standardized selected cities: \(standardizedSelectedCities)")
         
         var filtered = companies
         
         // Apply city filter if cities are selected
-        if !selectedCities.isEmpty {
+        if !standardizedSelectedCities.isEmpty {
             filtered = filtered.filter { company in
-                selectedCities.contains(company.city)
+                // Standardize company city name
+                let standardizedCity = standardizeCity(company.city)
+                print("Debug - Checking if \(standardizedCity) is in \(standardizedSelectedCities)")
+                return standardizedSelectedCities.contains(standardizedCity)
             }
         }
         
