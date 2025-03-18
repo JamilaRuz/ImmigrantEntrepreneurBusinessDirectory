@@ -10,12 +10,15 @@ import SwiftUI
 struct EmptyProfileView: View {
     @Binding var showSignInView: Bool
     @Binding var userIsLoggedIn: Bool
+    
+    // Add color scheme environment to detect dark mode
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         VStack(spacing: 16) {
             Text("Please sign in first\nto create your profile.")
                 .font(.body)
-                .foregroundColor(Color.pink1)
+                .foregroundColor(colorScheme == .dark ? .white : Color.pink1)
                 .multilineTextAlignment(.center)
                 
             Button(action: {
@@ -25,10 +28,10 @@ struct EmptyProfileView: View {
             }) {
                 Text("Sign In")
                     .font(.headline)
-                    .foregroundColor(Color.pink1)
+                    .foregroundColor(colorScheme == .dark ? .white : Color.pink1)
                     .padding(.vertical, 12)
                     .padding(.horizontal, 40)
-                    .background(Color.white)
+                    .background(colorScheme == .dark ? Color.gray : Color.white)
                     .cornerRadius(10)
                     .overlay(
                         RoundedRectangle(cornerRadius: 10)
