@@ -55,6 +55,7 @@ final class AuthenticationManager {
   func signIn(email: String, password: String) async throws -> AuthDataResultModel? {
     // Attempt to sign in with Firebase Authentication
     let authDataResult = try await Auth.auth().signIn(withEmail: email, password: password)
+    let user = authDataResult.user
     
     // Check if the email exists in the Firestore database
     let db = Firestore.firestore()
@@ -62,18 +63,31 @@ final class AuthenticationManager {
         .whereField("email", isEqualTo: email)
         .getDocuments()
     
-    // If the email exists, return the authenticated user
-    if !querySnapshot.isEmpty {
-        // Check profile completion status
-        DispatchQueue.main.async {
-            ProfileCompletionManager.shared.checkProfileCompletion()
-        }
-        return AuthDataResultModel(user: authDataResult.user)
-    } else {
-        // Handle the case where the email does not exist in Firestore
-        print("Email does not exist in Firestore.")
-        return nil
+    // If the email doesn't exist in Firestore, create a new document
+    if querySnapshot.isEmpty {
+        print("Email exists in Authentication but not in Firestore. Creating new document...")
+        
+        // Create a new user document in Firestore with the correct field names
+        let userData: [String: Any] = [
+          "entrepId": user.uid,
+          "email": user.email ?? "",
+          "fullName": user.displayName ?? "",
+          "dateCreated": Timestamp(),
+          "bioDescr": "",
+          "companyIds": [],
+          "profileUrl": NSNull()
+        ]
+        
+        try await db.collection("entrepreneurs").document(user.uid).setData(userData)
+        print("Created new entrepreneur document in Firestore.")
     }
+    
+    // Check profile completion status
+    DispatchQueue.main.async {
+        ProfileCompletionManager.shared.checkProfileCompletion()
+    }
+    
+    return AuthDataResultModel(user: authDataResult.user)
   }
   
   func signOut() throws {
