@@ -15,6 +15,7 @@ struct EditProfileView: View {
     @State private var isSaving = false
     @State private var bioText: String = ""
     @Environment(\.presentationMode) var presentationMode
+    @Environment(\.colorScheme) private var colorScheme
     @StateObject private var viewModel = EditProfileViewModel()
     var onSave: (() -> Void)?
     
@@ -104,13 +105,13 @@ struct EditProfileView: View {
             isImagePickerPresented = true
         }) {
             Text("Choose Image")
-                .foregroundColor(.pink1) // Set text color to pink
-                .padding() // Add padding to the text
-                .frame(maxWidth: .infinity) // Make the button take the full width if desired
-                .background(Color.white) // Background color of the button
+                .foregroundColor(colorScheme == .dark ? .white : .pink1)
+                .padding()
+                .frame(maxWidth: .infinity)
+                .background(colorScheme == .dark ? Color(UIColor.darkGray) : Color.white)
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.pink1, lineWidth: 2) // Pink border
+                        .stroke(colorScheme == .dark ? Color.white.opacity(0.3) : Color.pink1, lineWidth: 2)
                 )
         }
     }
@@ -132,6 +133,7 @@ struct EditProfileView: View {
                 isSaving = false
             }
         }
+        .foregroundColor(colorScheme == .dark ? .white : .blue)
     }
 }
 
