@@ -10,6 +10,7 @@ import SwiftUI
 struct ProductsView: View {
     let services: [String]
     let portfolioImages: [String]
+    @Environment(\.colorScheme) private var colorScheme
     
     let columns = [
         GridItem(.flexible(), spacing: 5),
@@ -32,8 +33,9 @@ struct ProductsView: View {
                         Image(systemName: "circle.fill")
                             .font(.system(size: 5))
                             .padding(.top, 7)
+                            .foregroundColor(colorScheme == .dark ? .white : .primary)
                         Text(service)
-                            .foregroundColor(.gray)
+                            .foregroundColor(colorScheme == .dark ? .gray.opacity(0.9) : .gray)
                     }
                 }
                 
@@ -47,11 +49,11 @@ struct ProductsView: View {
                         ForEach(0..<3) { _ in
                             ZStack {
                                 RoundedRectangle(cornerRadius: 10)
-                                    .fill(Color.gray.opacity(0.3))
+                                    .fill(colorScheme == .dark ? Color(UIColor.darkGray).opacity(0.5) : Color.gray.opacity(0.3))
                                     .aspectRatio(1, contentMode: .fit)
                                 Text("No image")
                                     .font(.caption)
-                                    .foregroundColor(.gray)
+                                    .foregroundColor(colorScheme == .dark ? .gray.opacity(0.9) : .gray)
                             }
                         }
                     } else {
@@ -73,6 +75,7 @@ struct ProductsView: View {
                                         Image(systemName: "photo")
                                             .resizable()
                                             .aspectRatio(contentMode: .fit)
+                                            .foregroundColor(colorScheme == .dark ? .white.opacity(0.5) : .gray)
                                     }
                                 }
                                 .clipShape(RoundedRectangle(cornerRadius: 10))
@@ -101,6 +104,7 @@ struct ProductsView: View {
                         Image(systemName: "photo")
                             .resizable()
                             .aspectRatio(contentMode: .fit)
+                            .foregroundColor(colorScheme == .dark ? .white.opacity(0.5) : .gray)
                     }
                 }
             }

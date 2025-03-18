@@ -10,6 +10,7 @@ import MapKit
 
 struct MapView: View {
     let company: Company
+    @Environment(\.colorScheme) private var colorScheme
     @State private var region = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 0, longitude: 0),
         span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
@@ -28,9 +29,14 @@ struct MapView: View {
             }
             .frame(height: 300)
             .cornerRadius(10)
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(colorScheme == .dark ? Color.gray.opacity(0.3) : Color.clear, lineWidth: 1)
+            )
 
             Text(formatFullAddress())
                 .font(.subheadline)
+                .foregroundColor(colorScheme == .dark ? .gray.opacity(0.9) : .gray)
                 .multilineTextAlignment(.leading)
                 .padding(.horizontal)
         }

@@ -9,6 +9,7 @@ import SwiftUI
 
 struct CompanyDetailView: View {
   @Environment(\.dismiss) var dismiss
+  @Environment(\.colorScheme) private var colorScheme
   let company: Company
   @State private var selectedSegment = 0
   @State private var isBookmarked: Bool
@@ -214,7 +215,7 @@ struct CompanyDetailView: View {
               .padding(.vertical, 16)
             }
           }
-          .background(Color.white)
+          .background(colorScheme == .dark ? Color.black : Color.white)
         }
       }
     }

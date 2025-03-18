@@ -10,6 +10,7 @@ import SwiftUI
 struct InfoView: View {
     let company: Company
     @StateObject private var viewModel = InfoViewModel()
+    @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -21,14 +22,14 @@ struct InfoView: View {
                 ScrollView {
                     Text(company.aboutUs)
                         .font(.body)
-                        .foregroundColor(.gray)
+                        .foregroundColor(colorScheme == .dark ? .gray.opacity(0.9) : .gray)
                         .fixedSize(horizontal: false, vertical: true)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.vertical, 5)
                 }
                 .frame(minHeight: 150)
                 .padding()
-                .background(Color.gray.opacity(0.1))
+                .background(colorScheme == .dark ? Color(UIColor.darkGray).opacity(0.3) : Color.gray.opacity(0.1))
                 .cornerRadius(10)
             }
             
@@ -43,7 +44,7 @@ struct InfoView: View {
                         .foregroundColor(.gray)
                         .padding()
                         .frame(maxWidth: .infinity, alignment: .center)
-                        .background(Color.gray.opacity(0.1))
+                        .background(colorScheme == .dark ? Color(UIColor.darkGray).opacity(0.3) : Color.gray.opacity(0.1))
                         .cornerRadius(8)
                 } else {
                     ScrollView(.horizontal, showsIndicators: false) {
@@ -200,6 +201,7 @@ struct SocialMediaLinkButton: View {
     let platform: Company.SocialMedia
     let color: Color
     let company: Company
+    @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
         Button(action: {
@@ -225,7 +227,7 @@ struct SocialMediaLinkButton: View {
             .frame(width: 80)
             .padding(.vertical, 8)
             .padding(.horizontal, 8)
-            .background(Color.gray.opacity(0.05))
+            .background(colorScheme == .dark ? Color(UIColor.darkGray).opacity(0.3) : Color.gray.opacity(0.05))
             .cornerRadius(12)
         }
     }
