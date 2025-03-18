@@ -3,6 +3,7 @@ import SwiftUI
 struct ProfileCompletionBanner: View {
     let message: String
     var action: (() -> Void)? = nil
+    @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
         VStack(spacing: 0) {
@@ -26,20 +27,20 @@ struct ProfileCompletionBanner: View {
                         Text("Complete")
                             .font(.subheadline)
                             .fontWeight(.semibold)
-                            .foregroundColor(.white)
+                            .foregroundColor(colorScheme == .dark ? Color(.darkGray) : .white)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 6)
-                            .background(Color.white.opacity(0.3))
+                            .background(colorScheme == .dark ? Color(.lightGray) : Color.white.opacity(0.3))
                             .cornerRadius(16)
                     }
                 }
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            .background(Color("pink1"))
+            .background(colorScheme == .dark ? Color(UIColor(red: 0.17, green: 0.17, blue: 0.18, alpha: 1.0)) : Color("pink1"))
             
             Rectangle()
-                .fill(Color("pink1").opacity(0.8))
+                .fill(colorScheme == .dark ? Color(UIColor(red: 0.17, green: 0.17, blue: 0.18, alpha: 0.8)) : Color("pink1").opacity(0.8))
                 .frame(height: 1)
         }
         .transition(.move(edge: .top).combined(with: .opacity))
@@ -55,5 +56,6 @@ struct ProfileCompletionBanner_Previews: PreviewProvider {
             
             Spacer()
         }
+        .preferredColorScheme(.dark)
     }
 } 

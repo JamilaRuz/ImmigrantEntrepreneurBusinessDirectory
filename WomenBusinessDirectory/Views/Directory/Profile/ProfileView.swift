@@ -82,6 +82,7 @@ struct ProfileView: View {
     @State private var selectedCompanyToEdit: Company?
     @Binding var showSignInView: Bool
     @Binding var userIsLoggedIn: Bool
+    @Environment(\.colorScheme) private var colorScheme
     let isEditable: Bool
     let entrepreneur: Entrepreneur?
     
@@ -238,10 +239,10 @@ struct ProfileView: View {
                         }) {
                             Text("Add Your Story")
                                 .font(.subheadline)
-                                .foregroundColor(.white)
+                                .foregroundColor(colorScheme == .dark ? Color.white : .white)
                                 .padding(.horizontal, 20)
                                 .padding(.vertical, 8)
-                                .background(Color.purple1)
+                                .background(colorScheme == .dark ? Color(UIColor.darkGray) : Color.purple1)
                                 .cornerRadius(20)
                         }
                         .padding(.top, 8)
@@ -362,13 +363,13 @@ struct ProfileView: View {
         ) {
             Text("Add Company")
                 .font(.system(size: 16, weight: .regular))
-                .foregroundColor(.pink1)
+                .foregroundColor(colorScheme == .dark ? .white : .pink1)
                 .frame(width: 150, height: 40)
-                .background(Color.white)
+                .background(colorScheme == .dark ? Color(UIColor.darkGray) : Color.white)
                 .cornerRadius(10)
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color.pink1.opacity(0.6), lineWidth: 1)
+                        .stroke(colorScheme == .dark ? Color.white.opacity(0.3) : Color.pink1.opacity(0.6), lineWidth: 1)
                 )
                 .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1)
         }
