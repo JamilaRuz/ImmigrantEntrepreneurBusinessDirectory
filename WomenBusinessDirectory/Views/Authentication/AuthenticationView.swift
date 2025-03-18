@@ -24,6 +24,9 @@ struct AuthenticationView: View {
     
     // Add a state variable to force view refresh
     @State private var forceRefresh: Bool = false
+    
+    // Get the color scheme from the environment to detect dark mode
+    @Environment(\.colorScheme) private var colorScheme
 
     func handleAuthError(_ error: Error) {
         showAlert = true
@@ -197,7 +200,13 @@ struct AuthenticationView: View {
                                 .textInputAutocapitalization(.never)
                                 .autocorrectionDisabled()
                                 .textContentType(.none)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .padding()
+                                .background(colorScheme == .dark ? Color.gray.opacity(0.3) : Color(.systemBackground))
+                                .cornerRadius(8)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(Color.gray.opacity(colorScheme == .dark ? 0.5 : 0.3), lineWidth: 1)
+                                )
                                 .padding(.horizontal)
                             
                             ZStack(alignment: .trailing) {
@@ -207,14 +216,18 @@ struct AuthenticationView: View {
                                         .textInputAutocapitalization(.never)
                                         .autocorrectionDisabled()
                                         .textContentType(.none)
-                                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                                        .padding()
+                                        .background(colorScheme == .dark ? Color.gray.opacity(0.3) : Color(.systemBackground))
+                                        .cornerRadius(8)
                                 } else {
                                     SecureField("Password", text: $password)
                                         .autocapitalization(.none)
                                         .textInputAutocapitalization(.never)
                                         .autocorrectionDisabled()
                                         .textContentType(.none)
-                                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                                        .padding()
+                                        .background(colorScheme == .dark ? Color.gray.opacity(0.3) : Color(.systemBackground))
+                                        .cornerRadius(8)
                                 }
                                 
                                 Button(action: {
@@ -223,8 +236,12 @@ struct AuthenticationView: View {
                                     isPasswordVisible ? Image(systemName: "eye") : Image(systemName: "eye.slash")
                                 }
                                 .foregroundColor(.gray)
-                                .padding(.trailing, 8)
+                                .padding(.trailing, 16)
                             }
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.gray.opacity(colorScheme == .dark ? 0.5 : 0.3), lineWidth: 1)
+                            )
                             .padding(.horizontal)
                             
                             // Add Forgot Password button
@@ -282,11 +299,11 @@ struct AuthenticationView: View {
                             }) {
                                 Text("Sign In")
                                     .font(.system(size: 16, weight: .medium))
-                                    .foregroundColor(.white)
+                                    .foregroundColor(colorScheme == .dark ? .white : .white)
                                     .frame(maxWidth: .infinity)
                                     .frame(height: 50) // Increased height to match Apple button
                             }
-                            .background(Color.orange1)
+                            .background(colorScheme == .dark ? Color.gray : Color.orange1)
                             .cornerRadius(8)
                             .padding(.horizontal)
                             .alert(isPresented: $showAlert) {
@@ -342,12 +359,34 @@ struct AuthenticationView: View {
                         
                         // Social media buttons with improved spacing
                         VStack(spacing: 12) { // Add spacing between buttons
-                            // Apple Sign In Button
-                            SignInWithAppleButton { result in
-                                handleAppleSignInCompletion(result: result)
+                            // Apple Sign In Button - conditional rendering based on color scheme
+                            if colorScheme == .dark {
+                                // Custom gray wrapper for dark mode
+                                ZStack {
+                                    // Gray background
+                                    Rectangle()
+                                        .fill(Color.gray)
+                                        .cornerRadius(8)
+                                    
+                                    // White SignInWithAppleButton
+                                    SignInWithAppleButton { result in
+                                        handleAppleSignInCompletion(result: result)
+                                    }
+                                    .signInWithAppleButtonStyle(.white)
+                                    .cornerRadius(6) // Slightly smaller to fit within the gray background
+                                    .padding(1)      // Small padding to show gray edge
+                                }
+                                .frame(height: 50)
+                                .padding(.horizontal)
+                            } else {
+                                // Standard Apple Sign In Button for light mode
+                                SignInWithAppleButton { result in
+                                    handleAppleSignInCompletion(result: result)
+                                }
+                                .signInWithAppleButtonStyle(.black)
+                                .frame(height: 50)
+                                .padding(.horizontal)
                             }
-                            .frame(height: 50)
-                            .padding(.horizontal)
                             
                             // Google Sign In Button - styled to match Apple button
                             Button(action: {}) {
@@ -359,11 +398,12 @@ struct AuthenticationView: View {
                                         .padding(.trailing, 4)
                                     Text("Continue with Google")
                                         .font(.system(size: 16, weight: .medium))
+                                        .foregroundColor(colorScheme == .dark ? .white : .primary)
                                 }
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 50)
                             }
-                            .background(Color.white)
+                            .background(colorScheme == .dark ? Color.gray : Color.white)
                             .cornerRadius(8)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
@@ -387,11 +427,12 @@ struct AuthenticationView: View {
                                         .padding(.trailing, 4)
                                     Text("Continue with Facebook")
                                         .font(.system(size: 16, weight: .medium))
+                                        .foregroundColor(colorScheme == .dark ? .white : .primary)
                                 }
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 50)
                             }
-                            .background(Color.white)
+                            .background(colorScheme == .dark ? Color.gray : Color.white)
                             .cornerRadius(8)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
@@ -424,8 +465,8 @@ struct AuthenticationView: View {
                         UserDefaults.standard.set(true, forKey: "hasSkippedAuthentication")
                     }
                     .frame(width: 100, height: 40)
-                    .foregroundColor(.orange1)
-                    .background(Color.white)
+                    .foregroundColor(colorScheme == .dark ? .white : .orange1)
+                    .background(colorScheme == .dark ? Color.gray : Color.white)
                     .cornerRadius(8)
                     .overlay(
                         RoundedRectangle(cornerRadius: 8)
