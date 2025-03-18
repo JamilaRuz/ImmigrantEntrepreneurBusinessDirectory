@@ -184,7 +184,7 @@ struct ProfileView: View {
                             .font(.caption)
                             .padding(6)
                             .foregroundColor(.white)
-                            .background(Color.purple1)
+                            .background(colorScheme == .dark ? Color(UIColor.darkGray) : Color.purple1)
                             .clipShape(Circle())
                     }
                     .offset(x: 5, y: -5)
@@ -300,9 +300,9 @@ struct ProfileView: View {
                                         editingCompany: company)
                                 } label: {
                                     Image(systemName: "pencil")
-                                        .foregroundColor(.purple1)
+                                        .foregroundColor(colorScheme == .dark ? .white : .purple1)
                                         .padding(8)
-                                        .background(Color.white)
+                                        .background(colorScheme == .dark ? Color(UIColor.darkGray) : Color.white)
                                         .clipShape(Circle())
                                         .shadow(radius: 3)
                                 }

@@ -13,6 +13,7 @@ import Combine
 
 struct AddCompanyView: View {
   @Environment(\.dismiss) private var dismiss
+  @Environment(\.colorScheme) private var colorScheme
   @StateObject var viewModel: AddCompanyViewModel
   let entrepreneur: Entrepreneur
   var editingCompany: Company?
@@ -168,11 +169,11 @@ struct AddCompanyView: View {
           }
           .frame(width: 100, height: 40)
           .foregroundColor(.yellow)
-          .background(Color.white)
+          .background(colorScheme == .dark ? Color(UIColor.darkGray) : Color.white)
           .cornerRadius(10)
           .overlay(
             RoundedRectangle(cornerRadius: 10)
-              .stroke(Color.gray, lineWidth: 1)
+              .stroke(colorScheme == .dark ? Color.gray.opacity(0.5) : Color.gray, lineWidth: 1)
           )
         }
         .disabled(!isFormValid)
@@ -346,13 +347,13 @@ struct AddCompanyView: View {
                 TextField(entrepreneur.email ?? "", text: $email)
                     .padding(.vertical, 8)
                     .padding(.horizontal, 12)
-                    .background(Color.white)
+                    .background(colorScheme == .dark ? Color(UIColor.darkGray) : Color.white)
                     .autocorrectionDisabled(true)
                     .textInputAutocapitalization(.never)
                     .keyboardType(.emailAddress)
                     .overlay(
                         RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                            .stroke(colorScheme == .dark ? Color.gray.opacity(0.5) : Color.gray.opacity(0.3), lineWidth: 1)
                     )
             }
             
@@ -373,10 +374,10 @@ struct AddCompanyView: View {
                 }
                 .padding(.vertical, 8)
                 .padding(.trailing, 12)
-                .background(Color.white)
+                .background(colorScheme == .dark ? Color(UIColor.darkGray) : Color.white)
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                        .stroke(colorScheme == .dark ? Color.gray.opacity(0.5) : Color.gray.opacity(0.3), lineWidth: 1)
                 )
             }
           }
@@ -428,10 +429,10 @@ struct AddCompanyView: View {
                 .frame(width: 120)
                 .padding(.vertical, 8)
                 .padding(.horizontal, 12)
-                .background(Color.white)
+                .background(colorScheme == .dark ? Color(UIColor.darkGray) : Color.white)
                 .overlay(
                   RoundedRectangle(cornerRadius: 8)
-                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                    .stroke(colorScheme == .dark ? Color.gray.opacity(0.5) : Color.gray.opacity(0.3), lineWidth: 1)
                 )
               }
               
@@ -448,10 +449,10 @@ struct AddCompanyView: View {
               }
               .padding(.vertical, 8)
               .padding(.trailing, 12)
-              .background(Color.white)
+              .background(colorScheme == .dark ? Color(UIColor.darkGray) : Color.white)
               .overlay(
                 RoundedRectangle(cornerRadius: 8)
-                  .stroke(socialMediaLinkError != nil ? Color.red : Color.gray.opacity(0.3), lineWidth: 1)
+                  .stroke(socialMediaLinkError != nil ? Color.red : (colorScheme == .dark ? Color.gray.opacity(0.5) : Color.gray.opacity(0.3)), lineWidth: 1)
               )
               .onChange(of: socialMediaLinkInput) { _, _ in
                 socialMediaLinkError = nil // Clear error when typing
@@ -803,6 +804,7 @@ struct CompanyInfoSection: View {
     @Binding var isHeaderImagePickerPresented: Bool
     @Binding var isPortfolioPickerPresented: Bool
     @ObservedObject var viewModel: AddCompanyViewModel
+    @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
         ScrollView {
@@ -903,10 +905,10 @@ struct CompanyInfoSection: View {
                         TextEditor(text: $aboutUs)
                             .frame(height: 100)
                             .padding(8)
-                            .background(Color.white)
+                            .background(colorScheme == .dark ? Color(UIColor.darkGray) : Color.white)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                    .stroke(colorScheme == .dark ? Color.gray.opacity(0.3) : Color.gray.opacity(0.3), lineWidth: colorScheme == .dark ? 0.5 : 1)
                             )
                     }
                     
@@ -968,6 +970,7 @@ struct CustomTextField: View {
   @Binding var text: String
   var placeholder: String = ""
   var icon: String? = nil
+  @Environment(\.colorScheme) private var colorScheme
   
   var body: some View {
     VStack(alignment: .leading, spacing: 4) {
@@ -984,10 +987,10 @@ struct CustomTextField: View {
       }
       .padding(.vertical, 8)
       .padding(.horizontal, 12)
-      .background(Color.white)
+      .background(colorScheme == .dark ? Color(UIColor.darkGray) : Color.white)
       .overlay(
         RoundedRectangle(cornerRadius: 8)
-          .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+          .stroke(colorScheme == .dark ? Color.gray.opacity(0.5) : Color.gray.opacity(0.3), lineWidth: 1)
       )
     }
   }
@@ -1030,6 +1033,7 @@ struct PhoneNumberField: View {
     @Binding var isValidPhone: Bool
     let editingCompany: Company?
     private let canadianPhonePattern = #"^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$"#
+    @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -1086,6 +1090,7 @@ struct AddressField: View {
     @StateObject private var addressCompleter = AddressCompleter()
     @State private var showAddressSuggestions = false
     @FocusState private var isAddressFieldFocused: Bool
+    @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -1098,10 +1103,10 @@ struct AddressField: View {
                 TextField("Enter street address", text: $address)
                     .padding(.vertical, 8)
                     .padding(.horizontal, 12)
-                    .background(Color.white)
+                    .background(colorScheme == .dark ? Color(UIColor.darkGray) : Color.white)
                     .overlay(
                         RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                            .stroke(colorScheme == .dark ? Color.gray.opacity(0.5) : Color.gray.opacity(0.3), lineWidth: 1)
                     )
                     .focused($isAddressFieldFocused)
                     .onChange(of: address) { oldValue, newValue in
@@ -1191,7 +1196,7 @@ struct AddressField: View {
                         Divider()
                     }
                 }
-                .background(Color.white)
+                .background(colorScheme == .dark ? Color(UIColor.darkGray) : Color.white)
                 .cornerRadius(8)
                 .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
                 .padding(.top, -8)
@@ -1214,10 +1219,10 @@ struct AddressField: View {
                 TextField("Enter city", text: $city)
                     .padding(.vertical, 8)
                     .padding(.horizontal, 12)
-                    .background(Color.white)
+                    .background(colorScheme == .dark ? Color(UIColor.darkGray) : Color.white)
                     .overlay(
                         RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                            .stroke(colorScheme == .dark ? Color.gray.opacity(0.5) : Color.gray.opacity(0.3), lineWidth: 1)
                     )
             }
         }
@@ -1374,6 +1379,7 @@ struct BusinessDetailsSection: View {
     @Binding var customWorkHours: String
     @Binding var services: String
     @Binding var businessModel: Company.BusinessModel
+    @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
         ScrollView {
@@ -1404,10 +1410,10 @@ struct BusinessDetailsSection: View {
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 8)
                             .padding(.horizontal, 12)
-                            .background(Color.white)
+                            .background(colorScheme == .dark ? Color(UIColor.darkGray) : Color.white)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                    .stroke(colorScheme == .dark ? Color.gray.opacity(0.5) : Color.gray.opacity(0.3), lineWidth: 1)
                             )
                         }
                         
@@ -1416,10 +1422,10 @@ struct BusinessDetailsSection: View {
                                 .textFieldStyle(PlainTextFieldStyle())
                                 .padding(.vertical, 8)
                                 .padding(.horizontal, 12)
-                                .background(Color.white)
+                                .background(colorScheme == .dark ? Color(UIColor.darkGray) : Color.white)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 8)
-                                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                        .stroke(colorScheme == .dark ? Color.gray.opacity(0.5) : Color.gray.opacity(0.3), lineWidth: 1)
                                 )
                         }
                     }
@@ -1523,6 +1529,7 @@ struct SocialMediaToggle: View {
     let icon: String
     let isSelected: Bool
     let action: () -> Void
+    @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
         Button(action: action) {
@@ -1541,10 +1548,10 @@ struct SocialMediaToggle: View {
             .frame(maxWidth: .infinity)
             .padding(.vertical, 8)
             .padding(.horizontal, 12)
-            .background(Color.white)
+            .background(colorScheme == .dark ? Color(UIColor.darkGray) : Color.white)
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
-                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                    .stroke(colorScheme == .dark ? Color.gray.opacity(0.5) : Color.gray.opacity(0.3), lineWidth: 1)
             )
         }
     }
