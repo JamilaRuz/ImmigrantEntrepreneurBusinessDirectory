@@ -36,6 +36,9 @@ struct BookmarkedListView: View {
     @StateObject private var viewModel = BookmarkedListViewModel()
     @Binding var showSignInView: Bool
     @Binding var userIsLoggedIn: Bool
+    
+    // Add color scheme environment to detect dark mode
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         NavigationStack {
@@ -44,10 +47,10 @@ struct BookmarkedListView: View {
                     VStack(spacing: 16) {
                         Text("No Bookmarks Yet")
                             .font(.title2)
-                            .foregroundColor(Color.green1)
+                            .foregroundColor(colorScheme == .dark ? .white : Color.green1)
                         Text("Browse the directory and bookmark companies you're interested in to see them here.")
                             .font(.subheadline)
-                            .foregroundColor(Color.green1)
+                            .foregroundColor(colorScheme == .dark ? .gray : Color.green1)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 40)
                     }
@@ -86,7 +89,7 @@ struct BookmarkedListView: View {
                 }
             }
         }
-        .tint(Color.green1)
+        .tint(colorScheme == .dark ? .white : Color.green1)
     }
 }
 

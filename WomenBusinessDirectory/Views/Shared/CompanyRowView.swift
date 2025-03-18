@@ -4,6 +4,9 @@ struct CompanyRowView: View {
     let company: Company
     let categories: [Category]
     
+    // Add color scheme environment to detect dark mode
+    @Environment(\.colorScheme) private var colorScheme
+    
     init(company: Company, categories: [Category]) {
         self.company = company
         self.categories = categories
@@ -55,6 +58,7 @@ struct CompanyRowView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(company.name)
                             .font(.headline)
+                            .foregroundColor(colorScheme == .dark ? .white : .primary)
                         
                         // Categories horizontal scroll
                         ScrollView(.horizontal, showsIndicators: false) {
@@ -83,7 +87,7 @@ struct CompanyRowView: View {
                 
                 Text(company.aboutUs)
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(colorScheme == .dark ? .gray : .secondary)
                     .lineLimit(2)
                 
                 // Services scroll
@@ -103,9 +107,9 @@ struct CompanyRowView: View {
             }
         }
         .padding()
-        .background(Color.white)
+        .background(colorScheme == .dark ? Color(UIColor(red: 0.17, green: 0.17, blue: 0.18, alpha: 1.0)) : Color.white)
         .cornerRadius(10)
-        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+        .shadow(color: colorScheme == .dark ? Color.black.opacity(0.2) : Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
     }
 }
 
