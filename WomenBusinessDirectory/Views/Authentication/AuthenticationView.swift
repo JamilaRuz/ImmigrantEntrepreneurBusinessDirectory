@@ -200,7 +200,9 @@ struct AuthenticationView: View {
                                 .textInputAutocapitalization(.never)
                                 .autocorrectionDisabled()
                                 .textContentType(.none)
-                                .padding()
+                                .padding(.vertical, 15)
+                                .padding(.horizontal)
+                                .frame(height: 50)
                                 .background(colorScheme == .dark ? Color.gray.opacity(0.3) : Color(.systemBackground))
                                 .cornerRadius(8)
                                 .overlay(
@@ -216,7 +218,9 @@ struct AuthenticationView: View {
                                         .textInputAutocapitalization(.never)
                                         .autocorrectionDisabled()
                                         .textContentType(.none)
-                                        .padding()
+                                        .padding(.vertical, 15)
+                                        .padding(.horizontal)
+                                        .frame(height: 50)
                                         .background(colorScheme == .dark ? Color.gray.opacity(0.3) : Color(.systemBackground))
                                         .cornerRadius(8)
                                 } else {
@@ -225,7 +229,9 @@ struct AuthenticationView: View {
                                         .textInputAutocapitalization(.never)
                                         .autocorrectionDisabled()
                                         .textContentType(.none)
-                                        .padding()
+                                        .padding(.vertical, 15)
+                                        .padding(.horizontal)
+                                        .frame(height: 50)
                                         .background(colorScheme == .dark ? Color.gray.opacity(0.3) : Color(.systemBackground))
                                         .cornerRadius(8)
                                 }
