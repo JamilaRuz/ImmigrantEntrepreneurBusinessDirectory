@@ -383,11 +383,11 @@ struct AddCompanyView: View {
           }
           
           VStack(alignment: .leading, spacing: 12) {
-            Text("Social Media")
+            Text("Social Media of the company")
               .font(.subheadline)
               .foregroundColor(.gray)
             
-            Text("Add your social media profiles")
+            Text("Add your social media profiles according to the shown prompt format")
               .font(.caption)
               .foregroundColor(.gray)
               .padding(.bottom, 4)

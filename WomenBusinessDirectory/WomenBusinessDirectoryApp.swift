@@ -10,6 +10,7 @@ import Firebase
 import AuthenticationServices
 import Alamofire
 import AlamofireImage
+import GoogleSignIn
 
 // Create a shared session that can be accessed throughout the app
 class NetworkManager {
@@ -80,6 +81,20 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     }
     
     return true
+  }
+  
+  // Handle URL schemes for authentication services
+  func application(_ app: UIApplication,
+                  open url: URL,
+                  options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
+    // Handle Google Sign-in callback
+    if GIDSignIn.sharedInstance.handle(url) {
+      return true
+    }
+    
+    // If not handled by Google Sign-In, could handle other URL schemes here
+    
+    return false
   }
 }
 

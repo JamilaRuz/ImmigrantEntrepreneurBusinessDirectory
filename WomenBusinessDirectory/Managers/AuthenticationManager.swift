@@ -259,4 +259,61 @@ final class AuthenticationManager {
       throw error
     }
   }
+  
+  // MARK: - Google Sign In
+  
+  @discardableResult
+  func signInWithGoogle(idToken: String, accessToken: String?) async throws -> AuthDataResultModel {
+    print("AuthenticationManager: Starting signInWithGoogle with token")
+    
+    // Initialize a Firebase credential with the Google ID token
+    let credential = GoogleAuthProvider.credential(
+      withIDToken: idToken,
+      accessToken: accessToken ?? ""
+    )
+    
+    print("AuthenticationManager: Created Firebase credential with Google provider")
+    
+    do {
+      // Authenticate with Firebase using the Google credential
+      let authDataResult = try await Auth.auth().signIn(with: credential)
+      let user = authDataResult.user
+      print("AuthenticationManager: User signed in with Google: \(user.uid)")
+      
+      // Check if the user already exists in Firestore
+      let db = Firestore.firestore()
+      let docRef = db.collection("entrepreneurs").document(user.uid)
+      let docSnapshot = try await docRef.getDocument()
+      
+      // If user doesn't exist in Firestore, create a new document
+      if !docSnapshot.exists {
+        print("AuthenticationManager: User doesn't exist in Firestore, creating new document")
+        
+        // Create a new user document with information from Google
+        let userData: [String: Any] = [
+          "entrepId": user.uid,
+          "email": user.email ?? "",
+          "fullName": user.displayName ?? "",
+          "dateCreated": Timestamp(),
+          "bioDescr": "",
+          "companyIds": [],
+          "profileUrl": user.photoURL?.absoluteString ?? NSNull()
+        ]
+        
+        try await docRef.setData(userData)
+        print("AuthenticationManager: Created new entrepreneur document in Firestore")
+      }
+      
+      // Check profile completion status
+      DispatchQueue.main.async {
+        ProfileCompletionManager.shared.checkProfileCompletion()
+      }
+      
+      print("AuthenticationManager: Google sign in process completed successfully")
+      return AuthDataResultModel(user: authDataResult.user)
+    } catch {
+      print("AuthenticationManager: Error during Google sign in: \(error)")
+      throw error
+    }
+  }
 }

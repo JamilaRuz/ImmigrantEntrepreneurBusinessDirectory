@@ -8,6 +8,8 @@
 import SwiftUI
 import FirebaseAuth
 import AuthenticationServices
+import GoogleSignIn
+import Firebase
 
 struct AuthenticationView: View {
     @StateObject private var viewModel = SignInEmailViewModel()
@@ -73,16 +75,117 @@ struct AuthenticationView: View {
                     // Apple sign in is handled by the SignInWithAppleButton
                     break
                 case "google":
-                    // Handle Google sign in
-                    break
+                    // Get the client ID from GoogleService-Info.plist
+                    guard let clientID = FirebaseApp.app()?.options.clientID else {
+                        DispatchQueue.main.async {
+                            self.showAlert = true
+                            self.alertTitle = "Configuration Error"
+                            self.alertMessage = "Google Sign In isn't configured correctly. Check your GoogleService-Info.plist file."
+                            self.isLoading = false
+                        }
+                        return
+                    }
+                    
+                    // Create Google Sign In configuration
+                    let config = GIDConfiguration(clientID: clientID)
+                    
+                    // Find the rootViewController to present the sign-in screen
+                    guard let rootViewController = UIApplication.shared.windows.first?.rootViewController else {
+                        DispatchQueue.main.async {
+                            self.showAlert = true
+                            self.alertTitle = "Error"
+                            self.alertMessage = "Could not find a view controller to present the sign-in screen."
+                            self.isLoading = false
+                        }
+                        return
+                    }
+                    
+                    // Start the Google sign-in process
+                    DispatchQueue.main.async {
+                        GIDSignIn.sharedInstance.configuration = config
+                        GIDSignIn.sharedInstance.signIn(withPresenting: rootViewController) { signInResult, error in
+                            // Always reset loading indicator when finished
+                            DispatchQueue.main.async {
+                                self.isLoading = false
+                            }
+                            
+                            if let error = error {
+                                // Handle error
+                                DispatchQueue.main.async {
+                                    self.showAlert = true
+                                    self.alertTitle = "Sign In Error"
+                                    self.alertMessage = "Failed to sign in with Google: \(error.localizedDescription)"
+                                }
+                                return
+                            }
+                            
+                            guard let signInResult = signInResult else {
+                                DispatchQueue.main.async {
+                                    self.showAlert = true
+                                    self.alertTitle = "Sign In Error"
+                                    self.alertMessage = "Failed to get sign-in result from Google."
+                                }
+                                return
+                            }
+                            
+                            // Extract ID token and access token
+                            guard let idToken = signInResult.user.idToken?.tokenString else {
+                                DispatchQueue.main.async {
+                                    self.showAlert = true
+                                    self.alertTitle = "Sign In Error"
+                                    self.alertMessage = "Failed to get Google ID token."
+                                }
+                                return
+                            }
+
+                            // Get access token
+                            let accessToken = signInResult.user.accessToken.tokenString
+                            
+                            // Sign in with Firebase using the tokens
+                            Task { @MainActor in
+                                do {
+                                    let authResult = try await AuthenticationManager.shared.signInWithGoogle(
+                                        idToken: idToken,
+                                        accessToken: accessToken
+                                    )
+                                    
+                                    // Update UI state on success (already on main actor)
+                                    print("Successfully signed in with Google: \(authResult.email ?? "no email")")
+                                    self.userIsLoggedIn = true
+                                    self.showSignInView = false
+                                    
+                                    // Force UI update
+                                    NotificationCenter.default.post(name: NSNotification.Name("UserDidSignIn"), object: nil)
+                                } catch {
+                                    // Handle Firebase sign in error (already on main actor)
+                                    self.showAlert = true
+                                    self.alertTitle = "Sign In Error"
+                                    self.alertMessage = "Failed to sign in with Google: \(error.localizedDescription)"
+                                }
+                            }
+                        }
+                    }
                 case "facebook":
                     // Handle Facebook sign in
                     break
                 default:
                     break
                 }
+            } catch {
+                print("Error during social sign in: \(error)")
+                DispatchQueue.main.async {
+                    self.showAlert = true
+                    self.alertTitle = "Error"
+                    self.alertMessage = "An unexpected error occurred. Please try again."
+                    self.isLoading = false
+                }
             }
-            isLoading = false
+            
+            // Only set isLoading to false here for non-Google providers
+            // (Google provider handles this within its own completion handler)
+            if provider != "google" {
+                isLoading = false
+            }
         }
     }
     
@@ -395,7 +498,9 @@ struct AuthenticationView: View {
                             }
                             
                             // Google Sign In Button - styled to match Apple button
-                            Button(action: {}) {
+                            Button(action: {
+                                handleSocialSignIn(provider: "google")
+                            }) {
                                 HStack {
                                     Image("google_logo")
                                         .resizable()
@@ -416,41 +521,6 @@ struct AuthenticationView: View {
                                     .stroke(Color.gray, lineWidth: 1)
                             )
                             .padding(.horizontal)
-                            .disabled(true)
-                            .opacity(0.6)
-                            .overlay(
-                                Text("Coming Soon")
-                                    .foregroundColor(.gray)
-                            )
-                            
-                            // Facebook Sign In Button - styled to match Apple button
-                            Button(action: {}) {
-                                HStack {
-                                    Image("facebook_logo")
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 20, height: 20)
-                                        .padding(.trailing, 4)
-                                    Text("Continue with Facebook")
-                                        .font(.system(size: 16, weight: .medium))
-                                        .foregroundColor(colorScheme == .dark ? .white : .primary)
-                                }
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 50)
-                            }
-                            .background(colorScheme == .dark ? Color.gray : Color.white)
-                            .cornerRadius(8)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.gray, lineWidth: 1)
-                            )
-                            .padding(.horizontal)
-                            .disabled(true)
-                            .opacity(0.6)
-                            .overlay(
-                                Text("Coming Soon")
-                                    .foregroundColor(.gray)
-                            )
                         }
                         .padding(.bottom, 10) // Add padding at the bottom of the button group
                         

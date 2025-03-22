@@ -19,6 +19,14 @@
                 <string>com.ruzimetova.WomenBusinessDirectory</string>
             </array>
         </dict>
+        <dict>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>com.googleusercontent.apps.945855472540-03di38hkjl57k3o27ip1a2k5ui4mtgg9</string>
+            </array>
+        </dict>
     </array>
 </dict>
 </plist> 
