@@ -11,6 +11,8 @@ import AuthenticationServices
 import Alamofire
 import AlamofireImage
 import GoogleSignIn
+import FirebaseCore
+import FirebaseCrashlytics
 
 // Create a shared session that can be accessed throughout the app
 class NetworkManager {
@@ -54,7 +56,8 @@ struct WomenBusinessDirectoryApp: App {
 }
 
 class AppDelegate: NSObject, UIApplicationDelegate {
-  func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+  func application(_ application: UIApplication,
+                   didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
     FirebaseApp.configure()
     
     // Initialize NetworkManager to set up caching
@@ -62,6 +65,8 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     _ = NetworkManager.shared
     print("URLCache configured with \(URLCache.shared.memoryCapacity / 1_000_000) MB memory capacity")
     
+    // Configure Crashlytics
+    Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(true)
     
     // Set up ASAuthorizationController delegate for Sign in with Apple
     ASAuthorizationAppleIDProvider().getCredentialState(forUserID: UserDefaults.standard.string(forKey: "appleUserID") ?? "") { (credentialState, error) in

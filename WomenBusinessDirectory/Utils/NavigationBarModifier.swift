@@ -16,6 +16,9 @@ struct NavigationBarModifier: ViewModifier {
     @State private var showFilterSheet = false
     @State private var showDeleteConfirmation = false
     @State private var showPasswordConfirmation = false
+    @State private var showAboutView = false
+    @State private var showPrivacyPolicy = false
+    @State private var showTermsOfService = false
     @State private var confirmPassword = ""
     @State private var deleteError: String?
     
@@ -51,6 +54,28 @@ struct NavigationBarModifier: ViewModifier {
                         
                         // Settings button
                         Menu {
+                            // About section
+                            Section("About") {
+                                Button {
+                                    showAboutView = true
+                                } label: {
+                                    Label("About", systemImage: "info.circle")
+                                }
+                                
+                                Button {
+                                    showPrivacyPolicy = true
+                                } label: {
+                                    Label("Privacy Policy", systemImage: "lock.shield")
+                                }
+                                
+                                Button {
+                                    showTermsOfService = true
+                                } label: {
+                                    Label("Terms of Use", systemImage: "doc.text")
+                                }
+                            }
+                            
+                            // Account section
                             if isLoggedIn {
                                 Section("Account") {
                                     Button {
@@ -108,6 +133,15 @@ struct NavigationBarModifier: ViewModifier {
             .sheet(isPresented: $showFilterSheet) {
                 FilterView()
                     .presentationDetents([.medium, .large])
+            }
+            .sheet(isPresented: $showAboutView) {
+                AboutView()
+            }
+            .sheet(isPresented: $showPrivacyPolicy) {
+                LegalDocumentsView(documentType: .privacyPolicy)
+            }
+            .sheet(isPresented: $showTermsOfService) {
+                LegalDocumentsView(documentType: .termsOfService)
             }
             .alert("Delete Account", isPresented: $showDeleteConfirmation) {
                 Button("Cancel", role: .cancel) {}
