@@ -7,6 +7,16 @@
 
 import SwiftUI
 
+extension View {
+    @ViewBuilder func `if`<Content: View>(_ condition: Bool, transform: (Self) -> Content) -> some View {
+        if condition {
+            transform(self)
+        } else {
+            self
+        }
+    }
+}
+
 @MainActor
 final class ProfileViewModel: ObservableObject {
     @Published private(set) var entrepreneur: Entrepreneur
@@ -131,10 +141,7 @@ struct ProfileView: View {
             .background(Color(.systemGray6))
             .navigationTitle("Profile")
             .navigationBarTitleDisplayMode(.inline)
-            .customNavigationBar(
-                showSignInView: $showSignInView,
-                isLoggedIn: $userIsLoggedIn
-            )
+            .modifier(CustomNavigationBarModifier(isOwnProfile: isOwnProfile, showSignInView: $showSignInView, userIsLoggedIn: $userIsLoggedIn))
             .withProfileCompletionBanner(isOwnProfile: isOwnProfile, action: {
                 showingEditProfile = true
             })
@@ -414,4 +421,21 @@ struct ProfileView: View {
 
 #Preview {
     ProfileView(showSignInView: .constant(false), userIsLoggedIn: .constant(false))
+}
+
+struct CustomNavigationBarModifier: ViewModifier {
+    let isOwnProfile: Bool
+    @Binding var showSignInView: Bool
+    @Binding var userIsLoggedIn: Bool
+    
+    func body(content: Content) -> some View {
+        if isOwnProfile {
+            content.customNavigationBar(
+                showSignInView: $showSignInView,
+                isLoggedIn: $userIsLoggedIn
+            )
+        } else {
+            content
+        }
+    }
 }
