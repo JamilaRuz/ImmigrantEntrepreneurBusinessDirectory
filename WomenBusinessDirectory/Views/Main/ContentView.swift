@@ -85,6 +85,7 @@ struct MainTabView: View {
     @ObservedObject var directoryListViewModel: DirectoryListViewModel
     @State private var selectedTab = 0
     @ObservedObject private var completionManager = ProfileCompletionManager.shared
+    @State private var shouldCheckProfileCompletion = false
     
     // Add a state variable to force view refresh
     @State private var forceRefresh: Bool = false
@@ -140,18 +141,7 @@ struct MainTabView: View {
         .accentColor(tabColor)
         .onChange(of: userIsLoggedIn) { _, _ in
             print("MainTabView: userIsLoggedIn changed to: \(userIsLoggedIn)")
-
-            // Check if user is logged in but profile is incomplete
-            if userIsLoggedIn {
-                completionManager.checkProfileCompletion()
-                
-                // If profile is incomplete, direct user to Profile tab
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    if !completionManager.isProfileComplete {
-                        selectedTab = 3 // Profile tab
-                    }
-                }
-            }
+            shouldCheckProfileCompletion = true
         }
         .onAppear {
             print("MainTabView: onAppear - userIsLoggedIn = \(userIsLoggedIn)")
@@ -161,16 +151,7 @@ struct MainTabView: View {
                 print("MainTabView: Received UserDidSignIn notification")
                 DispatchQueue.main.async {
                     self.forceRefresh.toggle() // Force view refresh
-                    if userIsLoggedIn {
-                        completionManager.checkProfileCompletion()
-                        
-                        // If profile is incomplete, direct user to Profile tab
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                            if !completionManager.isProfileComplete {
-                                selectedTab = 3 // Profile tab
-                            }
-                        }
-                    }
+                    shouldCheckProfileCompletion = true
                     print("MainTabView: Updated state after notification - userIsLoggedIn: \(self.userIsLoggedIn)")
                 }
             }
@@ -187,6 +168,18 @@ struct MainTabView: View {
             // Remove notification observers
             NotificationCenter.default.removeObserver(self, name: NSNotification.Name("UserDidSignIn"), object: nil)
             NotificationCenter.default.removeObserver(self, name: NSNotification.Name("ProfileCompletionStatusChanged"), object: nil)
+        }
+        .task(id: shouldCheckProfileCompletion) {
+            if shouldCheckProfileCompletion && userIsLoggedIn {
+                // Wait a short delay to ensure Directory view is loaded
+                try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second delay
+                completionManager.checkProfileCompletion()
+                
+                if !completionManager.isProfileComplete {
+                    selectedTab = 3 // Profile tab
+                }
+                shouldCheckProfileCompletion = false
+            }
         }
         .id(forceRefresh) // Force view to refresh when this changes
     }

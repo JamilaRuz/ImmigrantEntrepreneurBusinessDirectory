@@ -12,12 +12,16 @@ final class ProfileViewModel: ObservableObject {
     @Published private(set) var entrepreneur: Entrepreneur
     @Published private(set) var companies: [Company] = []
     @Published private(set) var allCategories: [Category] = []
+    @Published private(set) var isLoading = false
     
     init() {
-        self.entrepreneur = Entrepreneur(entrepId: "", fullName: "", profileUrl: " ", email: "", bioDescr: "", companyIds: [])
+        self.entrepreneur = Entrepreneur(entrepId: "", fullName: "", profileUrl: nil, email: "", bioDescr: "", companyIds: [])
     }
     
     func loadData(for entrepreneur: Entrepreneur?) async throws {
+        isLoading = true
+        defer { isLoading = false }
+        
         if let entrepreneur = entrepreneur {
             // If viewing another entrepreneur's profile, use their data directly
             await MainActor.run {
@@ -41,7 +45,10 @@ final class ProfileViewModel: ObservableObject {
     
     private func loadCurrentEntrepreneur() async throws {
         let authDataResult = try AuthenticationManager.shared.getAuthenticatedUser()
-        self.entrepreneur = try await EntrepreneurManager.shared.getEntrepreneur(entrepId: authDataResult.uid)
+        let loadedEntrepreneur = try await EntrepreneurManager.shared.getEntrepreneur(entrepId: authDataResult.uid)
+        await MainActor.run {
+            self.entrepreneur = loadedEntrepreneur
+        }
     }
     
     private func loadCompaniesOfEntrepreneur() async throws -> [Company] {
@@ -142,6 +149,16 @@ struct ProfileView: View {
                 print("Failed to load data: \(error)")
             }
         }
+        .onAppear {
+            // Reload data when view appears
+            Task {
+                do {
+                    try await viewModel.loadData(for: entrepreneur)
+                } catch {
+                    print("Failed to reload data on appear: \(error)")
+                }
+            }
+        }
         .sheet(isPresented: $showingEditProfile) {
             EditProfileView(entrepreneur: viewModel.entrepreneur) {
                 // Refresh data when edit view saves changes
@@ -163,19 +180,25 @@ struct ProfileView: View {
         HStack(spacing: 15) {
             // Profile image with edit button overlay
             ZStack(alignment: .topTrailing) {
-                CachedAsyncImage(url: URL(string: viewModel.entrepreneur.profileUrl ?? "")) { phase in
-                    switch phase {
-                    case .empty:
-                        DefaultProfileImage(size: 120)
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: 120, height: 120)
-                            .clipShape(Circle())
-                    case .failure:
-                        DefaultProfileImage(size: 120)
+                if let profileUrl = viewModel.entrepreneur.profileUrl,
+                   !profileUrl.isEmpty,
+                   let url = URL(string: profileUrl) {
+                    CachedAsyncImage(url: url) { phase in
+                        switch phase {
+                        case .empty:
+                            DefaultProfileImage(size: 120)
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: 120, height: 120)
+                                .clipShape(Circle())
+                        case .failure:
+                            DefaultProfileImage(size: 120)
+                        }
                     }
+                } else {
+                    DefaultProfileImage(size: 120)
                 }
                 
                 if isEditable {
