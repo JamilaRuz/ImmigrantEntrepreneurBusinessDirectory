@@ -86,6 +86,7 @@ struct MainTabView: View {
     @State private var selectedTab = 0
     @ObservedObject private var completionManager = ProfileCompletionManager.shared
     @State private var shouldCheckProfileCompletion = false
+    @State private var hasPerformedInitialCheck = false
     
     // Add a state variable to force view refresh
     @State private var forceRefresh: Bool = false
@@ -146,6 +147,12 @@ struct MainTabView: View {
         .onAppear {
             print("MainTabView: onAppear - userIsLoggedIn = \(userIsLoggedIn)")
             
+            // Check profile completion status on first appear
+            if !hasPerformedInitialCheck && userIsLoggedIn {
+                hasPerformedInitialCheck = true
+                shouldCheckProfileCompletion = true
+            }
+            
             // Add notification observer for sign-in events
             NotificationCenter.default.addObserver(forName: NSNotification.Name("UserDidSignIn"), object: nil, queue: .main) { _ in
                 print("MainTabView: Received UserDidSignIn notification")
@@ -158,9 +165,16 @@ struct MainTabView: View {
             
             // Listen for profile completion status changes
             NotificationCenter.default.addObserver(forName: NSNotification.Name("ProfileCompletionStatusChanged"), object: nil, queue: .main) { notification in
-                if let isComplete = notification.userInfo?["isComplete"] as? Bool, !isComplete {
-                    // If profile becomes incomplete, direct user to Profile tab
-                    selectedTab = 3
+                if let isComplete = notification.userInfo?["isComplete"] as? Bool {
+                    // Always update the tab based on completion status
+                    if !isComplete {
+                        // If profile is incomplete, direct user to Profile tab
+                        selectedTab = 3
+                    } else if selectedTab == 3 {
+                        // If we're on the profile tab and profile is complete, 
+                        // redirect to Directory tab
+                        selectedTab = 0
+                    }
                 }
             }
         }
@@ -171,13 +185,20 @@ struct MainTabView: View {
         }
         .task(id: shouldCheckProfileCompletion) {
             if shouldCheckProfileCompletion && userIsLoggedIn {
-                // Wait a short delay to ensure Directory view is loaded
+                // Wait a short delay to ensure views are loaded
                 try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second delay
                 completionManager.checkProfileCompletion()
                 
+                // Always check and update tab based on profile completion
                 if !completionManager.isProfileComplete {
-                    selectedTab = 3 // Profile tab
+                    // If profile is incomplete, always go to profile tab
+                    selectedTab = 3
+                } else if selectedTab == 3 && hasPerformedInitialCheck {
+                    // If we're on the profile tab and profile is complete,
+                    // redirect to Directory tab, but only if not first launch
+                    selectedTab = 0
                 }
+                
                 shouldCheckProfileCompletion = false
             }
         }

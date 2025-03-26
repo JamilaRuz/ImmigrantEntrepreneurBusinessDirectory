@@ -28,7 +28,7 @@ struct ProductsView: View {
                     .font(.headline)
                     .padding(.top, 15)
                 
-                ForEach(services, id: \.self) { service in
+                ForEach(Array(services.enumerated()), id: \.offset) { index, service in
                     HStack(alignment: .top, spacing: 10) {
                         Image(systemName: "circle.fill")
                             .font(.system(size: 5))
@@ -136,19 +136,35 @@ struct ZoomableScrollView<Content: View>: UIViewRepresentable {
         
         let hostedView = UIHostingController(rootView: content)
         hostedView.view.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.addSubview(hostedView.view)
         
-        NSLayoutConstraint.activate([
-            hostedView.view.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
-            hostedView.view.heightAnchor.constraint(equalTo: scrollView.heightAnchor),
-            hostedView.view.centerXAnchor.constraint(equalTo: scrollView.centerXAnchor),
-            hostedView.view.centerYAnchor.constraint(equalTo: scrollView.centerYAnchor)
-        ])
+        // Add the hosted view as a child view controller
+        let vc = context.coordinator.hostingController
+        if vc.parent == nil {
+            // Add the view controller to the scroll view
+            scrollView.addSubview(vc.view)
+            
+            // Use safer constraint setup that won't lead to NaN values
+            let constraints = [
+                vc.view.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
+                vc.view.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
+                vc.view.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
+                vc.view.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
+                
+                // Fix the width and height to match scroll view frame
+                vc.view.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor),
+                vc.view.heightAnchor.constraint(equalTo: scrollView.frameLayoutGuide.heightAnchor)
+            ]
+            
+            NSLayoutConstraint.activate(constraints)
+        }
         
         return scrollView
     }
 
-    func updateUIView(_ uiView: UIScrollView, context: Context) {}
+    func updateUIView(_ uiView: UIScrollView, context: Context) {
+        // Reset zoom when content changes
+        uiView.zoomScale = 1.0
+    }
 
     func makeCoordinator() -> Coordinator {
         Coordinator(hostingController: UIHostingController(rootView: content))
@@ -163,6 +179,33 @@ struct ZoomableScrollView<Content: View>: UIViewRepresentable {
 
         func viewForZooming(in scrollView: UIScrollView) -> UIView? {
             return hostingController.view
+        }
+        
+        // Add methods to handle zoom changes and prevent NaN
+        func scrollViewDidZoom(_ scrollView: UIScrollView) {
+            updateConstraintsForSize(scrollView.bounds.size, scrollView: scrollView)
+        }
+        
+        func updateConstraintsForSize(_ size: CGSize, scrollView: UIScrollView) {
+            guard let view = scrollView.subviews.first else { return }
+            
+            let scrollViewSize = scrollView.bounds.size
+            let contentSize = view.frame.size
+            
+            // Calculate the center offsets to keep content centered while zooming
+            let horizontalInset = max(0, (scrollViewSize.width - contentSize.width) / 2)
+            let verticalInset = max(0, (scrollViewSize.height - contentSize.height) / 2)
+            
+            // Ensure we don't have NaN values in insets
+            let safeHorizontalInset = horizontalInset.isNaN ? 0 : horizontalInset
+            let safeVerticalInset = verticalInset.isNaN ? 0 : verticalInset
+            
+            scrollView.contentInset = UIEdgeInsets(
+                top: safeVerticalInset,
+                left: safeHorizontalInset,
+                bottom: safeVerticalInset,
+                right: safeHorizontalInset
+            )
         }
     }
 }

@@ -26,12 +26,14 @@ class ProfileCompletionManager: ObservableObject {
     
     func checkProfileCompletion() {
         guard let user = Auth.auth().currentUser else {
+            print("ProfileCompletionManager: No user logged in")
             profileCompletionMessage = "Please sign in to complete your profile"
             isProfileComplete = false
             return
         }
         
         isLoading = true
+        print("ProfileCompletionManager: Checking profile completion for user \(user.uid)")
         
         let db = Firestore.firestore()
         db.collection("entrepreneurs").document(user.uid).getDocument { [weak self] snapshot, error in
@@ -40,17 +42,20 @@ class ProfileCompletionManager: ObservableObject {
             self.isLoading = false
             
             if let error = error {
-                print("Error fetching profile: \(error.localizedDescription)")
+                print("ProfileCompletionManager: Error fetching profile: \(error.localizedDescription)")
                 self.profileCompletionMessage = "Unable to check profile status"
                 self.isProfileComplete = false
                 return
             }
             
             guard let data = snapshot?.data() else {
+                print("ProfileCompletionManager: No data found for user")
                 self.profileCompletionMessage = "Complete your profile to showcase your business"
                 self.isProfileComplete = false
                 return
             }
+            
+            print("ProfileCompletionManager: Retrieved profile data: \(data)")
             
             // Check if profile has basic information
             let hasName = (data["fullName"] as? String)?.isEmpty == false
@@ -58,12 +63,16 @@ class ProfileCompletionManager: ObservableObject {
             let hasProfileImage = (data["profileUrl"] as? String)?.isEmpty == false
             let hasCompanies = (data["companyIds"] as? [String])?.isEmpty == false
             
+            print("ProfileCompletionManager: Profile status - hasName: \(hasName), hasBio: \(hasBio), hasProfileImage: \(hasProfileImage), hasCompanies: \(hasCompanies)")
+            
             if hasName && (hasBio || hasProfileImage) && hasCompanies {
                 // Profile is reasonably complete
+                print("ProfileCompletionManager: Profile is COMPLETE")
                 self.isProfileComplete = true
                 self.profileCompletionMessage = nil
             } else {
                 // Profile is incomplete
+                print("ProfileCompletionManager: Profile is INCOMPLETE")
                 self.isProfileComplete = false
                 
                 // Create a specific message based on what's missing
@@ -78,6 +87,8 @@ class ProfileCompletionManager: ObservableObject {
                 } else {
                     self.profileCompletionMessage = "Complete your profile to showcase your business"
                 }
+                
+                print("ProfileCompletionManager: Completion message: \(self.profileCompletionMessage ?? "nil")")
             }
         }
     }

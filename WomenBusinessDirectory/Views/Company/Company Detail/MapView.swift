@@ -52,6 +52,13 @@ struct MapView: View {
     private func geocodeAddress() {
         let geocoder = CLGeocoder()
         let fullAddress = "\(company.address), \(company.city)"
+        
+        // Skip geocoding if address is empty
+        guard !company.address.isEmpty else {
+            print("Address is empty, skipping geocoding")
+            return
+        }
+        
         geocoder.geocodeAddressString(fullAddress) { placemarks, error in
             if let error = error {
                 print("Geocoding error: \(error.localizedDescription)")
@@ -63,15 +70,24 @@ struct MapView: View {
                 print("No location found for the address")
                 return
             }
+            
+            // Check for invalid coordinates (NaN or extremely out of range)
+            let coordinate = location.coordinate
+            guard !coordinate.latitude.isNaN && !coordinate.longitude.isNaN,
+                  coordinate.latitude >= -90 && coordinate.latitude <= 90,
+                  coordinate.longitude >= -180 && coordinate.longitude <= 180 else {
+                print("Invalid coordinates returned from geocoding")
+                return
+            }
 
             annotation = CompanyAnnotation(
-                coordinate: location.coordinate,
+                coordinate: coordinate,
                 title: company.name,
                 subtitle: formatFullAddress()
             )
 
             region = MKCoordinateRegion(
-                center: location.coordinate,
+                center: coordinate,
                 span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
             )
         }
