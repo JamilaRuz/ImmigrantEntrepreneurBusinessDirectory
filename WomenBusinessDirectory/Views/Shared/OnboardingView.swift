@@ -102,7 +102,7 @@ struct OnboardingPageView: View {
         VStack(spacing: 32) {
             Spacer()
             
-            // Icon
+            // System image with circle background
             Image(systemName: page.imageName)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
@@ -115,24 +115,22 @@ struct OnboardingPageView: View {
                         .frame(width: 200, height: 200)
                 )
             
-            // Text content
-            VStack(spacing: 16) {
+            VStack(spacing: 8) {
                 Text(page.title)
                     .font(.title2)
                     .fontWeight(.bold)
-                    .multilineTextAlignment(.center)
+                    .foregroundColor(page.accentColor)
                 
                 Text(page.description)
                     .font(.body)
-                    .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal, 32)
             }
             
             Spacer()
-            Spacer()
         }
-        .padding()
     }
 }
 
