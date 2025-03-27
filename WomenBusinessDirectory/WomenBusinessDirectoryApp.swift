@@ -45,14 +45,27 @@ class NetworkManager {
 
 @main
 struct WomenBusinessDirectoryApp: App {
-  @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
-  
-  var body: some Scene {
-    WindowGroup {
-      SplashScreen()
-        .environment(\.companyManager, RealCompanyManager.shared)
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
+    @AppStorage(UserDefaultsKeys.hasSeenOnboarding) private var hasSeenOnboarding = false
+    @State private var showOnboarding = false
+    
+    var body: some Scene {
+        WindowGroup {
+            ZStack {
+                SplashScreen()
+                    .environment(\.companyManager, RealCompanyManager.shared)
+                    .onAppear {
+                        // Show onboarding only if user hasn't seen it before
+                        if !hasSeenOnboarding {
+                            showOnboarding = true
+                        }
+                    }
+            }
+            .fullScreenCover(isPresented: $showOnboarding) {
+                OnboardingView(showOnboarding: $showOnboarding)
+            }
+        }
     }
-  }
 }
 
 class AppDelegate: NSObject, UIApplicationDelegate {

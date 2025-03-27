@@ -29,6 +29,7 @@ struct AuthenticationView: View {
     
     // Get the color scheme from the environment to detect dark mode
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.dismiss) private var dismiss
 
     func handleAuthError(_ error: Error) {
         showAlert = true
@@ -276,7 +277,6 @@ struct AuthenticationView: View {
     }
 
     var body: some View {
-        // Use a GeometryReader to get the full screen size
         GeometryReader { geometry in
             ZStack(alignment: .bottom) {
                 // Main content in ScrollView
@@ -534,11 +534,11 @@ struct AuthenticationView: View {
                 // Skip button - anchored to the bottom
                 VStack {
                     Button("Skip") {
-                        showSignInView = false
-                        userIsLoggedIn = false // Ensure user is not logged in
-                        
-                        // Save the skipped authentication state in UserDefaults
+                        // Set skipped authentication state
                         UserDefaults.standard.set(true, forKey: "hasSkippedAuthentication")
+                        userIsLoggedIn = false
+                        showSignInView = false
+                        dismiss()
                     }
                     .frame(width: 100, height: 40)
                     .foregroundColor(colorScheme == .dark ? .white : .orange1)
@@ -551,7 +551,7 @@ struct AuthenticationView: View {
                 }
                 .frame(width: geometry.size.width)
                 .padding(.bottom, 20)
-                .background(Color.white.opacity(0.01)) // Nearly transparent background to capture taps
+                .background(Color.white.opacity(0.01))
             }
             
             // Overlay loading indicator
@@ -568,23 +568,21 @@ struct AuthenticationView: View {
                 .ignoresSafeArea()
             }
         }
-        .ignoresSafeArea(.keyboard) // Prevent keyboard from pushing content up
+        .ignoresSafeArea(.keyboard)
         .onAppear {
             print("AuthenticationView: onAppear")
-            // Add notification observer for sign-in events
             NotificationCenter.default.addObserver(forName: NSNotification.Name("UserDidSignIn"), object: nil, queue: .main) { _ in
                 print("AuthenticationView: Received UserDidSignIn notification")
                 DispatchQueue.main.async {
                     self.userIsLoggedIn = true
                     self.showSignInView = false
-                    self.forceRefresh.toggle() // Force view refresh
+                    self.forceRefresh.toggle()
                     print("AuthenticationView: Updated state after notification - userIsLoggedIn: \(self.userIsLoggedIn), showSignInView: \(self.showSignInView)")
                 }
             }
         }
         .onDisappear {
             print("AuthenticationView: onDisappear")
-            // Remove notification observer
             NotificationCenter.default.removeObserver(self, name: NSNotification.Name("UserDidSignIn"), object: nil)
         }
         .id(forceRefresh)

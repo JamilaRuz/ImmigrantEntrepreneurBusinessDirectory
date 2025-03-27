@@ -10,6 +10,7 @@ import FirebaseAuth
 import FirebaseFirestore
 import AuthenticationServices
 import CryptoKit
+import Combine
 
 struct AuthDataResultModel {
   let uid: String
@@ -25,14 +26,34 @@ struct AuthDataResultModel {
   }
 }
 
-final class AuthenticationManager {
+final class AuthenticationManager: ObservableObject {
   
   static let shared = AuthenticationManager()
+  
+  @Published var isAuthenticated = false
+  @Published var isAnonymous = false
+  @Published var currentUser: AuthDataResultModel?
   
   // Property to store the current nonce for Apple Sign In
   var currentNonce: String?
   
-  private init() {}
+  private init() {
+    // Set initial authentication state
+    if let user = Auth.auth().currentUser {
+      self.isAuthenticated = true
+      self.isAnonymous = user.isAnonymous
+      self.currentUser = AuthDataResultModel(user: user)
+    }
+    
+    // Add auth state listener
+    Auth.auth().addStateDidChangeListener { [weak self] _, user in
+      DispatchQueue.main.async {
+        self?.isAuthenticated = user != nil
+        self?.isAnonymous = user?.isAnonymous ?? false
+        self?.currentUser = user.map { AuthDataResultModel(user: $0) }
+      }
+    }
+  }
   
   func getAuthenticatedUser() throws -> AuthDataResultModel {
     guard let user = Auth.auth().currentUser else {
@@ -56,6 +77,13 @@ final class AuthenticationManager {
     // Attempt to sign in with Firebase Authentication
     let authDataResult = try await Auth.auth().signIn(withEmail: email, password: password)
     let user = authDataResult.user
+    
+    // Update published properties
+    DispatchQueue.main.async { [weak self] in
+      self?.isAuthenticated = true
+      self?.isAnonymous = false
+      self?.currentUser = AuthDataResultModel(user: user)
+    }
     
     // Check if the email exists in the Firestore database
     let db = Firestore.firestore()
@@ -93,6 +121,12 @@ final class AuthenticationManager {
   func signOut() throws {
     do {
       try Auth.auth().signOut()
+      // Update published properties
+      DispatchQueue.main.async { [weak self] in
+        self?.isAuthenticated = false
+        self?.isAnonymous = false
+        self?.currentUser = nil
+      }
     } catch {
       throw error
     }
