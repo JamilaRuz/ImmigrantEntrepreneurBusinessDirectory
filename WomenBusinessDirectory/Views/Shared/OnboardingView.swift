@@ -7,7 +7,7 @@ struct OnboardingView: View {
     let pages: [OnboardingPage] = [
         OnboardingPage(
             title: "Welcome",
-            description: "Discover and connect with immigrant entrepreneurs from around the world. Support diverse businesses and be part of a growing community.",
+            description: "Discover and connect with immigrant entrepreneurs in Canada. Support diverse businesses and be part of a growing community.",
             imageName: "globe",
             accentColor: .purple1
         ),
@@ -19,13 +19,13 @@ struct OnboardingView: View {
         ),
         OnboardingPage(
             title: "Connect & Support",
-            description: "Follow your favorite businesses, leave reviews, and directly message business owners through the app.",
+            description: "Bookmark your favorite businesses, make a phone call or email business owners through the app.",
             imageName: "message.and.waveform",
             accentColor: .green
         ),
         OnboardingPage(
             title: "Join Our Community",
-            description: "Create an account to unlock all features and become part of our growing community of entrepreneurs.",
+            description: "To become part of our Business Directory:\n\n1. Create your account\n2. Complete your personal profile\n3. Register your business",
             imageName: "person.2.wave.2",
             accentColor: .orange
         )
