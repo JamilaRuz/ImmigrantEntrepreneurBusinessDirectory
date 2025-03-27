@@ -21,10 +21,11 @@ struct AboutView: View {
                     
                     // App name and version
                     VStack(spacing: 4) {
-                        Text("Women Business Directory")
+                        Text("Immigrant Entrepreneur Business Directory")
                             .font(.title2)
                             .fontWeight(.bold)
                             .foregroundColor(colorScheme == .dark ? .white : .purple1)
+                            .multilineTextAlignment(.center)
                         
                         if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
                            let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String {
@@ -38,19 +39,19 @@ struct AboutView: View {
                     VStack(alignment: .leading, spacing: 16) {
                         descriptionSection(
                             title: "Our Mission",
-                            content: "Women Business Directory connects women entrepreneurs with customers, promoting diverse, women-owned businesses to global audiences.",
+                            content: "Immigrant Entrepreneur Business Directory connects immigrant entrepreneurs with customers, promoting diverse, immigrant-owned businesses to global audiences.",
                             icon: "bolt.fill"
                         )
                         
                         descriptionSection(
                             title: "Why Use This App",
-                            content: "• Discover women-owned businesses\n• Support women entrepreneurs globally\n• Connect with like-minded business owners\n• Share your own business with potential customers",
+                            content: "• Discover immigrant-owned businesses\n• Support immigrant entrepreneurs globally\n• Connect with like-minded business owners\n• Share your own business with potential customers",
                             icon: "sparkles"
                         )
                         
                         descriptionSection(
                             title: "Contact Us",
-                            content: "Have questions or suggestions? Email us at:\nsupport@womenbusinessdirectory.com",
+                            content: "Have questions or suggestions? Email us at:\nsupport@immigrantbusinessdirectory.com",
                             icon: "envelope.fill"
                         )
                     }
@@ -59,7 +60,7 @@ struct AboutView: View {
                     Spacer()
                     
                     // Copyright info
-                    Text("© 2024 Women Business Directory. All rights reserved.")
+                    Text("© 2024 Immigrant Entrepreneur Business Directory. All rights reserved.")
                         .font(.caption)
                         .foregroundColor(.gray)
                         .padding(.bottom, 20)
