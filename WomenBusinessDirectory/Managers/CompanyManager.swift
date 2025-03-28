@@ -85,6 +85,7 @@ class Company: Codable, Hashable, Equatable, Identifiable {
         case latinxOwned = "Latinx Owned"
         case asianOwned = "Asian Owned"
         case lgbtqOwned = "LGBTQ+ Owned"
+        case blackOwned = "Black Owned"
     }
     
     enum WorkingHoursType: String, CaseIterable, Codable {

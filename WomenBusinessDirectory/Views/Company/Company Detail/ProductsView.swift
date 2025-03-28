@@ -22,74 +22,72 @@ struct ProductsView: View {
     @State private var hasAppeared = false
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                Text("Services we provide")
-                    .font(.headline)
-                    .padding(.top, 15)
-                
-                ForEach(Array(services.enumerated()), id: \.offset) { index, service in
-                    HStack(alignment: .top, spacing: 10) {
-                        Image(systemName: "circle.fill")
-                            .font(.system(size: 5))
-                            .padding(.top, 7)
-                            .foregroundColor(colorScheme == .dark ? .white : .primary)
-                        Text(service)
-                            .foregroundColor(colorScheme == .dark ? .gray.opacity(0.9) : .gray)
-                    }
+        VStack(alignment: .leading, spacing: 20) {
+            Text("Services we provide")
+                .font(.headline)
+                .padding(.top, 15)
+            
+            ForEach(Array(services.enumerated()), id: \.offset) { index, service in
+                HStack(alignment: .top, spacing: 10) {
+                    Image(systemName: "circle.fill")
+                        .font(.system(size: 5))
+                        .padding(.top, 7)
+                        .foregroundColor(colorScheme == .dark ? .white : .primary)
+                    Text(service)
+                        .foregroundColor(colorScheme == .dark ? .gray.opacity(0.9) : .gray)
                 }
-                
-                Text("Business portfolio")
-                    .font(.headline)
-                    .padding(.top, 10)
-                
-                LazyVGrid(columns: columns, spacing: 5) {
-                    if portfolioImages.isEmpty {
-                        // Show 3 placeholder rectangles when no images
-                        ForEach(0..<3) { _ in
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 10)
-                                    .fill(colorScheme == .dark ? Color(UIColor.darkGray).opacity(0.5) : Color.gray.opacity(0.3))
-                                    .aspectRatio(1, contentMode: .fit)
-                                Text("No image")
-                                    .font(.caption)
-                                    .foregroundColor(colorScheme == .dark ? .gray.opacity(0.9) : .gray)
-                            }
+            }
+            
+            Text("Business portfolio")
+                .font(.headline)
+                .padding(.top, 10)
+            
+            LazyVGrid(columns: columns, spacing: 5) {
+                if portfolioImages.isEmpty {
+                    // Show 3 placeholder rectangles when no images
+                    ForEach(0..<3) { _ in
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(colorScheme == .dark ? Color(UIColor.darkGray).opacity(0.5) : Color.gray.opacity(0.3))
+                                .aspectRatio(1, contentMode: .fit)
+                            Text("No image")
+                                .font(.caption)
+                                .foregroundColor(colorScheme == .dark ? .gray.opacity(0.9) : .gray)
                         }
-                    } else {
-                        ForEach(portfolioImages, id: \.self) { imageUrl in
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 10)
-                                    .fill(Color.clear)
-                                
-                                CachedAsyncImage(url: URL(string: imageUrl)) { phase in
-                                    switch phase {
-                                    case .empty:
-                                        ProgressView()
-                                    case .success(let image):
-                                        image
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fill)
-                                            .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
-                                    case .failure:
-                                        Image(systemName: "photo")
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fit)
-                                            .foregroundColor(colorScheme == .dark ? .white.opacity(0.5) : .gray)
-                                    }
+                    }
+                } else {
+                    ForEach(portfolioImages, id: \.self) { imageUrl in
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(Color.clear)
+                            
+                            CachedAsyncImage(url: URL(string: imageUrl)) { phase in
+                                switch phase {
+                                case .empty:
+                                    ProgressView()
+                                case .success(let image):
+                                    image
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
+                                case .failure:
+                                    Image(systemName: "photo")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .foregroundColor(colorScheme == .dark ? .white.opacity(0.5) : .gray)
                                 }
-                                .clipShape(RoundedRectangle(cornerRadius: 10))
                             }
-                            .aspectRatio(1, contentMode: .fit)
-                            .onTapGesture {
-                                selectedImage = imageUrl
-                            }
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                        }
+                        .aspectRatio(1, contentMode: .fit)
+                        .onTapGesture {
+                            selectedImage = imageUrl
                         }
                     }
                 }
             }
-            .padding(.horizontal, 20)
         }
+        .padding(.horizontal, 20)
         .sheet(item: $selectedImage) { imageUrl in
             ZoomableScrollView {
                 CachedAsyncImage(url: URL(string: imageUrl)) { phase in
