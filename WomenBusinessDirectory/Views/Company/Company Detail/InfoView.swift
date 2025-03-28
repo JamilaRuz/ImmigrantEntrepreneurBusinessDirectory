@@ -18,6 +18,7 @@ struct InfoView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text("About Us")
                     .font(.headline)
+                    .padding(.top, 10) // Add consistent top padding
                 
                 if company.aboutUs.isEmpty {
                     Text("No company description available")
@@ -208,9 +209,6 @@ struct InfoView: View {
                     .padding(.vertical, 4)
                 }
             }
-            
-            // Extra padding at the bottom to ensure content is above buttons
-            Color.clear.frame(height: 100)
         }
         .padding(.horizontal, 16)
         .onAppear {

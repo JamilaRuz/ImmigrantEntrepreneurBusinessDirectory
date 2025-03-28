@@ -25,37 +25,45 @@ struct ProductsView: View {
         VStack(alignment: .leading, spacing: 20) {
             Text("Services we provide")
                 .font(.headline)
-                .padding(.top, 15)
+                .padding(.top, 10)
             
-            ForEach(Array(services.enumerated()), id: \.offset) { index, service in
-                HStack(alignment: .top, spacing: 10) {
-                    Image(systemName: "circle.fill")
-                        .font(.system(size: 5))
-                        .padding(.top, 7)
-                        .foregroundColor(colorScheme == .dark ? .white : .primary)
-                    Text(service)
-                        .foregroundColor(colorScheme == .dark ? .gray.opacity(0.9) : .gray)
+            if services.isEmpty {
+                Text("No services available")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .background(colorScheme == .dark ? Color(UIColor.darkGray).opacity(0.3) : Color.gray.opacity(0.1))
+                    .cornerRadius(8)
+            } else {
+                ForEach(Array(services.enumerated()), id: \.offset) { index, service in
+                    HStack(alignment: .top, spacing: 10) {
+                        Image(systemName: "circle.fill")
+                            .font(.system(size: 5))
+                            .padding(.top, 7)
+                            .foregroundColor(colorScheme == .dark ? .white : .primary)
+                        Text(service)
+                            .foregroundColor(colorScheme == .dark ? .gray.opacity(0.9) : .gray)
+                    }
                 }
             }
             
+            // Always show the Business portfolio section
             Text("Business portfolio")
                 .font(.headline)
                 .padding(.top, 10)
             
-            LazyVGrid(columns: columns, spacing: 5) {
-                if portfolioImages.isEmpty {
-                    // Show 3 placeholder rectangles when no images
-                    ForEach(0..<3) { _ in
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(colorScheme == .dark ? Color(UIColor.darkGray).opacity(0.5) : Color.gray.opacity(0.3))
-                                .aspectRatio(1, contentMode: .fit)
-                            Text("No image")
-                                .font(.caption)
-                                .foregroundColor(colorScheme == .dark ? .gray.opacity(0.9) : .gray)
-                        }
-                    }
-                } else {
+            if portfolioImages.isEmpty {
+                // Show a consistent "no images" message
+                Text("No portfolio images available")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .background(colorScheme == .dark ? Color(UIColor.darkGray).opacity(0.3) : Color.gray.opacity(0.1))
+                    .cornerRadius(8)
+            } else {
+                LazyVGrid(columns: columns, spacing: 5) {
                     ForEach(portfolioImages, id: \.self) { imageUrl in
                         ZStack {
                             RoundedRectangle(cornerRadius: 10)
@@ -88,6 +96,7 @@ struct ProductsView: View {
             }
         }
         .padding(.horizontal, 20)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .sheet(item: $selectedImage) { imageUrl in
             ZoomableScrollView {
                 CachedAsyncImage(url: URL(string: imageUrl)) { phase in

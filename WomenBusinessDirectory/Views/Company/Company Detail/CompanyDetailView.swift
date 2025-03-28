@@ -145,10 +145,12 @@ struct CompanyDetailView: View {
                 InfoView(company: company)
                     .tag(0)
                     .id("info")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                     
                 ProductsView(services: company.services, portfolioImages: company.portfolioImages)
                     .tag(1)
                     .id("products")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
               }
               .frame(minHeight: max(600, geometry.size.height - 200)) // Ensure there's enough height to show all content
               .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
