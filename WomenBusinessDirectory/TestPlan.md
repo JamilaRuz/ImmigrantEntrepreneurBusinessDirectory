@@ -64,6 +64,11 @@ The Women Business Directory is an iOS application designed to showcase business
 ### 3.3 Performance Testing
 - Measure app launch time
 - Check responsiveness during scrolling long lists
+  - Test rapid flick scrolling through Directory with 50+ companies
+  - Monitor frame rate drops using Instruments Time Profiler
+  - Verify smooth deceleration when releasing a scroll
+  - Check for UI thread blocking during image loading while scrolling
+  - Test scrolling performance with and without cached images
 - Verify image loading performance
 - Test app behavior with large datasets
 
@@ -78,6 +83,34 @@ The Women Business Directory is an iOS application designed to showcase business
 - Test authentication mechanisms
 - Validate proper access restrictions
 - Check data protection measures
+
+### 3.6 Unit Testing
+The following unit tests have been implemented to test the core functionality of the app:
+
+#### 3.6.1 Company Model Tests
+- **Initialization Tests**: Verify that Company objects are created correctly with all properties properly set
+- **Social Media Tests**: Validate the computed socialMedias property works with and without data
+- **Equality Tests**: Confirm that Company objects with the same ID are considered equal regardless of other properties
+
+#### 3.6.2 Entrepreneur Manager Tests
+- **Entrepreneur Creation Tests**: Validate creating and retrieving entrepreneur profiles
+- **Company Association Tests**: Test adding and removing companies from entrepreneur profiles
+- **Entrepreneur Update Tests**: Verify entrepreneur information can be updated correctly
+- **Error Handling Tests**: Validate proper handling of not-found scenarios
+
+#### 3.6.3 Companies List View Model Tests
+- **Search Filter Tests**: Verify search functionality works correctly with company names and descriptions
+- **City Filter Tests**: Test filtering companies by city with proper standardization of city names
+- **Ownership Type Tests**: Validate filtering by various business ownership types
+- **Combined Filtering Tests**: Test scenarios with multiple simultaneous filter criteria
+
+#### 3.6.4 Info View Model Tests
+- **Data Loading Tests**: Verify entrepreneur data is loaded correctly
+- **Error Handling Tests**: Test proper handling of loading failures
+- **Not Found Tests**: Validate behavior when entrepreneur records aren't found
+- **Loading State Tests**: Confirm proper management of loading state indicators
+
+These unit tests provide automated verification of the app's core business logic and data handling capabilities, helping to catch regressions quickly during development.
 
 ## 4. Test Schedule
 
@@ -193,6 +226,10 @@ The Women Business Directory is an iOS application designed to showcase business
 | PERF-002 | Image Loading | Test image loading performance | App with data | 1. Navigate to image-heavy screens<br>2. Observe loading | Images load smoothly with placeholders | - | - |
 | PERF-003 | Scrolling Performance | Test list scrolling | App with data | 1. Go to Directory<br>2. Scroll rapidly through lists | Smooth scrolling without stutters | - | - |
 | PERF-004 | Memory Usage | Test memory management | App running for extended time | 1. Use app extensively<br>2. Navigate between screens<br>3. View many images | No excessive memory usage or crashes | - | - |
+| PERF-005 | Fast Scroll Gesture | Test rapid scrolling in long lists | App with 50+ companies | 1. Go to Directory<br>2. Select a category with many companies<br>3. Perform rapid flick scrolling<br>4. Observe scrolling behavior | Scrolling remains smooth at 60 FPS, no visual stuttering | - | - |
+| PERF-006 | Scrolling with Image Loading | Test scrolling while images load | Fresh app install, clear cache | 1. Go to Directory<br>2. Quickly scroll through list<br>3. Observe image loading during scroll | UI remains responsive, scrolling doesn't stutter when images load | - | - |
+| PERF-007 | Scroll Deceleration | Test smooth scroll deceleration | App with data | 1. Go to Company list<br>2. Perform quick flick gesture<br>3. Observe how scrolling decelerates | Smooth deceleration without jitter or sudden stops | - | - |
+| PERF-008 | Frame Rate Monitoring | Use Instruments to measure scroll performance | Development build with Instruments | 1. Connect app to Instruments<br>2. Use Time Profiler<br>3. Monitor frame rate during scrolling | Sustained 58-60 FPS during scrolling, no significant drops | - | Developer tool |
 
 ### Network Module
 
@@ -235,14 +272,28 @@ To be completed after testing:
 - Executed test cases:
 - Pass rate:
 - Test areas covered:
+  - UI/UX functionality
+  - Business logic
+  - Data handling
+  - Unit tests (including models, managers, view models)
 
-### 9.2 Outstanding Issues
+### 9.2 Unit Test Coverage
+The following unit tests have been implemented and are running successfully:
+
+| Test Category | Tests Implemented | Tests Passing | Coverage Areas |
+|---------------|------------------|--------------|----------------|
+| Company Model | 3 | 3 | Initialization, social media properties, equality |
+| Entrepreneur Manager | 5 | 5 | Creation, retrieval, company associations, updates, error handling |
+| Companies List View Model | 4 | 4 | Search filtering, city filtering, ownership filtering, combined filters |
+| Info View Model | 4 | 4 | Data loading, error handling, not-found handling, loading states |
+
+### 9.3 Outstanding Issues
 - Critical issues:
 - High priority issues:
 - Medium priority issues:
 - Low priority issues:
 
-### 9.3 Recommendations
+### 9.4 Recommendations
 - Release readiness assessment
 - Suggested improvements
 - Follow-up testing needs
