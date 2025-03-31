@@ -55,7 +55,7 @@ struct AuthenticationView: View {
                 alertMessage = "No account exists with this email. Please sign up first."
             case .tooManyRequests:
                 alertMessage = "Too many unsuccessful attempts. Please try again later."
-            case .networkError:
+            case .networkRequestFailed:
                 alertMessage = "Network error. Please check your internet connection."
             case .invalidCredential:
                 alertMessage = "Your email or password is incorrect. Please try again."

@@ -32,7 +32,7 @@ struct SignUpEmailView: View {
               alertMessage = "Please enter a valid email address."
           case .weakPassword:
               alertMessage = "Please use a stronger password (at least 6 characters)."
-          case .networkError:
+          case .networkRequestFailed:
               alertMessage = "Unable to connect. Please check your internet connection and try again."
           case .invalidCredential:
               alertMessage = "Your email or password is incorrect. Please try again."
