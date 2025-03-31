@@ -1,0 +1,44 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Common function to check if user is authenticated
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    // Function to check if the user is accessing their own data
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    
+    // Entrepreneurs collection
+    match /entrepreneurs/{userId} {
+      // Users can read and write only their own entrepreneur profile
+      allow read: if isSignedIn();
+      allow write: if isOwner(userId);
+      
+      // Allow creation if the user ID matches the authenticated user
+      allow create: if isSignedIn() && request.resource.data.entrepId == request.auth.uid;
+    }
+    
+    // Companies collection
+    match /companies/{companyId} {
+      // Anyone can read company data
+      allow read: if true;
+      
+      // Only authenticated users can create companies
+      allow create: if isSignedIn() && request.resource.data.ownerId == request.auth.uid;
+      
+      // Only company owners can update or delete their companies
+      allow update, delete: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+    }
+    
+    // Categories collection (read-only for users, managed by admin)
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if false; // Only allow updates via admin or server functions
+    }
+    
+    // Additional collections can be added with appropriate rules
+  }
+} 

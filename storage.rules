@@ -1,0 +1,48 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Common function to check if user is authenticated
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    // Limit file size to 5MB
+    function isValidSize() {
+      return request.resource.size <= 5 * 1024 * 1024; // 5MB
+    }
+    
+    // Only allow image uploads
+    function isImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+    
+    // Profiles folder - user profile images
+    match /profiles/{userId}/{fileName} {
+      // Anyone can read profile images
+      allow read: if true;
+      
+      // Only the owner can upload their own profile image
+      allow write: if isSignedIn() && 
+                     request.auth.uid == userId && 
+                     isValidSize() && 
+                     isImage();
+    }
+    
+    // Companies folder - company images
+    match /companies/{companyId}/{fileName} {
+      // Anyone can read company images
+      allow read: if true;
+      
+      // Only authenticated users can upload company images
+      // Note: For stricter security, you might want to check if the user owns the company
+      allow write: if isSignedIn() && 
+                     isValidSize() && 
+                     isImage();
+    }
+    
+    // Default rule - deny all other access
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+} 
