@@ -23,29 +23,7 @@ struct SignUpEmailView: View {
   
   func handleAuthError(_ error: Error) {
       alertTitle = "Please Note"
-      
-      if let errorCode = AuthErrorCode(rawValue: (error as NSError).code) {
-          switch errorCode {
-          case .emailAlreadyInUse:
-              alertMessage = "This email is already registered. Please sign in instead."
-          case .invalidEmail:
-              alertMessage = "Please enter a valid email address."
-          case .weakPassword:
-              alertMessage = "Please use a stronger password (at least 6 characters)."
-          case .networkRequestFailed:
-              alertMessage = "Unable to connect. Please check your internet connection and try again."
-          case .invalidCredential:
-              alertMessage = "Your email or password is incorrect. Please try again."
-          case .userNotFound:
-              alertMessage = "No account exists with this email. Please sign up first."
-          case .wrongPassword:
-              alertMessage = "Your email or password is incorrect. Please try again."
-          default:
-              alertMessage = "Something went wrong. Please try again."
-          }
-      } else {
-          alertMessage = "Something went wrong. Please try again."
-      }
+      alertMessage = FirebaseErrorHandler.handleError(error)
   }
   
   var body: some View {

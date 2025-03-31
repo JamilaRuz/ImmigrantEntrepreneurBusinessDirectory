@@ -34,6 +34,12 @@ struct FirebaseErrorHandler {
     static func handleError(_ error: Error) -> String {
         var errorMessage = "An unexpected error occurred. Please try again."
         
+        // Handle email verification error
+        let nsError = error as NSError
+        if nsError.domain == "EmailVerificationError" && nsError.code == 1001 {
+            return nsError.localizedDescription + "\n\nWould you like to resend the verification email?"
+        }
+        
         // Handle Auth Errors
         if let authError = error as? AuthErrorCode {
             errorMessage = getAuthErrorMessage(authError)

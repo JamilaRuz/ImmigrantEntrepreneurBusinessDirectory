@@ -32,39 +32,9 @@ struct AuthenticationView: View {
     @Environment(\.dismiss) private var dismiss
 
     func handleAuthError(_ error: Error) {
-        showAlert = true
         alertTitle = "Sign In Error"
-        
-        // Check for email verification error
-        let nsError = error as NSError
-        if nsError.domain == "EmailVerificationError" && nsError.code == 1001 {
-            alertTitle = "Email Not Verified"
-            alertMessage = nsError.localizedDescription
-            // Add option to resend verification email
-            alertMessage += "\n\nWould you like to resend the verification email?"
-            return
-        }
-        
-        if let errorCode = AuthErrorCode(rawValue: (error as NSError).code) {
-            switch errorCode {
-            case .wrongPassword:
-                alertMessage = "Your email or password is incorrect. Please try again."
-            case .invalidEmail:
-                alertMessage = "Please enter a valid email address."
-            case .userNotFound:
-                alertMessage = "No account exists with this email. Please sign up first."
-            case .tooManyRequests:
-                alertMessage = "Too many unsuccessful attempts. Please try again later."
-            case .networkRequestFailed:
-                alertMessage = "Network error. Please check your internet connection."
-            case .invalidCredential:
-                alertMessage = "Your email or password is incorrect. Please try again."
-            default:
-                alertMessage = "Your email or password is incorrect. Please try again."
-            }
-        } else {
-            alertMessage = "Your email or password is incorrect. Please try again."
-        }
+        alertMessage = FirebaseErrorHandler.handleError(error)
+        showAlert = true
     }
 
     func handleSocialSignIn(provider: String) {
