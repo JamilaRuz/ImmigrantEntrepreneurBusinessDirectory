@@ -12,6 +12,7 @@ enum FirebaseErrorCode: String {
     case userDisabled = "ERROR_USER_DISABLED"
     case weakPassword = "ERROR_WEAK_PASSWORD"
     case networkRequestFailed = "ERROR_NETWORK_REQUEST_FAILED"
+    case networkError = "ERROR_NETWORK_ERROR"
     case tooManyRequests = "ERROR_TOO_MANY_REQUESTS"
     case requiresRecentLogin = "ERROR_REQUIRES_RECENT_LOGIN"
     
@@ -85,7 +86,7 @@ struct FirebaseErrorHandler {
             return "This account has been disabled. Please contact support."
         case .weakPassword:
             return "Password is too weak. Please use a stronger password."
-        case .networkRequestFailed:
+        case .networkError:
             return "Network error. Please check your internet connection and try again."
         case .tooManyRequests:
             return "Too many attempts. Please try again later."
@@ -150,7 +151,7 @@ struct FirebaseErrorHandler {
             return "This account has been disabled. Please contact support."
         case .weakPassword:
             return "Password is too weak. Please use a stronger password."
-        case .networkRequestFailed:
+        case .networkRequestFailed, .networkError:
             return "Network error. Please check your internet connection and try again."
         case .tooManyRequests:
             return "Too many attempts. Please try again later."

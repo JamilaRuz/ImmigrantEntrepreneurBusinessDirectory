@@ -13,8 +13,9 @@ service cloud.firestore {
     
     // Entrepreneurs collection
     match /entrepreneurs/{userId} {
-      // Users can read and write only their own entrepreneur profile
-      allow read: if isSignedIn();
+      // Allow anyone to read entrepreneur profiles
+      allow read: if true;
+      // Only owners can modify their own profiles
       allow write: if isOwner(userId);
       
       // Allow creation if the user ID matches the authenticated user
