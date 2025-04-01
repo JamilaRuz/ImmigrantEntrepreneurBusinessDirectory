@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import FirebaseAuth
+@preconcurrency import FirebaseAuth
 import FirebaseFirestore
 import AuthenticationServices
 import CryptoKit

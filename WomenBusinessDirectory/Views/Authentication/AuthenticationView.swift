@@ -247,315 +247,317 @@ struct AuthenticationView: View {
     }
 
     var body: some View {
-        GeometryReader { geometry in
-            ZStack(alignment: .bottom) {
-                // Main content in ScrollView
-                ScrollView(.vertical) {
-                    VStack(spacing: 0) {
-                        Text("Immigrant \nEntrepreneur Canada")
-                            .font(.title)
-                            .fontWeight(.semibold)
-                            .multilineTextAlignment(.center)
-                            .padding(.top, 30)
-                        
-                        LogoView(width: 100, height: 100)
-                            .padding(.top, 10)
-                            .padding(.bottom, 20)
-                        
-                        Text("Sign in or Sign up")
-                            .font(.title2)
-                            .fontWeight(.semibold)
-                            .padding(.bottom, 10)
-                        
-                        VStack(spacing: 10) {
-                            TextField("Email", text: $email)
-                                .autocapitalization(.none)
-                                .textInputAutocapitalization(.never)
-                                .autocorrectionDisabled()
-                                .textContentType(.none)
-                                .padding(.vertical, 15)
-                                .padding(.horizontal)
-                                .frame(height: 50)
-                                .background(colorScheme == .dark ? Color.gray.opacity(0.3) : Color(.systemBackground))
-                                .cornerRadius(8)
+        NavigationStack {
+            GeometryReader { geometry in
+                ZStack(alignment: .bottom) {
+                    // Main content in ScrollView
+                    ScrollView(.vertical) {
+                        VStack(spacing: 0) {
+                            Text("Immigrant \nEntrepreneur Canada")
+                                .font(.title)
+                                .fontWeight(.semibold)
+                                .multilineTextAlignment(.center)
+                                .padding(.top, 30)
+                            
+                            LogoView(width: 100, height: 100)
+                                .padding(.top, 10)
+                                .padding(.bottom, 20)
+                            
+                            Text("Sign in or Sign up")
+                                .font(.title2)
+                                .fontWeight(.semibold)
+                                .padding(.bottom, 10)
+                            
+                            VStack(spacing: 10) {
+                                TextField("Email", text: $email)
+                                    .autocapitalization(.none)
+                                    .textInputAutocapitalization(.never)
+                                    .autocorrectionDisabled()
+                                    .textContentType(.none)
+                                    .padding(.vertical, 15)
+                                    .padding(.horizontal)
+                                    .frame(height: 50)
+                                    .background(colorScheme == .dark ? Color.gray.opacity(0.3) : Color(.systemBackground))
+                                    .cornerRadius(8)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .stroke(Color.gray.opacity(colorScheme == .dark ? 0.5 : 0.3), lineWidth: 1)
+                                    )
+                                    .padding(.horizontal)
+                                
+                                ZStack(alignment: .trailing) {
+                                    if isPasswordVisible {
+                                        TextField("Password", text: $password)
+                                            .autocapitalization(.none)
+                                            .textInputAutocapitalization(.never)
+                                            .autocorrectionDisabled()
+                                            .textContentType(.none)
+                                            .padding(.vertical, 15)
+                                            .padding(.horizontal)
+                                            .frame(height: 50)
+                                            .background(colorScheme == .dark ? Color.gray.opacity(0.3) : Color(.systemBackground))
+                                            .cornerRadius(8)
+                                    } else {
+                                        SecureField("Password", text: $password)
+                                            .autocapitalization(.none)
+                                            .textInputAutocapitalization(.never)
+                                            .autocorrectionDisabled()
+                                            .textContentType(.none)
+                                            .padding(.vertical, 15)
+                                            .padding(.horizontal)
+                                            .frame(height: 50)
+                                            .background(colorScheme == .dark ? Color.gray.opacity(0.3) : Color(.systemBackground))
+                                            .cornerRadius(8)
+                                    }
+                                    
+                                    Button(action: {
+                                        isPasswordVisible.toggle()
+                                    }) {
+                                        isPasswordVisible ? Image(systemName: "eye") : Image(systemName: "eye.slash")
+                                    }
+                                    .foregroundColor(.gray)
+                                    .padding(.trailing, 16)
+                                }
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 8)
                                         .stroke(Color.gray.opacity(colorScheme == .dark ? 0.5 : 0.3), lineWidth: 1)
                                 )
                                 .padding(.horizontal)
-                            
-                            ZStack(alignment: .trailing) {
-                                if isPasswordVisible {
-                                    TextField("Password", text: $password)
-                                        .autocapitalization(.none)
-                                        .textInputAutocapitalization(.never)
-                                        .autocorrectionDisabled()
-                                        .textContentType(.none)
-                                        .padding(.vertical, 15)
-                                        .padding(.horizontal)
-                                        .frame(height: 50)
-                                        .background(colorScheme == .dark ? Color.gray.opacity(0.3) : Color(.systemBackground))
-                                        .cornerRadius(8)
-                                } else {
-                                    SecureField("Password", text: $password)
-                                        .autocapitalization(.none)
-                                        .textInputAutocapitalization(.never)
-                                        .autocorrectionDisabled()
-                                        .textContentType(.none)
-                                        .padding(.vertical, 15)
-                                        .padding(.horizontal)
-                                        .frame(height: 50)
-                                        .background(colorScheme == .dark ? Color.gray.opacity(0.3) : Color(.systemBackground))
-                                        .cornerRadius(8)
-                                }
                                 
-                                Button(action: {
-                                    isPasswordVisible.toggle()
-                                }) {
-                                    isPasswordVisible ? Image(systemName: "eye") : Image(systemName: "eye.slash")
-                                }
-                                .foregroundColor(.gray)
-                                .padding(.trailing, 16)
-                            }
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.gray.opacity(colorScheme == .dark ? 0.5 : 0.3), lineWidth: 1)
-                            )
-                            .padding(.horizontal)
-                            
-                            // Add Forgot Password button
-                            HStack {
-                                Spacer()
-                                Button(action: {
-                                    if email.isEmpty {
-                                        showAlert = true
-                                        alertTitle = "Email Required"
-                                        alertMessage = "Please enter your email address to reset your password."
-                                    } else {
-                                        isLoading = true
-                                        Task {
-                                            do {
-                                                try await AuthenticationManager.shared.resetPassword(email: email)
-                                                showAlert = true
-                                                alertTitle = "Password Reset Email Sent"
-                                                alertMessage = "Check your email for instructions to reset your password."
-                                            } catch {
-                                                showAlert = true
-                                                alertTitle = "Password Reset Failed"
-                                                alertMessage = "Failed to send password reset email. Please check your email address and try again."
-                                                print("Password reset error: \(error)")
-                                            }
-                                            isLoading = false
-                                        }
-                                    }
-                                }) {
-                                    Text("Forgot Password?")
-                                        .font(.subheadline)
-                                        .foregroundColor(.blue)
-                                }
-                                .padding(.trailing)
-                            }
-                            .padding(.bottom, 5)
-                            
-                            Button(action: {
-                                isLoading = true
-                                Task {
-                                    do {
-                                        let emailExists = try await viewModel.signIn(email: email, password: password)
-                                        if emailExists {
-                                            userIsLoggedIn = true
-                                            showSignInView = false
-                                        } else {
+                                // Add Forgot Password button
+                                HStack {
+                                    Spacer()
+                                    Button(action: {
+                                        if email.isEmpty {
                                             showAlert = true
-                                            alertTitle = "Sign In Error"
-                                            alertMessage = "No account exists with this email. Please sign up first."
-                                        }
-                                    } catch {
-                                        handleAuthError(error)
-                                    }
-                                    isLoading = false
-                                }
-                            }) {
-                                Text("Sign In")
-                                    .font(.system(size: 16, weight: .medium))
-                                    .foregroundColor(colorScheme == .dark ? .white : .white)
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 50) // Increased height to match Apple button
-                            }
-                            .background(colorScheme == .dark ? Color.gray : Color.orange1)
-                            .cornerRadius(8)
-                            .padding(.horizontal)
-                            .alert(isPresented: $showAlert) {
-                                // Check if this is a verification error
-                                if alertTitle == "Email Not Verified" {
-                                    return Alert(
-                                        title: Text(alertTitle),
-                                        message: Text(alertMessage),
-                                        primaryButton: .default(Text("Resend Email")) {
-                                            // Resend verification email
+                                            alertTitle = "Email Required"
+                                            alertMessage = "Please enter your email address to reset your password."
+                                        } else {
                                             isLoading = true
                                             Task {
                                                 do {
-                                                    try await viewModel.resendVerificationEmail()
+                                                    try await AuthenticationManager.shared.resetPassword(email: email)
                                                     showAlert = true
-                                                    alertTitle = "Verification Email Sent"
-                                                    alertMessage = "Please check your inbox for the verification link."
+                                                    alertTitle = "Password Reset Email Sent"
+                                                    alertMessage = "Check your email for instructions to reset your password."
                                                 } catch {
                                                     showAlert = true
-                                                    alertTitle = "Error"
-                                                    alertMessage = "Failed to send verification email. Please try again later."
+                                                    alertTitle = "Password Reset Failed"
+                                                    alertMessage = "Failed to send password reset email. Please check your email address and try again."
+                                                    print("Password reset error: \(error)")
                                                 }
                                                 isLoading = false
                                             }
-                                        },
-                                        secondaryButton: .cancel(Text("OK"))
-                                    )
+                                        }
+                                    }) {
+                                        Text("Forgot Password?")
+                                            .font(.subheadline)
+                                            .foregroundColor(.blue)
+                                    }
+                                    .padding(.trailing)
+                                }
+                                .padding(.bottom, 5)
+                                
+                                Button(action: {
+                                    isLoading = true
+                                    Task {
+                                        do {
+                                            let emailExists = try await viewModel.signIn(email: email, password: password)
+                                            if emailExists {
+                                                userIsLoggedIn = true
+                                                showSignInView = false
+                                            } else {
+                                                showAlert = true
+                                                alertTitle = "Sign In Error"
+                                                alertMessage = "No account exists with this email. Please sign up first."
+                                            }
+                                        } catch {
+                                            handleAuthError(error)
+                                        }
+                                        isLoading = false
+                                    }
+                                }) {
+                                    Text("Sign In")
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundColor(colorScheme == .dark ? .white : .white)
+                                        .frame(maxWidth: .infinity)
+                                        .frame(height: 50) // Increased height to match Apple button
+                                }
+                                .background(colorScheme == .dark ? Color.gray : Color.orange1)
+                                .cornerRadius(8)
+                                .padding(.horizontal)
+                                .alert(isPresented: $showAlert) {
+                                    // Check if this is a verification error
+                                    if alertTitle == "Email Not Verified" {
+                                        return Alert(
+                                            title: Text(alertTitle),
+                                            message: Text(alertMessage),
+                                            primaryButton: .default(Text("Resend Email")) {
+                                                // Resend verification email
+                                                isLoading = true
+                                                Task {
+                                                    do {
+                                                        try await viewModel.resendVerificationEmail()
+                                                        showAlert = true
+                                                        alertTitle = "Verification Email Sent"
+                                                        alertMessage = "Please check your inbox for the verification link."
+                                                    } catch {
+                                                        showAlert = true
+                                                        alertTitle = "Error"
+                                                        alertMessage = "Failed to send verification email. Please try again later."
+                                                    }
+                                                    isLoading = false
+                                                }
+                                            },
+                                            secondaryButton: .cancel(Text("OK"))
+                                        )
+                                    } else {
+                                        return Alert(
+                                            title: Text(alertTitle),
+                                            message: Text(alertMessage),
+                                            dismissButton: .default(Text("OK"))
+                                        )
+                                    }
+                                }
+                                
+                                NavigationLink(destination: SignUpEmailView(showSignInView: $showSignInView)) {
+                                    HStack {
+                                        Text("Don't have an account?")
+                                            .foregroundColor(.gray)
+                                        Text("Sign Up")
+                                            .foregroundColor(.blue)
+                                    }
+                                }
+                                .padding(.top, 5)
+                                .padding(.bottom, 5)
+                                
+                            }
+                            
+                            Text("or")
+                                .foregroundColor(.gray)
+                                .padding(.vertical, 5)
+                            
+                            // Social media buttons with improved spacing
+                            VStack(spacing: 12) { // Add spacing between buttons
+                                // Apple Sign In Button - conditional rendering based on color scheme
+                                if colorScheme == .dark {
+                                    // Custom gray wrapper for dark mode
+                                    ZStack {
+                                        // Gray background
+                                        Rectangle()
+                                            .fill(Color.gray)
+                                            .cornerRadius(8)
+                                        
+                                        // White SignInWithAppleButton
+                                        SignInWithAppleButton { result in
+                                            handleAppleSignInCompletion(result: result)
+                                        }
+                                        .signInWithAppleButtonStyle(.white)
+                                        .cornerRadius(6) // Slightly smaller to fit within the gray background
+                                        .padding(1)      // Small padding to show gray edge
+                                    }
+                                    .frame(height: 50)
+                                    .padding(.horizontal)
                                 } else {
-                                    return Alert(
-                                        title: Text(alertTitle),
-                                        message: Text(alertMessage),
-                                        dismissButton: .default(Text("OK"))
-                                    )
-                                }
-                            }
-                            
-                            NavigationLink(destination: SignUpEmailView(showSignInView: $showSignInView)) {
-                                HStack {
-                                    Text("Don't have an account?")
-                                        .foregroundColor(.gray)
-                                    Text("Sign Up")
-                                        .foregroundColor(.blue)
-                                }
-                            }
-                            .padding(.top, 5)
-                            .padding(.bottom, 5)
-                            
-                        }
-                        
-                        Text("or")
-                            .foregroundColor(.gray)
-                            .padding(.vertical, 5)
-                        
-                        // Social media buttons with improved spacing
-                        VStack(spacing: 12) { // Add spacing between buttons
-                            // Apple Sign In Button - conditional rendering based on color scheme
-                            if colorScheme == .dark {
-                                // Custom gray wrapper for dark mode
-                                ZStack {
-                                    // Gray background
-                                    Rectangle()
-                                        .fill(Color.gray)
-                                        .cornerRadius(8)
-                                    
-                                    // White SignInWithAppleButton
+                                    // Standard Apple Sign In Button for light mode
                                     SignInWithAppleButton { result in
                                         handleAppleSignInCompletion(result: result)
                                     }
-                                    .signInWithAppleButtonStyle(.white)
-                                    .cornerRadius(6) // Slightly smaller to fit within the gray background
-                                    .padding(1)      // Small padding to show gray edge
+                                    .signInWithAppleButtonStyle(.black)
+                                    .frame(height: 50)
+                                    .padding(.horizontal)
                                 }
-                                .frame(height: 50)
-                                .padding(.horizontal)
-                            } else {
-                                // Standard Apple Sign In Button for light mode
-                                SignInWithAppleButton { result in
-                                    handleAppleSignInCompletion(result: result)
+                                
+                                // Google Sign In Button - styled to match Apple button
+                                Button(action: {
+                                    handleSocialSignIn(provider: "google")
+                                }) {
+                                    HStack {
+                                        Image("google_logo")
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 20, height: 20)
+                                            .padding(.trailing, 4)
+                                        Text("Continue with Google")
+                                            .font(.system(size: 16, weight: .medium))
+                                            .foregroundColor(colorScheme == .dark ? .white : .primary)
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 50)
                                 }
-                                .signInWithAppleButtonStyle(.black)
-                                .frame(height: 50)
+                                .background(colorScheme == .dark ? Color.gray : Color.white)
+                                .cornerRadius(8)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(Color.gray, lineWidth: 1)
+                                )
                                 .padding(.horizontal)
                             }
+                            .padding(.bottom, 10) // Add padding at the bottom of the button group
                             
-                            // Google Sign In Button - styled to match Apple button
-                            Button(action: {
-                                handleSocialSignIn(provider: "google")
-                            }) {
-                                HStack {
-                                    Image("google_logo")
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 20, height: 20)
-                                        .padding(.trailing, 4)
-                                    Text("Continue with Google")
-                                        .font(.system(size: 16, weight: .medium))
-                                        .foregroundColor(colorScheme == .dark ? .white : .primary)
-                                }
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 50)
-                            }
-                            .background(colorScheme == .dark ? Color.gray : Color.white)
-                            .cornerRadius(8)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.gray, lineWidth: 1)
-                            )
-                            .padding(.horizontal)
+                            // Add padding at the bottom to ensure content doesn't get hidden behind the Skip button
+                            Spacer()
+                                .frame(height: 60) // Reduced from 80 to 60
                         }
-                        .padding(.bottom, 10) // Add padding at the bottom of the button group
-                        
-                        // Add padding at the bottom to ensure content doesn't get hidden behind the Skip button
-                        Spacer()
-                            .frame(height: 60) // Reduced from 80 to 60
+                        .frame(minHeight: geometry.size.height - 80) // Ensure content fills the screen minus space for Skip button
+                    } // ScrollView
+                    
+                    // Skip button - anchored to the bottom
+                    VStack {
+                        Button("Skip") {
+                            // Set skipped authentication state
+                            UserDefaults.standard.set(true, forKey: "hasSkippedAuthentication")
+                            userIsLoggedIn = false
+                            showSignInView = false
+                            dismiss()
+                        }
+                        .frame(width: 100, height: 40)
+                        .foregroundColor(colorScheme == .dark ? .white : .orange1)
+                        .background(colorScheme == .dark ? Color.gray : Color.white)
+                        .cornerRadius(8)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.gray, lineWidth: 1)
+                        )
                     }
-                    .frame(minHeight: geometry.size.height - 80) // Ensure content fills the screen minus space for Skip button
-                } // ScrollView
+                    .frame(width: geometry.size.width)
+                    .padding(.bottom, 20)
+                    .background(Color.white.opacity(0.01))
+                }
                 
-                // Skip button - anchored to the bottom
-                VStack {
-                    Button("Skip") {
-                        // Set skipped authentication state
-                        UserDefaults.standard.set(true, forKey: "hasSkippedAuthentication")
-                        userIsLoggedIn = false
-                        showSignInView = false
-                        dismiss()
+                // Overlay loading indicator
+                if isLoading {
+                    Color.black.opacity(0.3)
+                        .ignoresSafeArea()
+                    VStack {
+                        ProgressView()
+                            .scaleEffect(1.5)
+                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
                     }
-                    .frame(width: 100, height: 40)
-                    .foregroundColor(colorScheme == .dark ? .white : .orange1)
-                    .background(colorScheme == .dark ? Color.gray : Color.white)
-                    .cornerRadius(8)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color.gray, lineWidth: 1)
-                    )
-                }
-                .frame(width: geometry.size.width)
-                .padding(.bottom, 20)
-                .background(Color.white.opacity(0.01))
-            }
-            
-            // Overlay loading indicator
-            if isLoading {
-                Color.black.opacity(0.3)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.black.opacity(0.3))
                     .ignoresSafeArea()
-                VStack {
-                    ProgressView()
-                        .scaleEffect(1.5)
-                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color.black.opacity(0.3))
-                .ignoresSafeArea()
-            }
-        }
-        .ignoresSafeArea(.keyboard)
-        .onAppear {
-            print("AuthenticationView: onAppear")
-            NotificationCenter.default.addObserver(forName: NSNotification.Name("UserDidSignIn"), object: nil, queue: .main) { _ in
-                print("AuthenticationView: Received UserDidSignIn notification")
-                DispatchQueue.main.async {
-                    self.userIsLoggedIn = true
-                    self.showSignInView = false
-                    self.forceRefresh.toggle()
-                    print("AuthenticationView: Updated state after notification - userIsLoggedIn: \(self.userIsLoggedIn), showSignInView: \(self.showSignInView)")
                 }
             }
+            .ignoresSafeArea(.keyboard)
+            .onAppear {
+                print("AuthenticationView: onAppear")
+                NotificationCenter.default.addObserver(forName: NSNotification.Name("UserDidSignIn"), object: nil, queue: .main) { _ in
+                    print("AuthenticationView: Received UserDidSignIn notification")
+                    DispatchQueue.main.async {
+                        self.userIsLoggedIn = true
+                        self.showSignInView = false
+                        self.forceRefresh.toggle()
+                        print("AuthenticationView: Updated state after notification - userIsLoggedIn: \(self.userIsLoggedIn), showSignInView: \(self.showSignInView)")
+                    }
+                }
+            }
+            .onDisappear {
+                print("AuthenticationView: onDisappear")
+                NotificationCenter.default.removeObserver(self, name: NSNotification.Name("UserDidSignIn"), object: nil)
+            }
+            .id(forceRefresh)
         }
-        .onDisappear {
-            print("AuthenticationView: onDisappear")
-            NotificationCenter.default.removeObserver(self, name: NSNotification.Name("UserDidSignIn"), object: nil)
-        }
-        .id(forceRefresh)
     }
 }
 

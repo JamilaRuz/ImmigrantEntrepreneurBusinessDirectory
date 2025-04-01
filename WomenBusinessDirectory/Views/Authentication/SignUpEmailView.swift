@@ -8,6 +8,50 @@
 import SwiftUI
 import FirebaseAuth
 
+// MARK: - LegalDocumentsSection
+private struct LegalDocumentsSection: View {
+    @Binding var acceptedTerms: Bool
+    @Binding var showPrivacyPolicy: Bool
+    @Binding var showTermsOfService: Bool
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top, spacing: 8) {
+                Image(systemName: acceptedTerms ? "checkmark.square.fill" : "square")
+                    .foregroundColor(acceptedTerms ? .purple1 : .gray)
+                    .onTapGesture {
+                        acceptedTerms.toggle()
+                    }
+                
+                HStack(spacing: 4) {
+                    Text("I agree to the")
+                        .foregroundColor(.gray)
+                    
+                    Text("Terms of Service")
+                        .foregroundColor(.purple1)
+                        .underline()
+                        .onTapGesture {
+                            showTermsOfService = true
+                        }
+                    
+                    Text("and")
+                        .foregroundColor(.gray)
+                    
+                    Text("Privacy Policy")
+                        .foregroundColor(.purple1)
+                        .underline()
+                        .onTapGesture {
+                            showPrivacyPolicy = true
+                        }
+                }
+                .font(.footnote)
+            }
+        }
+        .padding(.horizontal)
+        .padding(.top, 20)
+    }
+}
+
 struct SignUpEmailView: View {
   @StateObject private var viewModel = SignUpEmailViewModel()
   @Environment(\.dismiss) var dismiss
@@ -20,6 +64,9 @@ struct SignUpEmailView: View {
   @State private var alertMessage = ""
   @State private var isSuccess = false
   @State private var isLoading = false
+  @State private var showPrivacyPolicy = false
+  @State private var showTermsOfService = false
+  @State private var acceptedTerms = false
   
   func handleAuthError(_ error: Error) {
       alertTitle = "Please Note"
@@ -78,6 +125,13 @@ struct SignUpEmailView: View {
                 }
                 .padding(.horizontal)
                 .padding(.top, 12)
+                
+                // Legal documents section
+                LegalDocumentsSection(
+                    acceptedTerms: $acceptedTerms,
+                    showPrivacyPolicy: $showPrivacyPolicy,
+                    showTermsOfService: $showTermsOfService
+                )
                 
                 // sign up button
                 Button {
@@ -140,6 +194,12 @@ struct SignUpEmailView: View {
                 }
             )
         }
+        .sheet(isPresented: $showPrivacyPolicy) {
+            LegalDocumentsView(documentType: .privacyPolicy)
+        }
+        .sheet(isPresented: $showTermsOfService) {
+            LegalDocumentsView(documentType: .termsOfService)
+        }
         
         // Overlay loading indicator
         if isLoading {
@@ -162,6 +222,7 @@ extension SignUpEmailView: AuthenticationFormProtocol {
     && viewModel.email.contains("@")
     && confirmPassword == viewModel.password
     && !viewModel.fullName.isEmpty
+    && acceptedTerms
   }
 }
 
