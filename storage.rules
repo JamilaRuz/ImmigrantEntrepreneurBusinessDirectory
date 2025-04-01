@@ -16,28 +16,40 @@ service firebase.storage {
       return request.resource.contentType.matches('image/.*');
     }
     
-    // Profiles folder - user profile images
-    match /profiles/{userId}/{fileName} {
+    // Profile images folder 
+    match /profile_images/{fileName} {
       // Anyone can read profile images
       allow read: if true;
       
-      // Only the owner can upload their own profile image
-      allow write: if isSignedIn() && 
-                     request.auth.uid == userId && 
-                     isValidSize() && 
-                     isImage();
+      // Only authenticated users can upload profile images
+      allow write: if isSignedIn();
     }
     
-    // Companies folder - company images
-    match /companies/{companyId}/{fileName} {
-      // Anyone can read company images
+    // Logo images folder
+    match /logo_images/{fileName} {
+      // Anyone can read logo images
       allow read: if true;
       
-      // Only authenticated users can upload company images
-      // Note: For stricter security, you might want to check if the user owns the company
-      allow write: if isSignedIn() && 
-                     isValidSize() && 
-                     isImage();
+      // Only authenticated users can upload logo images
+      allow write: if isSignedIn();
+    }
+    
+    // Header images folder
+    match /header_images/{fileName} {
+      // Anyone can read header images
+      allow read: if true;
+      
+      // Only authenticated users can upload header images
+      allow write: if isSignedIn();
+    }
+    
+    // Portfolio images folder
+    match /portfolio_images/{fileName} {
+      // Anyone can read portfolio images
+      allow read: if true;
+      
+      // Only authenticated users can upload portfolio images
+      allow write: if isSignedIn();
     }
     
     // Default rule - deny all other access

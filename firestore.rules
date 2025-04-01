@@ -13,13 +13,11 @@ service cloud.firestore {
     
     // Entrepreneurs collection
     match /entrepreneurs/{userId} {
-      // Allow anyone to read entrepreneur profiles
+      // Anyone can read entrepreneur profiles
       allow read: if true;
+      
       // Only owners can modify their own profiles
       allow write: if isOwner(userId);
-      
-      // Allow creation if the user ID matches the authenticated user
-      allow create: if isSignedIn() && request.resource.data.entrepId == request.auth.uid;
     }
     
     // Companies collection
@@ -28,18 +26,23 @@ service cloud.firestore {
       allow read: if true;
       
       // Only authenticated users can create companies
-      allow create: if isSignedIn() && request.resource.data.ownerId == request.auth.uid;
+      allow create: if isSignedIn();
       
-      // Only company owners can update or delete their companies
-      allow update, delete: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      // Only the company owner can update their companies
+      allow update, delete: if isSignedIn() && 
+                             (resource.data.ownerId == request.auth.uid || 
+                              resource.data.entrepId == request.auth.uid);
     }
     
-    // Categories collection (read-only for users, managed by admin)
+    // Categories collection
     match /categories/{categoryId} {
       allow read: if true;
-      allow write: if false; // Only allow updates via admin or server functions
+      allow write: if false; // Admin-only via Firebase console
     }
     
-    // Additional collections can be added with appropriate rules
+    // No default access to other collections
+    match /{document=**} {
+      allow read, write: if false;
+    }
   }
 } 
