@@ -13,9 +13,10 @@ final class CompaniesListViewModel: ObservableObject {
     // Add a flag to track if the view is active
     private var isViewActive = false
     
-    init(category: Category, filterManager: FilterManaging = FilterManager.shared) {
+    init(category: Category, filterManager: FilterManaging? = nil) {
         self.category = category
-        self.filterManager = filterManager
+        // Use the passed filterManager or get it on the main actor
+        self.filterManager = filterManager ?? FilterManager.shared
     }
     
     var filteredCompanies: [Company] {
@@ -126,7 +127,10 @@ struct CompaniesListView: View {
     
     init(category: Category) {
         self.category = category
-        self._viewModel = StateObject(wrappedValue: CompaniesListViewModel(category: category))
+        
+        // Properly handle MainActor isolation
+        let filterManager = FilterManager.shared
+        self._viewModel = StateObject(wrappedValue: CompaniesListViewModel(category: category, filterManager: filterManager))
         
         // Check if user is logged in
         if let _ = try? AuthenticationManager.shared.getAuthenticatedUser() {

@@ -48,7 +48,7 @@ class ImageCache {
         print("🔄 Downloading image from: \(urlString.suffix(20))")
         // Download image
         let urlRequest = URLRequest(url: url)
-        imageDownloader.download(urlRequest) { [weak self] response in
+        imageDownloader.download(urlRequest, completion:  { [weak self] response in
             guard let self = self else { return }
             
             if case .success(let image) = response.result {
@@ -60,7 +60,7 @@ class ImageCache {
                 print("❌ Failed to download image: \(urlString.suffix(20))")
                 completion(nil)
             }
-        }
+        })
     }
     
     /// Clears the image cache
@@ -108,8 +108,12 @@ struct CachedAsyncImage<Content: View>: View where Content: View {
     
     var body: some View {
         content(phase)
-            .onAppear(perform: loadImage)
-            .onChange(of: url) { _ in loadImage() }
+            .onAppear {
+                loadImage()
+            }
+            .onChange(of: url) { oldValue, newValue in
+                loadImage()
+            }
     }
     
     private func loadImage() {

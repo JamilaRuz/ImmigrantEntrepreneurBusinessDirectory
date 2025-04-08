@@ -9,8 +9,14 @@ import SwiftUI
 
 struct ProductsView: View {
     let services: [String]
-    let portfolioImages: [String]
+    let portfolioImages: [PortfolioImage]
     @Environment(\.colorScheme) private var colorScheme
+    
+    // Convenience initializer that converts string URLs to PortfolioImage objects
+    init(services: [String], portfolioImages: [String]) {
+        self.services = services
+        self.portfolioImages = portfolioImages.map { PortfolioImage(url: $0) }
+    }
     
     let columns = [
         GridItem(.flexible(), spacing: 5),
@@ -18,7 +24,7 @@ struct ProductsView: View {
         GridItem(.flexible(), spacing: 5)
     ]
     
-    @State private var selectedImage: String?
+    @State private var selectedImage: PortfolioImage?
     @State private var hasAppeared = false
     
     var body: some View {
@@ -64,12 +70,12 @@ struct ProductsView: View {
                     .cornerRadius(8)
             } else {
                 LazyVGrid(columns: columns, spacing: 5) {
-                    ForEach(portfolioImages, id: \.self) { imageUrl in
+                    ForEach(portfolioImages) { image in
                         ZStack {
                             RoundedRectangle(cornerRadius: 10)
                                 .fill(Color.clear)
                             
-                            CachedAsyncImage(url: URL(string: imageUrl)) { phase in
+                            CachedAsyncImage(url: URL(string: image.url)) { phase in
                                 switch phase {
                                 case .empty:
                                     ProgressView()
@@ -89,7 +95,7 @@ struct ProductsView: View {
                         }
                         .aspectRatio(1, contentMode: .fit)
                         .onTapGesture {
-                            selectedImage = imageUrl
+                            selectedImage = image
                         }
                     }
                 }
@@ -97,9 +103,9 @@ struct ProductsView: View {
         }
         .padding(.horizontal, 20)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .sheet(item: $selectedImage) { imageUrl in
+        .sheet(item: $selectedImage) { image in
             ZoomableScrollView {
-                CachedAsyncImage(url: URL(string: imageUrl)) { phase in
+                CachedAsyncImage(url: URL(string: image.url)) { phase in
                     switch phase {
                     case .empty:
                         ProgressView()
@@ -217,8 +223,19 @@ struct ZoomableScrollView<Content: View>: UIViewRepresentable {
     }
 }
 
-extension String: Identifiable {
-    public var id: String { self }
+// Replace String extension with a proper model type
+struct PortfolioImage: Identifiable, Hashable {
+    let url: String
+    var id: String { url }
+    
+    // Required for Hashable
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+    
+    static func == (lhs: PortfolioImage, rhs: PortfolioImage) -> Bool {
+        lhs.id == rhs.id
+    }
 }
 
 #Preview {

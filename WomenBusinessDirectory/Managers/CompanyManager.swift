@@ -8,7 +8,18 @@
 import Foundation
 import FirebaseFirestore
 import FirebaseStorage
+import FirebaseAuth
 
+// Helper to access AuthenticationManager safely from non-MainActor contexts
+@MainActor
+func getUserId() throws -> String {
+    return try AuthenticationManager.shared.getAuthenticatedUser().uid
+}
+
+// Non-MainActor helper for synchronous contexts
+func getUserIdSync() -> String? {
+    return Auth.auth().currentUser?.uid
+}
 
 class Company: Codable, Hashable, Equatable, Identifiable {
     static func == (lhs: Company, rhs: Company) -> Bool {
@@ -47,11 +58,42 @@ class Company: Codable, Hashable, Equatable, Identifiable {
     
     var isBookmarked: Bool {
         get {
-            if let currentUserId = try? AuthenticationManager.shared.getAuthenticatedUser().uid {
+            // Use the synchronous helper function
+            if let currentUserId = getUserIdSync() {
                 return bookmarkedBy.contains(currentUserId)
             }
             return false
         }
+    }
+    
+    init(companyId: String, entrepId: String, categoryIds: [String], name: String, logoImg: String?, headerImg: String?, aboutUs: String, dateFounded: String, portfolioImages: [String], address: String, city: String, phoneNum: String, email: String, workHours: String, services: [String], socialMedia: [SocialMedia: String]? = nil, businessModel: BusinessModel, website: String, ownershipTypes: [OwnershipType], isBookmarked: Bool = false) {
+        self.companyId = companyId
+        self.entrepId = entrepId
+        self.categoryIds = categoryIds
+        self.name = name
+        self.logoImg = logoImg
+        self.headerImg = headerImg
+        self.aboutUs = aboutUs
+        self.dateFounded = dateFounded
+        self.portfolioImages = portfolioImages
+        self.address = address
+        self.city = city
+        self.phoneNum = phoneNum
+        self.email = email
+        self.workHours = workHours
+        self.services = services
+        self.socialMedia = socialMedia
+        self.businessModel = businessModel
+        self.website = website
+        
+        // Initialize bookmarkedBy array using synchronous helper
+        if isBookmarked, let currentUserId = getUserIdSync() {
+            self.bookmarkedBy = [currentUserId]
+        } else {
+            self.bookmarkedBy = []
+        }
+        
+        self.ownershipTypes = ownershipTypes
     }
     
     enum BusinessModel: String, CaseIterable, Codable {
@@ -96,36 +138,6 @@ class Company: Codable, Hashable, Equatable, Identifiable {
         var displayText: String {
             return self.rawValue
         }
-    }
-    
-    init(companyId: String, entrepId: String, categoryIds: [String], name: String, logoImg: String?, headerImg: String?, aboutUs: String, dateFounded: String, portfolioImages: [String], address: String, city: String, phoneNum: String, email: String, workHours: String, services: [String], socialMedia: [SocialMedia: String]? = nil, businessModel: BusinessModel, website: String, ownershipTypes: [OwnershipType], isBookmarked: Bool = false) {
-        self.companyId = companyId
-        self.entrepId = entrepId
-        self.categoryIds = categoryIds
-        self.name = name
-        self.logoImg = logoImg
-        self.headerImg = headerImg
-        self.aboutUs = aboutUs
-        self.dateFounded = dateFounded
-        self.portfolioImages = portfolioImages
-        self.address = address
-        self.city = city
-        self.phoneNum = phoneNum
-        self.email = email
-        self.workHours = workHours
-        self.services = services
-        self.socialMedia = socialMedia
-        self.businessModel = businessModel
-        self.website = website
-        
-        // Initialize bookmarkedBy array
-        if isBookmarked, let currentUserId = try? AuthenticationManager.shared.getAuthenticatedUser().uid {
-            self.bookmarkedBy = [currentUserId]
-        } else {
-            self.bookmarkedBy = []
-        }
-        
-        self.ownershipTypes = ownershipTypes
     }
 }
 
@@ -260,7 +272,9 @@ final class RealCompanyManager: CompanyManager {
     }
     
     func getBookmarkedCompanies() async throws -> [Company] {
-        let currentUserId = try AuthenticationManager.shared.getAuthenticatedUser().uid
+        // Call the MainActor-aware helper function
+        let currentUserId = try await MainActor.run { try getUserId() }
+        
         let querySnapshot = try await companiesCollection
             .whereField("bookmarkedBy", arrayContains: currentUserId)
             .getDocuments()
@@ -351,7 +365,9 @@ final class RealCompanyManager: CompanyManager {
         print("Updating bookmark status for company: \(company.companyId)")
         
         do {
-            let currentUserId = try AuthenticationManager.shared.getAuthenticatedUser().uid
+            // Call the MainActor-aware helper function
+            let currentUserId = try await MainActor.run { try getUserId() }
+            
             let companyRef = companiesCollection.document(company.companyId)
             
             if isBookmarked {

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 @MainActor
 class FilterViewModel: ObservableObject {
@@ -17,11 +18,25 @@ class FilterViewModel: ObservableObject {
     
     private let filterManager: FilterManaging
     
-    init(filterManager: FilterManaging = FilterManager.shared) {
-        self.filterManager = filterManager
-        self.selectedCities = filterManager.getSelectedCities()
-        self.selectedOwnershipTypes = filterManager.getSelectedOwnershipTypes()
+    init(filterManager: FilterManaging? = nil) {
+        // In Swift 6, we must explicitly access FilterManager.shared on the MainActor
+        // Instead of using a nonisolated helper, we initialize directly within MainActor context
+        if let filterManager = filterManager {
+            self.filterManager = filterManager
+        } else {
+            // Since this class is @MainActor, and init runs on MainActor,
+            // this access to FilterManager.shared is allowed
+            self.filterManager = FilterManager.shared
+        }
+        
+        // Initialize with empty sets then load properly
+        self.selectedCities = []
+        self.selectedOwnershipTypes = []
+        
+        // Load initial values
         Task {
+            self.selectedCities = self.filterManager.getSelectedCities()
+            self.selectedOwnershipTypes = self.filterManager.getSelectedOwnershipTypes()
             await fetchFilterOptions()
         }
     }
@@ -64,7 +79,9 @@ class FilterViewModel: ObservableObject {
             selectedCities.insert(standardizedCity)
         }
         
-        filterManager.saveSelectedCities(selectedCities)
+        Task {
+            filterManager.saveSelectedCities(selectedCities)
+        }
     }
     
     func toggleOwnershipType(_ type: Company.OwnershipType) {
@@ -73,13 +90,17 @@ class FilterViewModel: ObservableObject {
         } else {
             selectedOwnershipTypes.insert(type)
         }
-        filterManager.saveSelectedOwnershipTypes(selectedOwnershipTypes)
+        Task {
+            filterManager.saveSelectedOwnershipTypes(selectedOwnershipTypes)
+        }
     }
     
     func clearFilters() {
         selectedCities.removeAll()
         selectedOwnershipTypes.removeAll()
-        filterManager.clearAllFilters()
+        Task {
+            filterManager.clearAllFilters()
+        }
     }
 }
 

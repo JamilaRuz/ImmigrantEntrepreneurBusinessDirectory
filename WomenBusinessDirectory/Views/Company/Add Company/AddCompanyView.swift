@@ -628,7 +628,7 @@ struct AddCompanyView: View {
   
   // Helper function to format website URL
   private func formatWebsiteURL(_ url: String) -> String {
-    var formattedURL = url.trimmingCharacters(in: .whitespacesAndNewlines)
+    let formattedURL = url.trimmingCharacters(in: .whitespacesAndNewlines)
     
     // If it's empty, return empty string
     if formattedURL.isEmpty {

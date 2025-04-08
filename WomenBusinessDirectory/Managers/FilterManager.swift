@@ -9,16 +9,17 @@ import Foundation
 import FirebaseFirestore
 
 protocol FilterManaging {
-    func getSelectedCities() -> Set<String>
-    func getSelectedOwnershipTypes() -> Set<Company.OwnershipType>
+    // Add nonisolated to methods that don't need MainActor isolation
+    nonisolated func getSelectedCities() -> Set<String>
+    nonisolated func getSelectedOwnershipTypes() -> Set<Company.OwnershipType>
     func saveSelectedCities(_ cities: Set<String>)
     func saveSelectedOwnershipTypes(_ types: Set<Company.OwnershipType>)
     func clearAllFilters()
     func fetchCities() async throws -> [String]
-    func fetchOwnershipTypes() -> [Company.OwnershipType]
-    func applyFilters(to companies: [Company]) -> [Company]
-    func clearCache()
-    func standardizeCity(_ city: String) -> String
+    nonisolated func fetchOwnershipTypes() -> [Company.OwnershipType]
+    nonisolated func applyFilters(to companies: [Company]) -> [Company]
+    func clearCache() async
+    nonisolated func standardizeCity(_ city: String) -> String
 }
 
 @MainActor
@@ -38,7 +39,7 @@ class FilterManager: FilterManaging {
     
     // MARK: - Helper Methods
     
-    func standardizeCity(_ city: String) -> String {
+    nonisolated func standardizeCity(_ city: String) -> String {
         // Remove any commas and everything that follows
         // This way "Ottawa", "Ottawa, ON", and "Ottawa, Ontario" will all become just "Ottawa"
         if let commaRange = city.range(of: ",") {
@@ -49,26 +50,26 @@ class FilterManager: FilterManaging {
     
     // MARK: - Filter State Management
     
-    func getSelectedCities() -> Set<String> {
+    nonisolated func getSelectedCities() -> Set<String> {
         let array = UserDefaults.standard.stringArray(forKey: selectedCitiesKey) ?? []
         return Set(array)
     }
     
-    func getSelectedOwnershipTypes() -> Set<Company.OwnershipType> {
+    nonisolated func getSelectedOwnershipTypes() -> Set<Company.OwnershipType> {
         let rawValues = UserDefaults.standard.stringArray(forKey: selectedOwnershipTypesKey) ?? []
         return Set(rawValues.compactMap { Company.OwnershipType(rawValue: $0) })
     }
     
-    func saveSelectedCities(_ cities: Set<String>) {
+    nonisolated func saveSelectedCities(_ cities: Set<String>) {
         UserDefaults.standard.set(Array(cities), forKey: selectedCitiesKey)
     }
     
-    func saveSelectedOwnershipTypes(_ types: Set<Company.OwnershipType>) {
+    nonisolated func saveSelectedOwnershipTypes(_ types: Set<Company.OwnershipType>) {
         let rawValues = types.map { $0.rawValue }
         UserDefaults.standard.set(rawValues, forKey: selectedOwnershipTypesKey)
     }
     
-    func clearAllFilters() {
+    nonisolated func clearAllFilters() {
         UserDefaults.standard.removeObject(forKey: selectedCitiesKey)
         UserDefaults.standard.removeObject(forKey: selectedOwnershipTypesKey)
     }
@@ -112,13 +113,13 @@ class FilterManager: FilterManaging {
         return uniqueCities
     }
     
-    func fetchOwnershipTypes() -> [Company.OwnershipType] {
+    nonisolated func fetchOwnershipTypes() -> [Company.OwnershipType] {
         return Company.OwnershipType.allCases
     }
     
     // MARK: - Filter Application
     
-    func applyFilters(to companies: [Company]) -> [Company] {
+    nonisolated func applyFilters(to companies: [Company]) -> [Company] {
         let selectedCitiesRaw = getSelectedCities()
         let selectedTypes = getSelectedOwnershipTypes()
         
@@ -150,7 +151,7 @@ class FilterManager: FilterManaging {
     
     // MARK: - Cache Management
     
-    func clearCache() {
+    func clearCache() async {
         availableCitiesCache = nil
     }
 }

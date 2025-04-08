@@ -46,105 +46,16 @@ struct AuthenticationView: View {
                     // Apple sign in is handled by the SignInWithAppleButton
                     break
                 case "google":
-                    // Get the client ID from GoogleService-Info.plist
-                    guard let clientID = FirebaseApp.app()?.options.clientID else {
-                        DispatchQueue.main.async {
-                            self.showAlert = true
-                            self.alertTitle = "Configuration Error"
-                            self.alertMessage = "Google Sign In isn't configured correctly. Check your GoogleService-Info.plist file."
-                            self.isLoading = false
-                        }
-                        return
-                    }
-                    
-                    // Create Google Sign In configuration
-                    let config = GIDConfiguration(clientID: clientID)
-                    
-                    // Find the rootViewController to present the sign-in screen
-                    guard let rootViewController = UIApplication.shared.windows.first?.rootViewController else {
-                        DispatchQueue.main.async {
-                            self.showAlert = true
-                            self.alertTitle = "Error"
-                            self.alertMessage = "Could not find a view controller to present the sign-in screen."
-                            self.isLoading = false
-                        }
-                        return
-                    }
-                    
-                    // Start the Google sign-in process
-                    DispatchQueue.main.async {
-                        GIDSignIn.sharedInstance.configuration = config
-                        GIDSignIn.sharedInstance.signIn(withPresenting: rootViewController) { signInResult, error in
-                            // Always reset loading indicator when finished
-                            DispatchQueue.main.async {
-                                self.isLoading = false
-                            }
-                            
-                            if let error = error {
-                                // Handle error
-                                DispatchQueue.main.async {
-                                    self.showAlert = true
-                                    self.alertTitle = "Sign In Error"
-                                    self.alertMessage = "Failed to sign in with Google: \(error.localizedDescription)"
-                                }
-                                return
-                            }
-                            
-                            guard let signInResult = signInResult else {
-                                DispatchQueue.main.async {
-                                    self.showAlert = true
-                                    self.alertTitle = "Sign In Error"
-                                    self.alertMessage = "Failed to get sign-in result from Google."
-                                }
-                                return
-                            }
-                            
-                            // Extract ID token and access token
-                            guard let idToken = signInResult.user.idToken?.tokenString else {
-                                DispatchQueue.main.async {
-                                    self.showAlert = true
-                                    self.alertTitle = "Sign In Error"
-                                    self.alertMessage = "Failed to get Google ID token."
-                                }
-                                return
-                            }
-
-                            // Get access token
-                            let accessToken = signInResult.user.accessToken.tokenString
-                            
-                            // Sign in with Firebase using the tokens
-                            Task { @MainActor in
-                                do {
-                                    let authResult = try await AuthenticationManager.shared.signInWithGoogle(
-                                        idToken: idToken,
-                                        accessToken: accessToken
-                                    )
-                                    
-                                    // Update UI state on success (already on main actor)
-                                    print("Successfully signed in with Google: \(authResult.email ?? "no email")")
-                                    self.userIsLoggedIn = true
-                                    self.showSignInView = false
-                                    
-                                    // Force UI update
-                                    NotificationCenter.default.post(name: NSNotification.Name("UserDidSignIn"), object: nil)
-                                } catch {
-                                    // Handle Firebase sign in error (already on main actor)
-                                    self.showAlert = true
-                                    self.alertTitle = "Sign In Error"
-                                    self.alertMessage = "Failed to sign in with Google: \(error.localizedDescription)"
-                                }
-                            }
-                        }
-                    }
+                    try await handleGoogleSignIn()
                 case "facebook":
                     // Handle Facebook sign in
                     break
                 default:
-                    break
+                    throw NSError(domain: "com.womenbusinessdirectory", code: 1000, userInfo: [NSLocalizedDescriptionKey: "Unsupported provider"])
                 }
             } catch {
                 print("Error during social sign in: \(error)")
-                DispatchQueue.main.async {
+                await MainActor.run {
                     self.showAlert = true
                     self.alertTitle = "Error"
                     self.alertMessage = "An unexpected error occurred. Please try again."
@@ -155,8 +66,93 @@ struct AuthenticationView: View {
             // Only set isLoading to false here for non-Google providers
             // (Google provider handles this within its own completion handler)
             if provider != "google" {
-                isLoading = false
+                await MainActor.run {
+                    isLoading = false
+                }
             }
+        }
+    }
+    
+    private func handleGoogleSignIn() async throws {
+        // Setup defer to ensure loading indicator is reset at the end of function execution
+        defer {
+            Task {
+                await MainActor.run {
+                    self.isLoading = false
+                }
+            }
+        }
+        
+        // Get the client ID from GoogleService-Info.plist
+        guard let clientID = FirebaseApp.app()?.options.clientID else {
+            throw NSError(domain: "com.womenbusinessdirectory", code: 1001, userInfo: [NSLocalizedDescriptionKey: "Google Sign In isn't configured correctly. Check your GoogleService-Info.plist file."])
+        }
+        
+        // Create Google Sign In configuration
+        let config = GIDConfiguration(clientID: clientID)
+        
+        // Find the rootViewController to present the sign-in screen
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let rootViewController = windowScene.windows.first?.rootViewController else {
+            throw NSError(domain: "com.womenbusinessdirectory", code: 1002, userInfo: [NSLocalizedDescriptionKey: "Could not find a view controller to present the sign-in screen."])
+        }
+        
+        // Start the Google sign-in process
+        do {
+            GIDSignIn.sharedInstance.configuration = config
+            
+            // Use try-await pattern with continuation to make catch block reachable
+            let signInResult = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<GIDSignInResult, Error>) in
+                GIDSignIn.sharedInstance.signIn(withPresenting: rootViewController) { signInResult, error in
+                    if let error = error {
+                        continuation.resume(throwing: error)
+                        return
+                    }
+                    
+                    guard let signInResult = signInResult else {
+                        continuation.resume(throwing: NSError(domain: "com.womenbusinessdirectory", code: 1003, userInfo: [NSLocalizedDescriptionKey: "Failed to get sign-in result from Google."]))
+                        return
+                    }
+                    
+                    continuation.resume(returning: signInResult)
+                }
+            }
+            
+            // Now we can use the result safely since any errors would have been caught
+            guard let idToken = signInResult.user.idToken?.tokenString else {
+                throw NSError(domain: "com.womenbusinessdirectory", code: 1004, userInfo: [NSLocalizedDescriptionKey: "Failed to get Google ID token."])
+            }
+            
+            // Get access token
+            let accessToken = signInResult.user.accessToken.tokenString
+            
+            // Sign in with Firebase using the tokens
+            let authResult = try await AuthenticationManager.shared.signInWithGoogle(
+                idToken: idToken,
+                accessToken: accessToken
+            )
+            
+            // Update UI state on success
+            print("Successfully signed in with Google: \(authResult.email ?? "no email")")
+            await MainActor.run {
+                self.userIsLoggedIn = true
+                self.showSignInView = false
+                
+                // Force UI update
+                NotificationCenter.default.post(name: NSNotification.Name("UserDidSignIn"), object: nil)
+            }
+            
+        } catch {
+            // This catch block is now reachable
+            print("Google sign in error: \(error)")
+            await MainActor.run {
+                self.showAlert = true
+                self.alertTitle = "Sign In Error"
+                self.alertMessage = "Failed to sign in with Google: \(error.localizedDescription)"
+            }
+            
+            // Re-throw the error to be caught by the outer catch block
+            throw error
         }
     }
     

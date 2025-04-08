@@ -26,7 +26,8 @@ struct AuthDataResultModel {
   }
 }
 
-final class AuthenticationManager: ObservableObject {
+@MainActor
+final class AuthenticationManager: ObservableObject, @unchecked Sendable {
   
   static let shared = AuthenticationManager()
   
@@ -37,6 +38,9 @@ final class AuthenticationManager: ObservableObject {
   // Property to store the current nonce for Apple Sign In
   var currentNonce: String?
   
+  // Store the auth state listener handle
+  private var authStateHandle: AuthStateDidChangeListenerHandle?
+  
   private init() {
     // Set initial authentication state
     if let user = Auth.auth().currentUser {
@@ -45,13 +49,20 @@ final class AuthenticationManager: ObservableObject {
       self.currentUser = AuthDataResultModel(user: user)
     }
     
-    // Add auth state listener
-    Auth.auth().addStateDidChangeListener { [weak self] _, user in
+    // Add auth state listener and store the handle
+    authStateHandle = Auth.auth().addStateDidChangeListener { [weak self] _, user in
       DispatchQueue.main.async {
         self?.isAuthenticated = user != nil
         self?.isAnonymous = user?.isAnonymous ?? false
         self?.currentUser = user.map { AuthDataResultModel(user: $0) }
       }
+    }
+  }
+  
+  deinit {
+    // Remove the auth state listener when the object is deallocated
+    if let handle = authStateHandle {
+      Auth.auth().removeStateDidChangeListener(handle)
     }
   }
   
@@ -231,67 +242,60 @@ final class AuthenticationManager: ObservableObject {
   func signInWithApple(idTokenString: String, nonce: String) async throws -> AuthDataResultModel {
     print("AuthenticationManager: Starting signInWithApple with token and nonce")
     
-    // Initialize a Firebase credential with the Apple ID token
+    // Create the Firebase credential from Apple ID token and nonce
     let credential = OAuthProvider.credential(
       withProviderID: "apple.com",
-      idToken: idTokenString,
+      idToken: idTokenString, 
       rawNonce: nonce
     )
     
-    print("AuthenticationManager: Created Firebase credential with Apple provider")
+    // Sign in with Firebase using the credential
+    print("AuthenticationManager: Attempting to sign in with Firebase")
+    let authDataResult = try await Auth.auth().signIn(with: credential)
+    print("AuthenticationManager: Firebase sign in successful: \(authDataResult.user.uid)")
     
-    do {
-      // Sign in with Firebase using the Apple credential
-      print("AuthenticationManager: Attempting to sign in with Firebase")
-      let authDataResult = try await Auth.auth().signIn(with: credential)
-      print("AuthenticationManager: Firebase sign in successful: \(authDataResult.user.uid)")
+    // Check if user exists in Firestore, if not, create a new entry
+    let user = authDataResult.user
+    let db = Firestore.firestore()
+    
+    print("AuthenticationManager: Checking if user exists in Firestore")
+    
+    // Check if user exists in Firestore
+    let querySnapshot = try await db.collection("entrepreneurs")
+      .whereField("email", isEqualTo: user.email ?? "")
+      .getDocuments()
+    
+    print("AuthenticationManager: Firestore query completed. Documents found: \(querySnapshot.documents.count)")
+    
+    // If user doesn't exist in Firestore, create a new entry
+    if querySnapshot.isEmpty {
+      print("AuthenticationManager: User not found in Firestore, creating new entry")
       
-      // Check if user exists in Firestore, if not, create a new entry
-      let user = authDataResult.user
-      let db = Firestore.firestore()
+      // Create a new user document in Firestore with the correct field names
+      let userData: [String: Any] = [
+        "entrepId": user.uid, // Use entrepId instead of uid to match the model
+        "email": user.email ?? "",
+        "fullName": user.displayName ?? "",
+        "dateCreated": Timestamp(), // Use dateCreated instead of createdAt to match the model
+        "bioDescr": "", // Add empty bioDescr field
+        "companyIds": [], // Add empty companyIds array
+        "profileUrl": NSNull() // Use NSNull instead of nil for Firestore
+      ]
       
-      print("AuthenticationManager: Checking if user exists in Firestore")
-      
-      // Check if user exists in Firestore
-      let querySnapshot = try await db.collection("entrepreneurs")
-        .whereField("email", isEqualTo: user.email ?? "")
-        .getDocuments()
-      
-      print("AuthenticationManager: Firestore query completed. Documents found: \(querySnapshot.documents.count)")
-      
-      // If user doesn't exist in Firestore, create a new entry
-      if querySnapshot.isEmpty {
-        print("AuthenticationManager: User not found in Firestore, creating new entry")
-        
-        // Create a new user document in Firestore with the correct field names
-        let userData: [String: Any] = [
-          "entrepId": user.uid, // Use entrepId instead of uid to match the model
-          "email": user.email ?? "",
-          "fullName": user.displayName ?? "",
-          "dateCreated": Timestamp(), // Use dateCreated instead of createdAt to match the model
-          "bioDescr": "", // Add empty bioDescr field
-          "companyIds": [], // Add empty companyIds array
-          "profileUrl": NSNull() // Use NSNull instead of nil for Firestore
-        ]
-        
-        print("AuthenticationManager: Setting user data in Firestore")
-        try await db.collection("entrepreneurs").document(user.uid).setData(userData)
-        print("AuthenticationManager: User data saved to Firestore")
-      } else {
-        print("AuthenticationManager: User already exists in Firestore")
-      }
-      
-      // Check profile completion status
-      DispatchQueue.main.async {
-        ProfileCompletionManager.shared.checkProfileCompletion()
-      }
-      
-      print("AuthenticationManager: Apple sign in process completed successfully")
-      return AuthDataResultModel(user: authDataResult.user)
-    } catch {
-      print("AuthenticationManager: Error during Apple sign in: \(error)")
-      throw error
+      print("AuthenticationManager: Setting user data in Firestore")
+      try await db.collection("entrepreneurs").document(user.uid).setData(userData)
+      print("AuthenticationManager: User data saved to Firestore")
+    } else {
+      print("AuthenticationManager: User already exists in Firestore")
     }
+    
+    // Check profile completion status
+    DispatchQueue.main.async {
+      ProfileCompletionManager.shared.checkProfileCompletion()
+    }
+    
+    print("AuthenticationManager: Apple sign in process completed successfully")
+    return AuthDataResultModel(user: authDataResult.user)
   }
   
   // MARK: - Google Sign In

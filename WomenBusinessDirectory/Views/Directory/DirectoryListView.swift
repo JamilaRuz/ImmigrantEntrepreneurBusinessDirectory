@@ -26,8 +26,9 @@ final class DirectoryListViewModel: ObservableObject {
     return selectedCities + selectedOwnershipTypes
   }
   
-  init(filterManager: FilterManaging = FilterManager.shared) {
-    self.filterManager = filterManager
+  init(filterManager: FilterManaging? = nil) {
+    // Use the passed filterManager or get it on the main actor
+    self.filterManager = filterManager ?? FilterManager.shared
     
     // Observe UserDefaults changes for filters
     notificationObserver = NotificationCenter.default.addObserver(
@@ -35,7 +36,9 @@ final class DirectoryListViewModel: ObservableObject {
       object: nil,
       queue: .main
     ) { [weak self] _ in
-      self?.loadData()
+      Task { @MainActor in
+        await self?.loadData()
+      }
     }
   }
   
@@ -81,11 +84,13 @@ final class DirectoryListViewModel: ObservableObject {
   func setViewActive(_ active: Bool) {
     isViewActive = active
     if active && !isLoading && (categories.isEmpty || allCompanies.isEmpty) {
-      loadData()
+      Task { @MainActor in
+        await loadData()
+      }
     }
   }
   
-  func loadData() {
+  func loadData() async {
     // Skip loading if the view is not active
     if !isViewActive {
       print("DirectoryListView: View is not active, skipping load...")
@@ -98,23 +103,21 @@ final class DirectoryListViewModel: ObservableObject {
       return
     }
     
-    Task {
-      do {
-        print("DirectoryListView: Starting to load data...")
-        isLoading = true
-        
-        // Load all data concurrently
-        async let categoriesTask = CategoryManager.shared.getCategories()
-        async let companiesTask = RealCompanyManager.shared.getCompanies()
-        
-        self.categories = try await categoriesTask
-        self.allCompanies = try await companiesTask
-        hasInitialLoad = true
-        isLoading = false
-      } catch {
-        print("DirectoryListView: Failed to load data: \(error)")
-        isLoading = false
-      }
+    do {
+      print("DirectoryListView: Starting to load data...")
+      isLoading = true
+      
+      // Load all data concurrently
+      async let categoriesTask = CategoryManager.shared.getCategories()
+      async let companiesTask = RealCompanyManager.shared.getCompanies()
+      
+      self.categories = try await categoriesTask
+      self.allCompanies = try await companiesTask
+      hasInitialLoad = true
+      isLoading = false
+    } catch {
+      print("DirectoryListView: Failed to load data: \(error)")
+      isLoading = false
     }
   }
   
@@ -124,7 +127,7 @@ final class DirectoryListViewModel: ObservableObject {
     // Reset loading state
     isLoading = false
     // Call loadData with force refresh
-    Task {
+    Task { @MainActor in
       do {
         print("DirectoryListView: Starting to force reload data...")
         isLoading = true
@@ -147,12 +150,28 @@ final class DirectoryListViewModel: ObservableObject {
 }
 
 struct DirectoryListView: View {
-  @ObservedObject var viewModel: DirectoryListViewModel
+  @StateObject private var viewModel: DirectoryListViewModel
   @Binding var showSignInView: Bool
   @Binding var userIsLoggedIn: Bool
   @State private var showFilterSheet = false
   @State private var showToast = false
   @State private var showDeleteConfirmation = false
+  
+  init(showSignInView: Binding<Bool>, userIsLoggedIn: Binding<Bool>) {
+    self._showSignInView = showSignInView
+    self._userIsLoggedIn = userIsLoggedIn
+    
+    // Get filter manager on the main thread
+    let filterManager = FilterManager.shared
+    self._viewModel = StateObject(wrappedValue: DirectoryListViewModel(filterManager: filterManager))
+  }
+  
+  // Preview initializer
+  init(viewModel: DirectoryListViewModel, showSignInView: Binding<Bool>, userIsLoggedIn: Binding<Bool>) {
+    self._viewModel = StateObject(wrappedValue: viewModel)
+    self._showSignInView = showSignInView
+    self._userIsLoggedIn = userIsLoggedIn
+  }
   
   var body: some View {
     NavigationStack {
@@ -219,5 +238,6 @@ struct DirectoryListView: View {
 }
 
 #Preview {
-  DirectoryListView(viewModel: DirectoryListViewModel(), showSignInView: .constant(false), userIsLoggedIn: .constant(false))
+  let viewModel = DirectoryListViewModel()
+  return DirectoryListView(viewModel: viewModel, showSignInView: .constant(false), userIsLoggedIn: .constant(false))
 }
