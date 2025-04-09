@@ -21,9 +21,14 @@ struct AboutView: View {
                     
                     // App name and version
                     VStack(spacing: 4) {
-                        Text("Immigrant Entrepreneur Business Directory")
+                        Text("Immigrant Entrepreneur Canada")
                             .font(.title2)
                             .fontWeight(.bold)
+                            .foregroundColor(colorScheme == .dark ? .white : .purple1)
+                            .multilineTextAlignment(.center)
+                        
+                        Text("Business Directory")
+                            .font(.headline)
                             .foregroundColor(colorScheme == .dark ? .white : .purple1)
                             .multilineTextAlignment(.center)
                         
@@ -35,23 +40,42 @@ struct AboutView: View {
                         }
                     }
                     
-                    // App description
+                    // Organization description
+                    Text("Immigrant Entrepreneur Canada (IEC), founded in March 2023, is the national center of excellence dedicated to empowering and accelerating the impact and success of immigrant entrepreneurs in Canada.")
+                        .font(.body)
+                        .multilineTextAlignment(.center)
+                        .foregroundColor(.secondary)
+                        .padding(.horizontal)
+                    
+                    // App and organization details
                     VStack(alignment: .leading, spacing: 16) {
                         descriptionSection(
+                            title: "Our Vision",
+                            content: "To build a world that recognizes the immense value and contribution immigrant entrepreneurs bring to society. We envision a Canada where immigrant entrepreneurs thrive, drive innovation, create jobs, and enrich local communities, while fostering a nation that embraces diversity, cultivates inclusion, and sets the global standard for immigrant entrepreneurship.",
+                            icon: "eye.fill"
+                        )
+                        
+                        descriptionSection(
                             title: "Our Mission",
-                            content: "Immigrant Entrepreneur Business Directory connects immigrant entrepreneurs with customers, promoting diverse, immigrant-owned businesses to global audiences.",
+                            content: "To engage, connect, and empower Canadian immigrants through comprehensive education, dedicated advocacy, and a commitment to building opportunities for acquiring, starting, and scaling ventures. We are the driving force behind a movement that propels immigrant entrepreneurs to the forefront of Canada's entrepreneurial ecosystems and beyond.",
                             icon: "bolt.fill"
                         )
                         
                         descriptionSection(
+                            title: "About This App",
+                            content: "The Immigrant Entrepreneur Business Directory app is designed to connect immigrant entrepreneurs with customers and each other. Our app creates a centralized hub where users can discover, support, and engage with diverse, immigrant-owned businesses across Canada.",
+                            icon: "app.fill"
+                        )
+                        
+                        descriptionSection(
                             title: "Why Use This App",
-                            content: "• Discover immigrant-owned businesses\n• Support immigrant entrepreneurs globally\n• Connect with like-minded business owners\n• Share your own business with potential customers",
+                            content: "• Discover and connect with immigrant-owned businesses\n• Support the economic growth of immigrant entrepreneurs\n• Join a community that champions diversity and inclusion\n• Showcase your business to potential customers and partners\n• Contribute to building a strong, inclusive entrepreneurial ecosystem",
                             icon: "sparkles"
                         )
                         
                         descriptionSection(
                             title: "Contact Us",
-                            content: "Have questions or suggestions? Email us at:\nsupport@immigrantbusinessdirectory.com",
+                            content: "Have questions or suggestions? Email us at:\nadmin@immigrantentrepreneurcanada.ca",
                             icon: "envelope.fill"
                         )
                     }
@@ -60,7 +84,7 @@ struct AboutView: View {
                     Spacer()
                     
                     // Copyright info
-                    Text("© 2024 Immigrant Entrepreneur Business Directory. All rights reserved.")
+                    Text("© 2024 Immigrant Entrepreneur Canada. All rights reserved.")
                         .font(.caption)
                         .foregroundColor(.gray)
                         .padding(.bottom, 20)
