@@ -244,8 +244,8 @@ final class AuthenticationManager: ObservableObject, @unchecked Sendable {
     
     // Create the Firebase credential from Apple ID token and nonce
     let credential = OAuthProvider.credential(
-      withProviderID: "apple.com",
-      idToken: idTokenString, 
+      providerID: AuthProviderID.apple,
+      idToken: idTokenString,
       rawNonce: nonce
     )
     
