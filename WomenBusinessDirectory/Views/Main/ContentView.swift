@@ -185,9 +185,7 @@ struct MainTabView: View {
         }
         .task(id: shouldCheckProfileCompletion) {
             if shouldCheckProfileCompletion && userIsLoggedIn {
-                // Wait a short delay to ensure views are loaded
-                try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second delay
-                completionManager.checkProfileCompletion()
+                await completionManager.checkProfileCompletion()
                 
                 // Always check and update tab based on profile completion
                 if !completionManager.isProfileComplete {

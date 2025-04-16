@@ -1,92 +1,149 @@
-//
-//  ProfileView.swift
-//  WomenBusinessDirectory
-//
-//  Created by Jamila Ruzimetova on 5/24/24.
-//
-
 import SwiftUI
-
-extension View {
-    @ViewBuilder func `if`<Content: View>(_ condition: Bool, transform: (Self) -> Content) -> some View {
-        if condition {
-            transform(self)
-        } else {
-            self
-        }
-    }
-}
 
 @MainActor
 final class ProfileViewModel: ObservableObject {
     @Published private(set) var entrepreneur: Entrepreneur
-    @Published private(set) var companies: [Company] = []
+    @Published var companies: [Company] = []
     @Published private(set) var allCategories: [Category] = []
     @Published private(set) var isLoading = false
+    @Published private(set) var errorMessage: String?
+    
+    // Use a task manager to ensure we can cancel in-flight operations
+    private var loadTask: Task<Void, Never>?
     
     init() {
         self.entrepreneur = Entrepreneur(entrepId: "", fullName: "", profileUrl: nil, email: "", bioDescr: "", companyIds: [])
     }
     
-    func loadData(for entrepreneur: Entrepreneur?) async throws {
-        isLoading = true
-        defer { isLoading = false }
+    // Main public interface - cancels any in-flight operations and starts a new load
+    @MainActor
+    func loadData(for entrepreneurParam: Entrepreneur?) {
+        // Cancel any existing load task
+        loadTask?.cancel()
         
-        if let entrepreneur = entrepreneur {
-            // If viewing another entrepreneur's profile, use their data directly
-            await MainActor.run {
-                self.entrepreneur = entrepreneur
+        // Start a new load task
+        loadTask = Task { @MainActor in
+            do {
+                // Show loading indicator
+                self.isLoading = true
+                self.errorMessage = nil
+                
+                // Perform the actual data loading
+                try await performDataLoading(for: entrepreneurParam)
+            } catch is CancellationError {
+                // Task was cancelled, do nothing
+                print("Data loading was cancelled")
+            } catch {
+                // Handle errors
+                self.errorMessage = "Failed to load data: \(error.localizedDescription)"
+                print("Error loading data: \(error)")
             }
+            
+            // Always hide loading indicator when done
+            self.isLoading = false
+        }
+    }
+    
+    @MainActor
+    private func performDataLoading(for entrepreneurParam: Entrepreneur?) async throws {
+        // STEP 1: Determine and load the entrepreneur
+        let loadedEntrepreneur: Entrepreneur
+        
+        if let entrepreneurParam = entrepreneurParam {
+            // Use the provided entrepreneur directly
+            loadedEntrepreneur = entrepreneurParam
         } else {
-            // If no entrepreneur provided (viewing own profile), load current user's data
-            try await loadCurrentEntrepreneur()
+            // Load the current user's entrepreneur data
+            let authDataResult = try AuthenticationManager.shared.getAuthenticatedUser()
+            loadedEntrepreneur = try await EntrepreneurManager.shared.getEntrepreneur(entrepId: authDataResult.uid)
         }
         
-        async let companiesTask = loadCompaniesOfEntrepreneur()
-        async let categoriesTask = loadAllCategories()
+        // Check for cancellation before proceeding
+        try Task.checkCancellation()
         
-        let (newCompanies, newCategories) = try await (companiesTask, categoriesTask)
+        // Update the entrepreneur on the main actor
+        self.entrepreneur = loadedEntrepreneur
         
-        await MainActor.run {
-            self.companies = newCompanies
-            self.allCategories = newCategories
+        // STEP 2: Prepare for concurrent operations by extracting necessary data
+        let companyIds = loadedEntrepreneur.companyIds
+        
+        // STEP 3: Load companies and categories concurrently
+        let newCompanies = try await loadCompanies(from: companyIds)
+        let newCategories = try await loadCategories()
+        
+        // Check for cancellation before updating UI
+        try Task.checkCancellation()
+        
+        // STEP 4: Update the published properties on the main actor
+        self.companies = newCompanies
+        self.allCategories = newCategories
+    }
+    
+    // Helper method to load companies
+    private func loadCompanies(from companyIds: [String]) async throws -> [Company] {
+        if companyIds.isEmpty {
+            return []
+        }
+        
+        return try await withThrowingTaskGroup(of: Company.self) { group in
+            // Add a task for each company ID
+            for companyId in companyIds {
+                group.addTask {
+                    try await RealCompanyManager.shared.getCompany(companyId: companyId)
+                }
+            }
+            
+            // Collect results
+            var results: [Company] = []
+            for try await company in group {
+                results.append(company)
+            }
+            
+            return results
         }
     }
     
-    private func loadCurrentEntrepreneur() async throws {
-        let authDataResult = try AuthenticationManager.shared.getAuthenticatedUser()
-        let loadedEntrepreneur = try await EntrepreneurManager.shared.getEntrepreneur(entrepId: authDataResult.uid)
-        await MainActor.run {
-            self.entrepreneur = loadedEntrepreneur
-        }
-    }
-    
-    private func loadCompaniesOfEntrepreneur() async throws -> [Company] {
-        return try await entrepreneur.companyIds.asyncMap { companyId in
-            try await RealCompanyManager.shared.getCompany(companyId: companyId)
-        }
-    }
-    
-    private func loadAllCategories() async throws -> [Category] {
+    // Helper method to load categories
+    private func loadCategories() async throws -> [Category] {
         return try await CategoryManager.shared.getCategories()
     }
     
+    // Delete a company and reload data
+    func deleteCompany(_ company: Company) async throws {
+        // Cancel any in-flight load operations
+        loadTask?.cancel()
+        
+        // Set loading state
+        isLoading = true
+        
+        // Use defer to ensure loading state is reset regardless of success/failure
+        defer {
+            Task { @MainActor in
+                self.isLoading = false
+            }
+        }
+        
+        do {
+            // Delete from CompanyManager
+            try await RealCompanyManager.shared.deleteCompany(companyId: company.companyId)
+            
+            // Remove from entrepreneur's company list
+            try await EntrepreneurManager.shared.removeCompany(companyId: company.companyId)
+            
+            // Reload all data to ensure consistency
+            try await performDataLoading(for: nil)
+        } catch {
+            self.errorMessage = "Failed to delete company: \(error.localizedDescription)"
+            throw error
+        }
+    }
+    
+    // Helper method for getting category names
     func getCategoryNames(for company: Company) -> String {
         let names = company.categoryIds.compactMap { categoryId in
             allCategories.first(where: { $0.id == categoryId })?.name
         }
         return names.joined(separator: ", ")
-    }
-    
-    func deleteCompany(_ company: Company) async throws {
-        // Delete from CompanyManager
-        try await RealCompanyManager.shared.deleteCompany(companyId: company.companyId)
-        
-        // Remove from entrepreneur's company list
-        try await EntrepreneurManager.shared.removeCompany(companyId: company.companyId)
-        
-        // Reload companies to update the UI
-        self.companies = try await loadCompaniesOfEntrepreneur()
     }
 }
 
@@ -127,6 +184,9 @@ struct ProfileView: View {
                             profileCard
                             entrepreneurStory
                             companiesList
+                                .onAppear() {
+                                    viewModel.loadData(for: entrepreneur)
+                                }
                         }
                         .padding()
                     }
@@ -146,37 +206,25 @@ struct ProfileView: View {
                 showingEditProfile = true
             })
         }
-        .task {
-            do {
-                try await viewModel.loadData(for: entrepreneur)
-                if isEditable && isOwnProfile {
-                    completionManager.checkProfileCompletion()
-                }
-            } catch {
-                print("Failed to load data: \(error)")
-            }
-        }
+//        .task {
+//            viewModel.loadData(for: entrepreneur)
+//            if isEditable && isOwnProfile {
+//                await MainActor.run {
+//                    completionManager.checkProfileCompletion()
+//                }
+//            }
+//        }
         .onAppear {
             // Reload data when view appears
-            Task {
-                do {
-                    try await viewModel.loadData(for: entrepreneur)
-                } catch {
-                    print("Failed to reload data on appear: \(error)")
-                }
-            }
+            viewModel.loadData(for: entrepreneur)
         }
         .sheet(isPresented: $showingEditProfile) {
             EditProfileView(entrepreneur: viewModel.entrepreneur) {
                 // Refresh data when edit view saves changes
-                Task {
-                    do {
-                        try await viewModel.loadData(for: entrepreneur)
-                        if isEditable && isOwnProfile {
-                            completionManager.checkProfileCompletion()
-                        }
-                    } catch {
-                        print("Failed to refresh data after edit: \(error)")
+                viewModel.loadData(for: entrepreneur)
+                Task { @MainActor in
+                    if isEditable && isOwnProfile {
+                        await completionManager.checkProfileCompletion()
                     }
                 }
             }
@@ -295,11 +343,11 @@ struct ProfileView: View {
                         .font(.system(size: 50))
                         .foregroundColor(.pink1.opacity(0.6))
                     
-                    Text("No companies to show")
+                    Text("No services or businesses to show")
                         .font(.headline)
                         .foregroundColor(.secondary)
                     
-                    Text("Add your business to showcase your products and services to potential customers.")
+                    Text("Add your business or services that you provide as an entrepreneur to showcase to potential customers.")
                         .font(.subheadline)
                         .multilineTextAlignment(.center)
                         .foregroundColor(.gray)
@@ -309,7 +357,6 @@ struct ProfileView: View {
                 .padding(.vertical, 30)
                 .background(Color.pink1.opacity(0.05))
                 .cornerRadius(12)
-                .padding(.horizontal)
             } else {
                 ForEach(viewModel.companies, id: \.self) { company in
                     ZStack(alignment: .topTrailing) {
@@ -327,7 +374,8 @@ struct ProfileView: View {
                                     AddCompanyView(
                                         viewModel: AddCompanyViewModel(),
                                         entrepreneur: viewModel.entrepreneur,
-                                        editingCompany: company)
+                                        editingCompany: company
+                                    )
                                 } label: {
                                     Image(systemName: "pencil")
                                         .foregroundColor(colorScheme == .dark ? .white : .purple1)
@@ -335,15 +383,6 @@ struct ProfileView: View {
                                         .background(colorScheme == .dark ? Color(UIColor.darkGray) : Color.white)
                                         .clipShape(Circle())
                                         .shadow(radius: 3)
-                                }
-                                .onDisappear {
-                                    Task {
-                                        do {
-                                            try await viewModel.loadData(for: entrepreneur)
-                                        } catch {
-                                            print("Failed to refresh data after edit: \(error)")
-                                        }
-                                    }
                                 }
                                 
                                 Button {
@@ -371,8 +410,6 @@ struct ProfileView: View {
                     Task {
                         do {
                             try await viewModel.deleteCompany(company)
-                            // Refresh the data after deletion
-                            try await viewModel.loadData(for: entrepreneur)
                         } catch {
                             print("Failed to delete company: \(error)")
                         }
@@ -391,10 +428,10 @@ struct ProfileView: View {
                 entrepreneur: viewModel.entrepreneur
             )
         ) {
-            Text("Add Company")
+            Text("Add Business/Service")
                 .font(.system(size: 16, weight: .regular))
                 .foregroundColor(colorScheme == .dark ? .white : .pink1)
-                .frame(width: 150, height: 40)
+                .frame(width: 180, height: 40)
                 .background(colorScheme == .dark ? Color(UIColor.darkGray) : Color.white)
                 .cornerRadius(10)
                 .overlay(
@@ -404,18 +441,6 @@ struct ProfileView: View {
                 .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1)
         }
         .frame(maxWidth: .infinity, alignment: .center)
-        .onDisappear {
-            Task { @MainActor in
-                do {
-                    try await viewModel.loadData(for: entrepreneur)
-                    if isEditable && isOwnProfile {
-                        completionManager.checkProfileCompletion()
-                    }
-                } catch {
-                    print("Failed to refresh data after adding company: \(error)")
-                }
-            }
-        }
     }
 }
 

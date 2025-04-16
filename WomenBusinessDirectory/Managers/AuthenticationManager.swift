@@ -123,7 +123,9 @@ final class AuthenticationManager: ObservableObject, @unchecked Sendable {
     
     // Check profile completion status
     DispatchQueue.main.async {
-        ProfileCompletionManager.shared.checkProfileCompletion()
+        Task {
+            await ProfileCompletionManager.shared.checkProfileCompletion()
+        }
     }
     
     return AuthDataResultModel(user: authDataResult.user)
@@ -291,7 +293,9 @@ final class AuthenticationManager: ObservableObject, @unchecked Sendable {
     
     // Check profile completion status
     DispatchQueue.main.async {
-      ProfileCompletionManager.shared.checkProfileCompletion()
+        Task {
+            await ProfileCompletionManager.shared.checkProfileCompletion()
+        }
     }
     
     print("AuthenticationManager: Apple sign in process completed successfully")
@@ -344,7 +348,9 @@ final class AuthenticationManager: ObservableObject, @unchecked Sendable {
       
       // Check profile completion status
       DispatchQueue.main.async {
-        ProfileCompletionManager.shared.checkProfileCompletion()
+        Task {
+            await ProfileCompletionManager.shared.checkProfileCompletion()
+        }
       }
       
       print("AuthenticationManager: Google sign in process completed successfully")

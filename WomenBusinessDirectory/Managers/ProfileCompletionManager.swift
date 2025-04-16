@@ -2,7 +2,8 @@ import SwiftUI
 import FirebaseAuth
 import FirebaseFirestore
 
-class ProfileCompletionManager: ObservableObject {
+@MainActor
+final class ProfileCompletionManager: ObservableObject, @unchecked Sendable {
     static let shared = ProfileCompletionManager()
     
     @Published var isProfileComplete = false {
@@ -21,10 +22,12 @@ class ProfileCompletionManager: ObservableObject {
     @Published var profileCompletionMessage: String?
     
     private init() {
-        checkProfileCompletion()
+        Task {
+            await checkProfileCompletion()
+        }
     }
     
-    func checkProfileCompletion() {
+    func checkProfileCompletion() async {
         guard let user = Auth.auth().currentUser else {
             print("ProfileCompletionManager: No user logged in")
             profileCompletionMessage = "Please sign in to complete your profile"
@@ -36,22 +39,16 @@ class ProfileCompletionManager: ObservableObject {
         print("ProfileCompletionManager: Checking profile completion for user \(user.uid)")
         
         let db = Firestore.firestore()
-        db.collection("entrepreneurs").document(user.uid).getDocument { [weak self] snapshot, error in
-            guard let self = self else { return }
+        
+        do {
+            let snapshot = try await db.collection("entrepreneurs").document(user.uid).getDocument()
             
-            self.isLoading = false
+            isLoading = false
             
-            if let error = error {
-                print("ProfileCompletionManager: Error fetching profile: \(error.localizedDescription)")
-                self.profileCompletionMessage = "Unable to check profile status"
-                self.isProfileComplete = false
-                return
-            }
-            
-            guard let data = snapshot?.data() else {
+            guard let data = snapshot.data() else {
                 print("ProfileCompletionManager: No data found for user")
-                self.profileCompletionMessage = "Complete your profile to showcase your business"
-                self.isProfileComplete = false
+                profileCompletionMessage = "Complete your profile to showcase your business"
+                isProfileComplete = false
                 return
             }
             
@@ -68,28 +65,33 @@ class ProfileCompletionManager: ObservableObject {
             if hasName && (hasBio || hasProfileImage) && hasCompanies {
                 // Profile is reasonably complete
                 print("ProfileCompletionManager: Profile is COMPLETE")
-                self.isProfileComplete = true
-                self.profileCompletionMessage = nil
+                isProfileComplete = true
+                profileCompletionMessage = nil
             } else {
                 // Profile is incomplete
                 print("ProfileCompletionManager: Profile is INCOMPLETE")
-                self.isProfileComplete = false
+                isProfileComplete = false
                 
                 // Create a specific message based on what's missing
                 if !hasName {
-                    self.profileCompletionMessage = "Add your name to complete your profile"
+                    profileCompletionMessage = "Add your name to complete your profile"
                 } else if !hasProfileImage {
-                    self.profileCompletionMessage = "Add a profile photo to showcase yourself"
+                    profileCompletionMessage = "Add a profile photo to showcase yourself"
                 } else if !hasBio {
-                    self.profileCompletionMessage = "Tell your story to connect with others"
+                    profileCompletionMessage = "Tell your story to connect with others"
                 } else if !hasCompanies {
-                    self.profileCompletionMessage = "Add your business to the directory"
+                    profileCompletionMessage = "Add your business to the directory"
                 } else {
-                    self.profileCompletionMessage = "Complete your profile to showcase your business"
+                    profileCompletionMessage = "Complete your profile to showcase your business"
                 }
                 
                 print("ProfileCompletionManager: Completion message: \(self.profileCompletionMessage ?? "nil")")
             }
+        } catch {
+            print("ProfileCompletionManager: Error fetching profile: \(error.localizedDescription)")
+            isLoading = false
+            profileCompletionMessage = "Unable to check profile status"
+            isProfileComplete = false
         }
     }
 } 

@@ -18,7 +18,9 @@ struct ProfileCompletionModifier: ViewModifier {
         }
         .onAppear {
             if isOwnProfile {
-                completionManager.checkProfileCompletion()
+                Task {
+                    await completionManager.checkProfileCompletion()
+                }
             }
         }
     }

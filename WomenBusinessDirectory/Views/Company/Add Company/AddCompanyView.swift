@@ -180,6 +180,7 @@ struct AddCompanyView: View {
         .padding(.horizontal)
         .padding(.bottom)
       }
+      .navigationTitle(editingCompany != nil ? "Edit Business/Service" : "Add Business/Service")
       .navigationBarTitleDisplayMode(.inline)
       .sheet(isPresented: $isImagePickerPresented) {
         ImagePicker(image: $logoImage)
@@ -198,7 +199,7 @@ struct AddCompanyView: View {
             ProgressView()
               .scaleEffect(1.5)
               .tint(.yellow)
-            Text(editingCompany != nil ? "Updating company..." : "Saving company...")
+            Text(editingCompany != nil ? "Updating..." : "Saving...")
               .font(.headline)
               .foregroundColor(.yellow)
           }
@@ -542,7 +543,7 @@ struct AddCompanyView: View {
   
   private func stepTitle(for index: Int) -> String {
     switch index {
-    case 0: return "Info"
+    case 0: return "Basic"
     case 1: return "Details"
     case 2: return "Contact"
     default: return ""
@@ -810,10 +811,10 @@ struct CompanyInfoSection: View {
         ScrollView {
             VStack(spacing: 24) {
                 VStack(alignment: .leading, spacing: 16) {
-                    Text("Company Information")
+                    Text("Basic Information")
                         .font(.headline)
                     
-                    CustomTextField(title: "Company Name *", text: $companyName)
+                    CustomTextField(title: "Business/Service Name *", text: $companyName)
                     
                     // Images Section
                     VStack(alignment: .leading, spacing: 12) {
@@ -823,7 +824,7 @@ struct CompanyInfoSection: View {
                         
                         // Logo Image
                         ImagePickerButton(
-                            title: "Company Logo",
+                            title: "Logo",
                             image: $logoImage,
                             isPresented: $isImagePickerPresented
                         )
@@ -837,7 +838,7 @@ struct CompanyInfoSection: View {
                         
                         // Portfolio Images
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Adding portfolio images is recommended as they help showcase and promote your company's services.")
+                            Text("Adding portfolio images is recommended as they help showcase and promote your services.")
                                 .font(.caption)
                                 .foregroundColor(.gray)
                             
@@ -889,7 +890,7 @@ struct CompanyInfoSection: View {
                     
                     // Date Founded
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Date Founded")
+                        Text("Date Started")
                             .font(.subheadline)
                             .foregroundColor(.gray)
                         DatePicker("", selection: $dateFounded, displayedComponents: [.date])
@@ -899,7 +900,7 @@ struct CompanyInfoSection: View {
                     
                     // About Us
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("About Us *")
+                        Text("Description *")
                             .font(.subheadline)
                             .foregroundColor(.gray)
                         TextEditor(text: $aboutUs)
@@ -1385,7 +1386,7 @@ struct BusinessDetailsSection: View {
         ScrollView {
             VStack(spacing: 24) {
                 VStack(alignment: .leading, spacing: 16) {
-                    Text("Business Details")
+                    Text("Service Details")
                         .font(.headline)
                     
                     VStack(alignment: .leading, spacing: 8) {
@@ -1439,7 +1440,7 @@ struct BusinessDetailsSection: View {
                     }
                     
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Business Model")
+                        Text("Service Model")
                             .font(.subheadline)
                             .foregroundColor(.gray)
                         Picker("", selection: $businessModel) {

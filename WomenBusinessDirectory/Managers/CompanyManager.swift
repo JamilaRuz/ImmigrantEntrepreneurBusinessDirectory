@@ -23,11 +23,33 @@ func getUserIdSync() -> String? {
 
 class Company: Codable, Hashable, Equatable, Identifiable {
     static func == (lhs: Company, rhs: Company) -> Bool {
-        return lhs.companyId == rhs.companyId
+        return lhs.companyId == rhs.companyId &&
+               lhs.name == rhs.name &&
+               lhs.logoImg == rhs.logoImg &&
+               lhs.headerImg == rhs.headerImg &&
+               lhs.aboutUs == rhs.aboutUs &&
+               lhs.portfolioImages == rhs.portfolioImages &&
+               lhs.address == rhs.address &&
+               lhs.city == rhs.city &&
+               lhs.phoneNum == rhs.phoneNum &&
+               lhs.email == rhs.email &&
+               lhs.workHours == rhs.workHours &&
+               lhs.services == rhs.services &&
+               lhs.website == rhs.website &&
+               lhs.ownershipTypes == rhs.ownershipTypes &&
+               lhs.categoryIds == rhs.categoryIds
     }
     
     func hash(into hasher: inout Hasher) {
         hasher.combine(companyId)
+        hasher.combine(name)
+        hasher.combine(logoImg)
+        hasher.combine(headerImg)
+        hasher.combine(address)
+        hasher.combine(city)
+        hasher.combine(email)
+        hasher.combine(phoneNum)
+        hasher.combine(website)
     }
     
     var companyId: String
