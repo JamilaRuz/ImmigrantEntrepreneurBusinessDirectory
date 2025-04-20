@@ -1557,7 +1557,7 @@ struct SocialMediaToggle: View {
         }
     }
 }
-    
+
 #Preview {
   AddCompanyView(viewModel: AddCompanyViewModel(), entrepreneur: createStubEntrepreneurs()[0])
 }

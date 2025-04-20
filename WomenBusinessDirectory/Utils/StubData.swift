@@ -28,6 +28,8 @@ class StubCompanyManager: CompanyManager {
   func uploadLogoImage(_ image: UIImage) async throws -> String { "" }
   func uploadHeaderImage(_ image: UIImage) async throws -> String { "" }
   func uploadPortfolioImages(_ images: [UIImage]) async throws -> [String] { [] }
+  func deleteImageFromStorage(imageUrl: String) async throws {}
+  func checkImageExistsInStorage(imageUrl: String) async -> Bool { return false } // Always return false for stub
 }
 
 func createStubEntrepreneurs() -> [Entrepreneur] {

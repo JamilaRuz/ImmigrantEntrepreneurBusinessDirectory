@@ -133,6 +133,16 @@ final class AddCompanyViewModel: ObservableObject {
         
         let logoUrlString: String?
         if let logoImage = logoImage {
+            // Delete old logo image if it exists
+            if let existingLogoUrl = company.logoImg {
+                do {
+                    try await RealCompanyManager.shared.deleteImageFromStorage(imageUrl: existingLogoUrl)
+                    print("Successfully deleted old logo image")
+                } catch {
+                    print("Error deleting old logo image: \(error.localizedDescription)")
+                    // Continue with the update even if deletion fails
+                }
+            }
             logoUrlString = try await RealCompanyManager.shared.uploadLogoImage(logoImage)
         } else {
             logoUrlString = company.logoImg // Keep existing logo if no new one provided
@@ -140,13 +150,39 @@ final class AddCompanyViewModel: ObservableObject {
         
         let headerUrlString: String?
         if let headerImage = headerImage {
+            // Delete old header image if it exists
+            if let existingHeaderUrl = company.headerImg {
+                do {
+                    try await RealCompanyManager.shared.deleteImageFromStorage(imageUrl: existingHeaderUrl)
+                    print("Successfully deleted old header image")
+                } catch {
+                    print("Error deleting old header image: \(error.localizedDescription)")
+                    // Continue with the update even if deletion fails
+                }
+            }
             headerUrlString = try await RealCompanyManager.shared.uploadHeaderImage(headerImage)
         } else {
             headerUrlString = company.headerImg // Keep existing header if no new one provided
         }
         
-        let portfolioUrls = try await RealCompanyManager.shared.uploadPortfolioImages(portfolioImages)
-        let allPortfolioUrls = company.portfolioImages + portfolioUrls // Combine existing and new images
+        // Upload new portfolio images
+        let newPortfolioUrls = try await RealCompanyManager.shared.uploadPortfolioImages(portfolioImages)
+        
+        // Keep existing portfolio URLs if there are no new images
+        let allPortfolioUrls = portfolioImages.isEmpty ? company.portfolioImages : newPortfolioUrls
+        
+        // If replacing portfolio images with new ones, delete the old ones
+        if !portfolioImages.isEmpty && !company.portfolioImages.isEmpty {
+            for imageUrl in company.portfolioImages {
+                do {
+                    try await RealCompanyManager.shared.deleteImageFromStorage(imageUrl: imageUrl)
+                    print("Successfully deleted old portfolio image")
+                } catch {
+                    print("Error deleting old portfolio image: \(error.localizedDescription)")
+                    // Continue with the update even if deletion fails
+                }
+            }
+        }
         
         // Convert the array of tuples to a dictionary
         var socialMediaDict: [Company.SocialMedia: String] = [:]

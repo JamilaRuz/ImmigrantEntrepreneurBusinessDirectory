@@ -175,6 +175,8 @@ protocol CompanyManager {
     func uploadLogoImage(_ image: UIImage) async throws -> String
     func uploadHeaderImage(_ image: UIImage) async throws -> String
     func uploadPortfolioImages(_ images: [UIImage]) async throws -> [String]
+    func deleteImageFromStorage(imageUrl: String) async throws
+    func checkImageExistsInStorage(imageUrl: String) async -> Bool
 }
 
 final class RealCompanyManager: CompanyManager {
@@ -305,7 +307,10 @@ final class RealCompanyManager: CompanyManager {
     }
     
     func uploadLogoImage(_ image: UIImage) async throws -> String {
-      guard let imageData = image.jpegData(compressionQuality: 0.5) else {
+      // Resize image to appropriate dimensions for logos (max 400x400 while preserving aspect ratio)
+      let resizedImage = image.preparingForUpload(maxDimension: 400)
+      
+      guard let imageData = resizedImage.jpegData(compressionQuality: 0.8) else {
         throw NSError(domain: "CompanyManager", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to convert image to data"])
       }
 
@@ -329,7 +334,10 @@ final class RealCompanyManager: CompanyManager {
     }
     
     func uploadHeaderImage(_ image: UIImage) async throws -> String {
-      guard let imageData = image.jpegData(compressionQuality: 0.5) else {
+      // Resize image to appropriate dimensions for headers (max 1200 width while preserving aspect ratio)
+      let resizedImage = image.preparingForUpload(maxDimension: 1200)
+      
+      guard let imageData = resizedImage.jpegData(compressionQuality: 0.8) else {
         throw NSError(domain: "CompanyManager", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to convert image to data"])
       }
 
@@ -356,7 +364,10 @@ final class RealCompanyManager: CompanyManager {
         var uploadedImageURLs: [String] = []
 
         for image in images {
-            guard let imageData = image.jpegData(compressionQuality: 0.5) else {
+            // Resize image to appropriate dimensions for portfolio (max 800px while preserving aspect ratio)
+            let resizedImage = image.preparingForUpload(maxDimension: 800)
+            
+            guard let imageData = resizedImage.jpegData(compressionQuality: 0.8) else {
                 throw NSError(domain: "CompanyManager", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to convert image to data"])
             }
 
@@ -435,6 +446,52 @@ final class RealCompanyManager: CompanyManager {
         } catch {
             print("Error updating company: \(error)")
             throw error
+        }
+    }
+    
+    func deleteImageFromStorage(imageUrl: String) async throws {
+        do {
+            print("Starting to delete image from storage: \(imageUrl)")
+            
+            // Extract filename from URL for better logging
+            let filename = URL(string: imageUrl)?.lastPathComponent ?? "unknown"
+            
+            let storageRef = Storage.storage().reference(forURL: imageUrl)
+            try await storageRef.delete()
+            
+            // After successfully deleting, verify the image no longer exists
+            print("✅ Successfully deleted image \(filename) from storage")
+            
+            // You could add analytics event here if needed
+            // Analytics.logEvent("image_deleted", parameters: ["status": "success"])
+        } catch let error as NSError {
+            // Check if it's an object not found error (the file doesn't exist)
+            if error.code == StorageErrorCode.objectNotFound.rawValue {
+                // The file didn't exist - might have been already deleted
+                print("⚠️ Image was already deleted or doesn't exist: \(imageUrl)")
+                return // Don't throw an error in this case
+            }
+            
+            print("❌ Error deleting image from storage: \(error.localizedDescription)")
+            // Analytics.logEvent("image_deleted", parameters: ["status": "error", "error": error.localizedDescription])
+            
+            throw NSError(
+                domain: "CompanyManager",
+                code: error.code,
+                userInfo: [NSLocalizedDescriptionKey: "Error deleting image from storage: \(error.localizedDescription)"]
+            )
+        }
+    }
+    
+    func checkImageExistsInStorage(imageUrl: String) async -> Bool {
+        do {
+            let storageRef = Storage.storage().reference(forURL: imageUrl)
+            // We only need metadata to check existence, not the whole image
+            _ = try await storageRef.getMetadata()
+            return true
+        } catch {
+            print("Error checking image existence: \(error.localizedDescription)")
+            return false
         }
     }
 }

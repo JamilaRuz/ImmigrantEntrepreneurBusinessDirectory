@@ -125,7 +125,10 @@ func createEntrepreneur(fullName: String, email: String) async throws {
   }
   
   func uploadProfileImage(_ image: UIImage, for entrepreneur: Entrepreneur) async throws -> String {
-    guard let imageData = image.jpegData(compressionQuality: 0.5) else {
+    // Resize image to appropriate dimensions for profile (max 500px while preserving aspect ratio)
+    let resizedImage = image.preparingForUpload(maxDimension: 500)
+    
+    guard let imageData = resizedImage.jpegData(compressionQuality: 0.8) else {
       throw NSError(domain: "EntrepreneurManager", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to convert image to data"])
     }
 
@@ -271,5 +274,39 @@ func createEntrepreneur(fullName: String, email: String) async throws {
     // Delete the entrepreneur document
     try await entrepDocument(entrepId: entrepId).delete()
     print("Successfully deleted entrepreneur and related data")
+  }
+  
+  func deleteProfileImage(imageUrl: String) async throws {
+    do {
+      print("Starting to delete profile image from storage: \(imageUrl)")
+      
+      // Extract filename from URL for better logging
+      let filename = URL(string: imageUrl)?.lastPathComponent ?? "unknown"
+      
+      let storageRef = Storage.storage().reference(forURL: imageUrl)
+      try await storageRef.delete()
+      
+      // After successfully deleting, verify the image no longer exists
+      print("✅ Successfully deleted profile image \(filename) from storage")
+      
+      // You could add analytics event here if needed
+      // Analytics.logEvent("profile_image_deleted", parameters: ["status": "success"])
+    } catch let error as NSError {
+      // Check if it's an object not found error (the file doesn't exist)
+      if error.code == StorageErrorCode.objectNotFound.rawValue {
+        // The file didn't exist - might have been already deleted
+        print("⚠️ Profile image was already deleted or doesn't exist: \(imageUrl)")
+        return // Don't throw an error in this case
+      }
+      
+      print("❌ Error deleting profile image from storage: \(error.localizedDescription)")
+      // Analytics.logEvent("profile_image_deleted", parameters: ["status": "error", "error": error.localizedDescription])
+      
+      throw NSError(
+        domain: "EntrepreneurManager",
+        code: error.code,
+        userInfo: [NSLocalizedDescriptionKey: "Error deleting profile image from storage: \(error.localizedDescription)"]
+      )
+    }
   }
 }

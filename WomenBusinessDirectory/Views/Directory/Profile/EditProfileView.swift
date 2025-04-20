@@ -7,6 +7,7 @@
 
 import SwiftUI
 import PhotosUI
+import FirebaseStorage
 
 struct EditProfileView: View {
     @State var entrepreneur: Entrepreneur
@@ -57,6 +58,26 @@ struct EditProfileView: View {
                     ProgressView()
                         .scaleEffect(1.5)
                         .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                }
+                
+                // Display verification message if present
+                if !viewModel.verificationMessage.isEmpty {
+                    VStack {
+                        Spacer()
+                        Text(viewModel.verificationMessage)
+                            .padding()
+                            .background(Color.gray.opacity(0.9))
+                            .foregroundColor(.white)
+                            .cornerRadius(8)
+                            .padding()
+                            .onAppear {
+                                // Auto-dismiss after 3 seconds using Task instead of DispatchQueue
+                                Task { @MainActor in
+                                    try? await Task.sleep(nanoseconds: 3_000_000_000) // 3 seconds
+                                    viewModel.verificationMessage = ""
+                                }
+                            }
+                    }
                 }
             }
         }
@@ -137,16 +158,79 @@ struct EditProfileView: View {
     }
 }
 
+@MainActor
 class EditProfileViewModel: ObservableObject {
+    @Published var verificationMessage: String = ""
+    
     func saveProfile(entrepreneur: Entrepreneur, newImage: UIImage?) async throws {
         var updatedEntrepreneur = entrepreneur
 
         if let newImage = newImage {
+            // If there's an existing profile image, delete it first
+            if let existingProfileUrl = entrepreneur.profileUrl {
+                do {
+                    // Check if image exists before deletion
+                    let imageExisted = await verifyImageExists(imageUrl: existingProfileUrl)
+                    
+                    try await EntrepreneurManager.shared.deleteProfileImage(imageUrl: existingProfileUrl)
+                    print("Successfully deleted old profile image")
+                    
+                    // Verify deletion
+                    Task {
+                        await verifyImageDeleted(imageUrl: existingProfileUrl, wasExisting: imageExisted)
+                    }
+                } catch {
+                    print("Error deleting old profile image: \(error.localizedDescription)")
+                    // Continue with the update even if deletion fails
+                }
+            }
+            
+            // Upload the new image
             let imageUrl = try await EntrepreneurManager.shared.uploadProfileImage(newImage, for: entrepreneur)
             updatedEntrepreneur.profileUrl = imageUrl
         }
 
         try await EntrepreneurManager.shared.updateEntrepreneur(updatedEntrepreneur)
+    }
+    
+    /// Verifies if an image exists in storage
+    // This method is not marked with @MainActor so it will run on a background thread
+    nonisolated private func verifyImageExists(imageUrl: String) async -> Bool {
+        // We could use a manager method here, but for simplicity we'll do a direct check
+        do {
+            let storageRef = Storage.storage().reference(forURL: imageUrl)
+            _ = try await storageRef.getMetadata()
+            print("✓ Verified image exists in storage: \(imageUrl)")
+            return true
+        } catch {
+            print("✗ Image does not exist in storage: \(imageUrl)")
+            print("  Error: \(error.localizedDescription)")
+            return false
+        }
+    }
+    
+    /// Verifies that an image was deleted from storage
+    // This method is not marked with @MainActor so it will run on a background thread
+    nonisolated private func verifyImageDeleted(imageUrl: String, wasExisting: Bool) async {
+        // Only meaningful if the image existed before
+        guard wasExisting else {
+            print("⚠️ Cannot verify deletion - image didn't exist before")
+            return
+        }
+        
+        // Check if the image still exists - this happens on background thread
+        let stillExists = await verifyImageExists(imageUrl: imageUrl)
+        
+        // Update UI on main thread
+        await MainActor.run {
+            if stillExists {
+                print("❌ DELETION VERIFICATION FAILED: Image still exists in storage: \(imageUrl)")
+                self.verificationMessage = "Warning: Old image may not have been deleted"
+            } else {
+                print("✅ DELETION VERIFIED: Image was successfully deleted from storage")
+                self.verificationMessage = "Image successfully deleted and replaced"
+            }
+        }
     }
 }
 
