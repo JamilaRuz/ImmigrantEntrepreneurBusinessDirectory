@@ -38,22 +38,35 @@ final class SettingsViewModel: ObservableObject {
       // Delete entrepreneur document from Firestore
       try await EntrepreneurManager.shared.deleteEntrepreneur(entrepId: authUser.uid)
       
-      // Finally, delete the Firebase Auth account
-      try await AuthenticationManager.shared.deleteAccount()
+      // Now delete the Firebase Auth account - this is critical
+      do {
+        try await AuthenticationManager.shared.deleteAccount()
+      } catch let error as NSError {
+        // Firebase requires recent authentication to delete an account
+        if error.domain == "FIRAuthErrorDomain" && error.code == 17014 {
+          print("Unable to delete Firebase Auth account: requires recent authentication")
+          // We'll at least sign out the user
+          try? AuthenticationManager.shared.signOut()
+          
+          // Throw a specialized error that tells the user they need to sign out and sign back in first
+          throw NSError(
+            domain: "SettingsViewModel",
+            code: 1001,
+            userInfo: [NSLocalizedDescriptionKey: "For security reasons, please sign out and sign in again before deleting your account."]
+          )
+        } else {
+          print("Could not delete auth account, but removed all user data: \(error.localizedDescription)")
+          // Force sign out to ensure the user session is cleared
+          try? AuthenticationManager.shared.signOut()
+          throw error
+        }
+      }
       
       // Reset the skipped authentication state when account is deleted
       UserDefaults.standard.set(false, forKey: "hasSkippedAuthentication")
-    } catch let error as NSError {
-      if error.domain == "FIRAuthErrorDomain" && error.code == 17014 {
-        // Need re-authentication
-        throw NSError(
-          domain: "SettingsViewModel",
-          code: 17014,
-          userInfo: [NSLocalizedDescriptionKey: "For security reasons, please enter your password to delete your account."]
-        )
-      } else {
-        throw error
-      }
+    } catch {
+      print("Error deleting account: \(error.localizedDescription)")
+      throw error
     }
   }
   
