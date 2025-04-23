@@ -104,22 +104,8 @@ struct ProductsView: View {
         .padding(.horizontal, 20)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .sheet(item: $selectedImage) { image in
-            ZoomableScrollView {
-                CachedAsyncImage(url: URL(string: image.url)) { phase in
-                    switch phase {
-                    case .empty:
-                        ProgressView()
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                    case .failure:
-                        Image(systemName: "photo")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .foregroundColor(colorScheme == .dark ? .white.opacity(0.5) : .gray)
-                    }
-                }
+            ZoomableImageView(imageURL: image.url, colorScheme: colorScheme) {
+                selectedImage = nil
             }
         }
         .onAppear {
@@ -133,93 +119,109 @@ struct ProductsView: View {
     }
 }
 
-struct ZoomableScrollView<Content: View>: UIViewRepresentable {
-    private var content: Content
-
-    init(@ViewBuilder content: () -> Content) {
-        self.content = content()
-    }
-
-    func makeUIView(context: Context) -> UIScrollView {
-        let scrollView = UIScrollView()
-        scrollView.delegate = context.coordinator
-        scrollView.maximumZoomScale = 5.0
-        scrollView.minimumZoomScale = 1.0
-        scrollView.bouncesZoom = true
-        
-        let hostedView = UIHostingController(rootView: content)
-        hostedView.view.translatesAutoresizingMaskIntoConstraints = false
-        
-        // Add the hosted view as a child view controller
-        let vc = context.coordinator.hostingController
-        if vc.parent == nil {
-            // Add the view controller to the scroll view
-            scrollView.addSubview(vc.view)
-            
-            // Use safer constraint setup that won't lead to NaN values
-            let constraints = [
-                vc.view.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
-                vc.view.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
-                vc.view.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
-                vc.view.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
+struct ZoomableImageView: View {
+    let imageURL: String
+    let colorScheme: ColorScheme
+    let onDismiss: () -> Void
+    
+    @State private var scale: CGFloat = 1.0
+    @State private var lastScale: CGFloat = 1.0
+    @State private var offset: CGSize = .zero
+    @State private var lastOffset: CGSize = .zero
+    
+    var body: some View {
+        GeometryReader { geometry in
+            ZStack {
+                (colorScheme == .dark ? Color.black : Color.white)
+                    .edgesIgnoringSafeArea(.all)
                 
-                // Fix the width and height to match scroll view frame
-                vc.view.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor),
-                vc.view.heightAnchor.constraint(equalTo: scrollView.frameLayoutGuide.heightAnchor)
-            ]
-            
-            NSLayoutConstraint.activate(constraints)
+                VStack {
+                    HStack {
+                        Spacer()
+                        Button(action: onDismiss) {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.title)
+                                .foregroundColor(.gray)
+                        }
+                        .padding()
+                    }
+                    
+                    Spacer()
+                    
+                    CachedAsyncImage(url: URL(string: imageURL)) { phase in
+                        switch phase {
+                        case .empty:
+                            ProgressView()
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .scaleEffect(scale)
+                                .offset(offset)
+                                .gesture(
+                                    MagnificationGesture()
+                                        .onChanged { value in
+                                            let delta = value / lastScale
+                                            lastScale = value
+                                            scale = min(max(scale * delta, 1.0), 5.0)
+                                        }
+                                        .onEnded { _ in
+                                            lastScale = 1.0
+                                            if scale < 1.0 {
+                                                withAnimation {
+                                                    scale = 1.0
+                                                }
+                                            }
+                                            if scale > 5.0 {
+                                                scale = 5.0
+                                            }
+                                        }
+                                )
+                                .gesture(
+                                    DragGesture()
+                                        .onChanged { value in
+                                            if scale > 1.0 {
+                                                offset = CGSize(
+                                                    width: lastOffset.width + value.translation.width,
+                                                    height: lastOffset.height + value.translation.height
+                                                )
+                                            }
+                                        }
+                                        .onEnded { _ in
+                                            lastOffset = offset
+                                            if scale <= 1.0 {
+                                                withAnimation {
+                                                    offset = .zero
+                                                    lastOffset = .zero
+                                                }
+                                            }
+                                        }
+                                )
+                                .onTapGesture(count: 2) {
+                                    withAnimation {
+                                        if scale > 1.0 {
+                                            scale = 1.0
+                                            offset = .zero
+                                            lastOffset = .zero
+                                        } else {
+                                            scale = 2.0
+                                        }
+                                    }
+                                }
+                        case .failure:
+                            Image(systemName: "photo")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .foregroundColor(colorScheme == .dark ? .white.opacity(0.5) : .gray)
+                        }
+                    }
+                    .frame(maxWidth: geometry.size.width, maxHeight: geometry.size.height * 0.9)
+                    
+                    Spacer()
+                }
+            }
         }
-        
-        return scrollView
-    }
-
-    func updateUIView(_ uiView: UIScrollView, context: Context) {
-        // Reset zoom when content changes
-        uiView.zoomScale = 1.0
-    }
-
-    func makeCoordinator() -> Coordinator {
-        Coordinator(hostingController: UIHostingController(rootView: content))
-    }
-
-    class Coordinator: NSObject, UIScrollViewDelegate {
-        var hostingController: UIHostingController<Content>
-
-        init(hostingController: UIHostingController<Content>) {
-            self.hostingController = hostingController
-        }
-
-        func viewForZooming(in scrollView: UIScrollView) -> UIView? {
-            return hostingController.view
-        }
-        
-        // Add methods to handle zoom changes and prevent NaN
-        func scrollViewDidZoom(_ scrollView: UIScrollView) {
-            updateConstraintsForSize(scrollView.bounds.size, scrollView: scrollView)
-        }
-        
-        func updateConstraintsForSize(_ size: CGSize, scrollView: UIScrollView) {
-            guard let view = scrollView.subviews.first else { return }
-            
-            let scrollViewSize = scrollView.bounds.size
-            let contentSize = view.frame.size
-            
-            // Calculate the center offsets to keep content centered while zooming
-            let horizontalInset = max(0, (scrollViewSize.width - contentSize.width) / 2)
-            let verticalInset = max(0, (scrollViewSize.height - contentSize.height) / 2)
-            
-            // Ensure we don't have NaN values in insets
-            let safeHorizontalInset = horizontalInset.isNaN ? 0 : horizontalInset
-            let safeVerticalInset = verticalInset.isNaN ? 0 : verticalInset
-            
-            scrollView.contentInset = UIEdgeInsets(
-                top: safeVerticalInset,
-                left: safeHorizontalInset,
-                bottom: safeVerticalInset,
-                right: safeHorizontalInset
-            )
-        }
+        .edgesIgnoringSafeArea(.all)
     }
 }
 

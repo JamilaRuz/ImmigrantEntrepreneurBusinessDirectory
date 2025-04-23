@@ -29,11 +29,7 @@ struct InfoView: View {
                         .background(colorScheme == .dark ? Color(UIColor.darkGray).opacity(0.3) : Color.gray.opacity(0.1))
                         .cornerRadius(8)
                 } else {
-                    Text(company.aboutUs)
-                        .font(.body)
-                        .foregroundColor(colorScheme == .dark ? .gray.opacity(0.9) : .gray)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .fixedSize(horizontal: false, vertical: true) // Important: Use this to prevent text truncation
+                    CompanyExpandableTextView(text: company.aboutUs, title: "About Us", color: colorScheme == .dark ? .gray.opacity(0.9) : .gray)
                 }
             }
             
@@ -376,6 +372,96 @@ struct SocialMediaLinkButton: View {
         // Open the URL if we have one
         if let urlString = urlString, let url = URL(string: urlString) {
             UIApplication.shared.open(url)
+        }
+    }
+}
+
+struct CompanyExpandableTextView: View {
+    let text: String
+    let title: String
+    let color: Color
+    @State private var isExpanded = false
+    @State private var isTruncated = false
+    @State private var lineLimit = 3
+    @Environment(\.colorScheme) private var colorScheme
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(text)
+                .font(.body)
+                .foregroundColor(color)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .lineLimit(isExpanded ? nil : lineLimit)
+                .background(
+                    // Detect if text is truncated
+                    GeometryReader { geometry in
+                        ZStack {
+                            // Create two text views to compare their heights
+                            Text(text)
+                                .font(.body)
+                                .lineLimit(nil)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .hidden()
+                                .background(
+                                    GeometryReader { fullTextGeometry in
+                                        Color.clear.onAppear {
+                                            // Compare the height of truncated vs full text
+                                            let truncated = fullTextGeometry.size.height > geometry.size.height
+                                            DispatchQueue.main.async {
+                                                isTruncated = truncated
+                                            }
+                                        }
+                                    }
+                                )
+                        }
+                    }
+                )
+                .fixedSize(horizontal: false, vertical: true)
+            
+            if isTruncated && !isExpanded {
+                Button(action: {
+                    isExpanded = true
+                }) {
+                    Text("more...")
+                        .font(.subheadline)
+                        .foregroundColor(.blue)
+                        .underline()
+                }
+                .padding(.top, 4)
+            }
+        }
+        .sheet(isPresented: $isExpanded) {
+            ZStack {
+                // Background that matches the parent view's color scheme
+                (colorScheme == .dark ? Color.black : Color(.systemBackground))
+                    .edgesIgnoringSafeArea(.all)
+                
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text(title)
+                            .font(.headline)
+                            .padding(.bottom, 8)
+                        
+                        Text(text)
+                            .font(.body)
+                            .foregroundColor(colorScheme == .dark ? .gray.opacity(0.9) : .gray)
+                            .lineSpacing(8)
+                        
+                        Spacer()
+                    }
+                    .padding(24)
+                }
+                .overlay(
+                    Button(action: {
+                        isExpanded = false
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.title)
+                            .foregroundColor(colorScheme == .dark ? .white.opacity(0.7) : .gray)
+                            .padding()
+                    }, alignment: .topTrailing
+                )
+            }
         }
     }
 }

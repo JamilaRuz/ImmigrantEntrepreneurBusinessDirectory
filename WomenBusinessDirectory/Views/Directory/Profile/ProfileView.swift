@@ -293,11 +293,7 @@ struct ProfileView: View {
                 .foregroundColor(.purple1)
             
             if let bio = viewModel.entrepreneur.bioDescr, !bio.isEmpty {
-                Text(bio)
-                    .font(.subheadline)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-                    .foregroundColor(.purple1)
+                ExpandableTextView(text: bio, color: .purple1)
             } else {
                 VStack(spacing: 16) {
                     Image(systemName: "doc.text")
@@ -461,6 +457,100 @@ struct CustomNavigationBarModifier: ViewModifier {
             )
         } else {
             content
+        }
+    }
+}
+
+struct ExpandableTextView: View {
+    let text: String
+    let color: Color
+    @State private var isExpanded = false
+    @State private var isTruncated = false
+    @State private var lineLimit = 4
+    @Environment(\.colorScheme) private var colorScheme
+    
+    var body: some View {
+        VStack(alignment: .center, spacing: 8) {
+            Text(text)
+                .font(.subheadline)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+                .foregroundColor(color)
+                .lineLimit(isExpanded ? nil : lineLimit)
+                .background(
+                    // Detect if text is truncated
+                    GeometryReader { geometry in
+                        ZStack {
+                            // Create two text views to compare their heights
+                            Text(text)
+                                .font(.subheadline)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
+                                .lineLimit(nil)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .hidden()
+                                .background(
+                                    GeometryReader { fullTextGeometry in
+                                        Color.clear.onAppear {
+                                            // Compare the height of truncated vs full text
+                                            let truncated = fullTextGeometry.size.height > geometry.size.height
+                                            DispatchQueue.main.async {
+                                                isTruncated = truncated
+                                            }
+                                        }
+                                    }
+                                )
+                        }
+                    }
+                )
+            
+            if isTruncated && !isExpanded {
+                Button(action: {
+                    isExpanded = true
+                }) {
+                    Text("more...")
+                        .font(.subheadline)
+                        .foregroundColor(color)
+                        .underline()
+                }
+            }
+        }
+        .sheet(isPresented: $isExpanded) {
+            ZStack {
+                // Background that matches the parent view's color scheme
+                (colorScheme == .dark ? Color.black : Color(.systemGray6))
+                    .edgesIgnoringSafeArea(.all)
+                
+                ScrollView {
+                    VStack(alignment: .center, spacing: 16) {
+                        Text("Tell us about yourself")
+                            .font(.title2)
+                            .italic()
+                            .foregroundColor(.purple1)
+                            .padding(.bottom, 8)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                        
+                        Text(text)
+                            .font(.subheadline)
+                            .multilineTextAlignment(.center)
+                            .foregroundColor(color)
+                            .lineSpacing(8)
+                        
+                        Spacer()
+                    }
+                    .padding(24)
+                }
+                .overlay(
+                    Button(action: {
+                        isExpanded = false
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.title)
+                            .foregroundColor(colorScheme == .dark ? .white.opacity(0.7) : .gray)
+                            .padding()
+                    }, alignment: .topTrailing
+                )
+            }
         }
     }
 }
