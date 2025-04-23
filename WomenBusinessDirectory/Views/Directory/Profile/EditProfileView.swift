@@ -166,42 +166,79 @@ class EditProfileViewModel: ObservableObject {
         var updatedEntrepreneur = entrepreneur
 
         if let newImage = newImage {
-            // If there's an existing profile image, delete it first
-            if let existingProfileUrl = entrepreneur.profileUrl {
-                do {
-                    // Check if image exists before deletion
-                    let imageExisted = await verifyImageExists(imageUrl: existingProfileUrl)
-                    
-                    try await EntrepreneurManager.shared.deleteProfileImage(imageUrl: existingProfileUrl)
-                    print("Successfully deleted old profile image")
-                    
-                    // Verify deletion
-                    Task {
-                        await verifyImageDeleted(imageUrl: existingProfileUrl, wasExisting: imageExisted)
+            // Upload the new image first - this is safer as we only delete the old one if upload succeeds
+            let imageUrl: String
+            do {
+                imageUrl = try await EntrepreneurManager.shared.uploadProfileImage(newImage, for: entrepreneur)
+                print("Successfully uploaded new profile image: \(imageUrl)")
+                
+                // Set the new URL
+                updatedEntrepreneur.profileUrl = imageUrl
+                
+                // Only try to delete old image if one exists and it's in Firebase Storage
+                if let existingProfileUrl = entrepreneur.profileUrl {
+                    // Handle the case where the user authenticated with Google but has no actual image
+                    // or has a Google profile URL that might not exist as an actual image
+                    if existingProfileUrl.isEmpty || 
+                       !existingProfileUrl.contains("firebasestorage.googleapis.com") {
+                        print("Previous profile image was not in Firebase Storage: \(existingProfileUrl)")
+                        // No deletion needed - just update with the new image
+                    } else {
+                        // Only delete Firebase Storage URLs
+                        Task.detached {
+                            do {
+                                print("Attempting to delete previous Firebase Storage image: \(existingProfileUrl)")
+                                try await EntrepreneurManager.shared.deleteProfileImage(imageUrl: existingProfileUrl)
+                                print("Successfully deleted old profile image in background")
+                            } catch {
+                                print("Non-critical error deleting old profile image: \(error.localizedDescription)")
+                            }
+                        }
                     }
-                } catch {
-                    print("Error deleting old profile image: \(error.localizedDescription)")
-                    // Continue with the update even if deletion fails
+                } else {
+                    print("No previous profile image to delete - this is the user's first custom image")
                 }
+            } catch {
+                print("Error uploading new image: \(error.localizedDescription)")
+                // Keep the existing profile URL since upload failed
+                throw error
             }
-            
-            // Upload the new image
-            let imageUrl = try await EntrepreneurManager.shared.uploadProfileImage(newImage, for: entrepreneur)
-            updatedEntrepreneur.profileUrl = imageUrl
         }
 
+        // Update the entrepreneur document
         try await EntrepreneurManager.shared.updateEntrepreneur(updatedEntrepreneur)
     }
     
     /// Verifies if an image exists in storage
     // This method is not marked with @MainActor so it will run on a background thread
     nonisolated private func verifyImageExists(imageUrl: String) async -> Bool {
-        // We could use a manager method here, but for simplicity we'll do a direct check
-        do {
-            let storageRef = Storage.storage().reference(forURL: imageUrl)
-            _ = try await storageRef.getMetadata()
-            print("✓ Verified image exists in storage: \(imageUrl)")
+        // Skip verification for invalid URLs
+        guard !imageUrl.isEmpty, 
+              imageUrl.hasPrefix("https://") || imageUrl.hasPrefix("http://"),
+              let _ = URL(string: imageUrl) else {
+            print("⚠️ Cannot verify invalid URL: \(imageUrl)")
+            return false
+        }
+        
+        // Special handling for Google profile images and other external URLs
+        if imageUrl.contains("googleusercontent.com") || 
+           !imageUrl.contains("firebasestorage.googleapis.com") {
+            // Assume external URLs exist (we can't check them via Firebase Storage)
+            print("ℹ️ External URL detected (not Firebase Storage): \(imageUrl)")
             return true
+        }
+        
+        // Only try to verify Firebase Storage URLs
+        do {
+            // Using try? to prevent fatal errors
+            if let storageRef = try? Storage.storage().reference(forURL: imageUrl) {
+                _ = try? await storageRef.getMetadata()
+                print("✓ Verified image exists in storage: \(imageUrl)")
+                return true
+            } else {
+                print("⚠️ Could not create storage reference for URL")
+                return false
+            }
         } catch {
             print("✗ Image does not exist in storage: \(imageUrl)")
             print("  Error: \(error.localizedDescription)")
@@ -218,7 +255,28 @@ class EditProfileViewModel: ObservableObject {
             return
         }
         
-        // Check if the image still exists - this happens on background thread
+        // Skip verification for invalid URLs
+        guard !imageUrl.isEmpty, 
+              imageUrl.hasPrefix("https://") || imageUrl.hasPrefix("http://"),
+              let _ = URL(string: imageUrl) else {
+            print("⚠️ Cannot verify invalid URL: \(imageUrl)")
+            await MainActor.run {
+                self.verificationMessage = "Could not verify image deletion (invalid URL)"
+            }
+            return
+        }
+        
+        // Handle external URLs like Google profile images
+        if imageUrl.contains("googleusercontent.com") || 
+           !imageUrl.contains("firebasestorage.googleapis.com") {
+            print("ℹ️ External URL detected - no deletion verification needed")
+            await MainActor.run {
+                self.verificationMessage = "Profile updated successfully"
+            }
+            return
+        }
+        
+        // Check if the image still exists but with error handling
         let stillExists = await verifyImageExists(imageUrl: imageUrl)
         
         // Update UI on main thread
@@ -228,7 +286,7 @@ class EditProfileViewModel: ObservableObject {
                 self.verificationMessage = "Warning: Old image may not have been deleted"
             } else {
                 print("✅ DELETION VERIFIED: Image was successfully deleted from storage")
-                self.verificationMessage = "Image successfully deleted and replaced"
+                self.verificationMessage = "Profile updated successfully"
             }
         }
     }

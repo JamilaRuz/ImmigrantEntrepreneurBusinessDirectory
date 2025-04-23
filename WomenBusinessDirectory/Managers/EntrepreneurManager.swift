@@ -132,22 +132,33 @@ func createEntrepreneur(fullName: String, email: String) async throws {
       throw NSError(domain: "EntrepreneurManager", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to convert image to data"])
     }
 
-    let imageName = UUID().uuidString + ".jpg"
-    let imageReference = storageRef.child("profile_images/\(imageName)")
+    // Create a safer filename without special characters
+    let safeUUID = UUID().uuidString.replacingOccurrences(of: "-", with: "")
+    let imageName = "profile_\(safeUUID).jpg"
+    
+    // Ensure the storage path is valid
+    let imageReference = storageRef.child("profile_images").child(imageName)
 
     do {
+      print("Uploading profile image to path: profile_images/\(imageName)")
       // Attempt to upload the image data
       _ = try await imageReference.putDataAsync(imageData)
       
       // If successful, get the download URL
       let downloadURL = try await imageReference.downloadURL()
       
+      print("✅ Image uploaded successfully, URL: \(downloadURL.absoluteString)")
+      
       // Return the URL as a string
       return downloadURL.absoluteString
     } catch {
       // Handle any errors that occur during upload
-      print("Error uploading image: \(error.localizedDescription)")
-      throw error
+      print("❌ Error uploading image: \(error.localizedDescription)")
+      throw NSError(
+        domain: "EntrepreneurManager",
+        code: 1,
+        userInfo: [NSLocalizedDescriptionKey: "Failed to upload profile image: \(error.localizedDescription)"]
+      )
     }
   }
 
@@ -280,33 +291,32 @@ func createEntrepreneur(fullName: String, email: String) async throws {
     do {
       print("Starting to delete profile image from storage: \(imageUrl)")
       
-      // Extract filename from URL for better logging
-      let filename = URL(string: imageUrl)?.lastPathComponent ?? "unknown"
-      
-      let storageRef = Storage.storage().reference(forURL: imageUrl)
-      try await storageRef.delete()
-      
-      // After successfully deleting, verify the image no longer exists
-      print("✅ Successfully deleted profile image \(filename) from storage")
-      
-      // You could add analytics event here if needed
-      // Analytics.logEvent("profile_image_deleted", parameters: ["status": "success"])
-    } catch let error as NSError {
-      // Check if it's an object not found error (the file doesn't exist)
-      if error.code == StorageErrorCode.objectNotFound.rawValue {
-        // The file didn't exist - might have been already deleted
-        print("⚠️ Profile image was already deleted or doesn't exist: \(imageUrl)")
-        return // Don't throw an error in this case
+      // Check if URL is completely malformed or empty
+      guard !imageUrl.isEmpty else {
+        print("⚠️ Empty URL provided, skipping deletion")
+        return
       }
       
-      print("❌ Error deleting profile image from storage: \(error.localizedDescription)")
-      // Analytics.logEvent("profile_image_deleted", parameters: ["status": "error", "error": error.localizedDescription])
+      // Basic validation that this is a Firebase Storage URL
+      guard imageUrl.contains("firebasestorage.googleapis.com") && imageUrl.contains("/o/") else {
+        print("⚠️ Not a Firebase Storage URL. Skipping deletion: \(imageUrl)")
+        return
+      }
       
-      throw NSError(
-        domain: "EntrepreneurManager",
-        code: error.code,
-        userInfo: [NSLocalizedDescriptionKey: "Error deleting profile image from storage: \(error.localizedDescription)"]
-      )
+      // At this point we've confirmed it's probably a valid Firebase Storage URL
+      do {
+        let storageRef = Storage.storage().reference(forURL: imageUrl)
+        try await storageRef.delete()
+        print("✅ Successfully deleted profile image from storage")
+      } catch let storageError as NSError {
+        if storageError.code == StorageErrorCode.objectNotFound.rawValue {
+          print("⚠️ Image doesn't exist in storage: \(imageUrl)")
+        } else {
+          print("❌ Storage error: \(storageError.localizedDescription)")
+        }
+      }
+    } catch {
+      print("⚠️ Error handling profile image deletion (non-critical): \(error)")
     }
   }
 }
