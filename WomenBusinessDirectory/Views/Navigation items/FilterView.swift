@@ -70,6 +70,16 @@ private struct FilterContentView: View {
         GridItem(.flexible())
     ]
     
+    // Helper function to identify if a city is amalgamated
+    private func isAmalgamatedCity(_ city: String) -> Bool {
+        viewModel.isAmalgamatedCity(city)
+    }
+    
+    // Helper to get parent city if it's an amalgamated city
+    private func parentCityFor(_ city: String) -> String? {
+        viewModel.parentCityFor(city)
+    }
+    
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
@@ -79,7 +89,13 @@ private struct FilterContentView: View {
                     items: viewModel.cities,
                     selectedItems: viewModel.selectedCities,
                     itemTitle: { $0 },
-                    onToggle: viewModel.toggleCity
+                    onToggle: viewModel.toggleCity,
+                    itemSubtitle: { city in
+                        if let parentCity = parentCityFor(city) {
+                            return "Part of \(parentCity)"
+                        }
+                        return nil
+                    }
                 )
                 
                 // Ownership Type Section
@@ -106,6 +122,9 @@ private struct FilterSection<T: Hashable>: View {
     let onToggle: (T) -> Void
     @Environment(\.colorScheme) private var colorScheme
     
+    // Optional function to provide subtitles for items
+    var itemSubtitle: ((T) -> String?)? = nil
+    
     private let columns = [
         GridItem(.flexible()),
         GridItem(.flexible())
@@ -121,10 +140,12 @@ private struct FilterSection<T: Hashable>: View {
                 ForEach(items, id: \.self) { item in
                     CheckboxButton(
                         title: itemTitle(item),
-                        isChecked: selectedItems.contains(item)
-                    ) {
-                        onToggle(item)
-                    }
+                        isChecked: selectedItems.contains(item),
+                        action: {
+                            onToggle(item)
+                        },
+                        subtitle: itemSubtitle?(item)
+                    )
                 }
             }
             .padding(.horizontal)
@@ -138,6 +159,9 @@ struct CheckboxButton: View {
     let isChecked: Bool
     let action: () -> Void
     @Environment(\.colorScheme) private var colorScheme
+    
+    // Optional subtitle for amalgamated cities
+    var subtitle: String? = nil
     
     var body: some View {
         Button(action: action) {
@@ -154,9 +178,17 @@ struct CheckboxButton: View {
                     }
                 }
                 
-                Text(title)
-                    .foregroundColor(colorScheme == .dark ? .white : .primary)
-                    .font(.system(size: 14))
+                VStack(alignment: .leading, spacing: subtitle != nil ? 2 : 0) {
+                    Text(title)
+                        .foregroundColor(colorScheme == .dark ? .white : .primary)
+                        .font(.system(size: 14))
+                    
+                    if let subtitle = subtitle {
+                        Text(subtitle)
+                            .foregroundColor(.gray)
+                            .font(.system(size: 10))
+                    }
+                }
                 
                 Spacer()
             }

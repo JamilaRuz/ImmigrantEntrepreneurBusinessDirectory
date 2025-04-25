@@ -37,15 +37,71 @@ class FilterManager: FilterManaging {
     // Cache for available options
     private var availableCitiesCache: [String]?
     
+    // Dictionary to map amalgamated cities to their parent cities
+    private let amalgamatedCitiesMap: [String: String] = [
+        // Ottawa amalgamations
+        "nepean": "Ottawa",
+        "kanata": "Ottawa",
+        "orleans": "Ottawa",
+        "gloucester": "Ottawa",
+        "cumberland": "Ottawa",
+        "vanier": "Ottawa",
+        "rockcliffe park": "Ottawa",
+        "osgoode": "Ottawa",
+        "rideau": "Ottawa",
+        "goulbourn": "Ottawa",
+        
+        // Toronto amalgamations
+        "etobicoke": "Toronto",
+        "scarborough": "Toronto",
+        "north york": "Toronto",
+        "east york": "Toronto",
+        "york": "Toronto",
+        
+        // Montreal amalgamations
+        "anjou": "Montreal",
+        "lachine": "Montreal",
+        "lasalle": "Montreal",
+        "outremont": "Montreal",
+        "pierrefonds-roxboro": "Montreal",
+        "pierrefonds": "Montreal",
+        "roxboro": "Montreal",
+        "saint-laurent": "Montreal",
+        "st-laurent": "Montreal",
+        "verdun": "Montreal",
+        "ville-marie": "Montreal",
+        
+        // Quebec City amalgamations
+        "beauport": "Quebec City",
+        "charlesbourg": "Quebec City",
+        "sainte-foy": "Quebec City",
+        "ste-foy": "Quebec City",
+        "sillery": "Quebec City",
+        "vanier, qc": "Quebec City"
+    ]
+    
     // MARK: - Helper Methods
     
     nonisolated func standardizeCity(_ city: String) -> String {
-        // Remove any commas and everything that follows
-        // This way "Ottawa", "Ottawa, ON", and "Ottawa, Ontario" will all become just "Ottawa"
+        // First remove any commas and everything that follows
+        let cityName: String
         if let commaRange = city.range(of: ",") {
-            return String(city[..<commaRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+            cityName = String(city[..<commaRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+        } else {
+            cityName = city.trimmingCharacters(in: .whitespacesAndNewlines)
         }
-        return city.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        // Convert to lowercase for case-insensitive comparison
+        let lowercasedCity = cityName.lowercased()
+        
+        // Check if this is an amalgamated city and should be standardized to its parent city
+        if let parentCity = amalgamatedCitiesMap[lowercasedCity] {
+            print("Standardizing amalgamated city: \(cityName) -> \(parentCity)")
+            return parentCity
+        }
+        
+        // Return the original city name with proper capitalization
+        return cityName
     }
     
     // MARK: - Filter State Management

@@ -54,9 +54,32 @@ class FilterViewModel: ObservableObject {
             cities = fetchedCities
             ownershipTypes = fetchedOwnershipTypes
             isLoading = false
+            
+            // After loading cities, ensure selected cities are standardized
+            standardizeSelectedCities()
         } catch {
             print("Error fetching filter options: \(error)")
             isLoading = false
+        }
+    }
+    
+    // New method to ensure selected cities are using standardized names
+    private func standardizeSelectedCities() {
+        // Create a new set with standardized names
+        var standardizedSet = Set<String>()
+        
+        for city in selectedCities {
+            let standardized = filterManager.standardizeCity(city)
+            standardizedSet.insert(standardized)
+        }
+        
+        // Replace the current selection with standardized names
+        if standardizedSet != selectedCities {
+            selectedCities = standardizedSet
+            // Save the standardized selection
+            Task {
+                filterManager.saveSelectedCities(selectedCities)
+            }
         }
     }
     
@@ -64,16 +87,9 @@ class FilterViewModel: ObservableObject {
         // Get the standardized version of the city name
         let standardizedCity = filterManager.standardizeCity(city)
         
-        // Check if any version of this city is already selected
-        let alreadySelected = selectedCities.contains { 
-            filterManager.standardizeCity($0) == standardizedCity
-        }
-        
-        if alreadySelected {
-            // Remove any versions of this city that match the standardized name
-            selectedCities = selectedCities.filter { 
-                filterManager.standardizeCity($0) != standardizedCity
-            }
+        // Check if this city is already selected
+        if selectedCities.contains(standardizedCity) {
+            selectedCities.remove(standardizedCity)
         } else {
             // Add the standardized city name
             selectedCities.insert(standardizedCity)
@@ -101,6 +117,20 @@ class FilterViewModel: ObservableObject {
         Task {
             filterManager.clearAllFilters()
         }
+    }
+    
+    // Helper to check if a city is an amalgamated smaller city
+    func isAmalgamatedCity(_ city: String) -> Bool {
+        // The standardized city will be different from the original
+        // if it's an amalgamated city
+        let standardized = filterManager.standardizeCity(city)
+        return standardized != city && !standardized.isEmpty
+    }
+    
+    // Helper to get the parent city of an amalgamated city
+    func parentCityFor(_ city: String) -> String? {
+        let standardized = filterManager.standardizeCity(city)
+        return standardized != city ? standardized : nil
     }
 }
 
