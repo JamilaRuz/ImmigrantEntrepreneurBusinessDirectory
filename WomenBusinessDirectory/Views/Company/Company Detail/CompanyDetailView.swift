@@ -36,9 +36,10 @@ struct CompanyDetailView: View {
                 case .success(let image):
                   image
                     .resizable()
-                    .aspectRatio(contentMode: .fit)
+                    .aspectRatio(contentMode: .fill)
                     .frame(height: 300)
-                    .frame(maxWidth: geometry.size.width)
+                    .frame(width: geometry.size.width)
+                    .clipped()
                 case .failure:
                   Rectangle()
                     .fill(Color.gray.opacity(0.3))
