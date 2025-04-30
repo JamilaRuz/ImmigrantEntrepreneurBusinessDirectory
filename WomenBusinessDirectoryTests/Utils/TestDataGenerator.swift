@@ -44,7 +44,7 @@ class TestDataGenerator {
                     "Service \(i % 5 + 1)",
                     "Service \(i % 7 + 1)"
                 ],
-                socialMedia: [
+                socialMedias: [
                     .facebook: "facebook.com/test\(i)",
                     .instagram: "instagram.com/test\(i)",
                     .linkedin: "linkedin.com/test\(i)"

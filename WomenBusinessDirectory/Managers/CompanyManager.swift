@@ -67,15 +67,15 @@ class Company: Codable, Hashable, Equatable, Identifiable {
     let email: String
     let workHours: String
     let services: [String]
-    let socialMedia: [SocialMedia: String]?
+    let socialMedias: [SocialMedia: String]?
     let businessModel: BusinessModel
     let website: String
     var bookmarkedBy: [String]
     let ownershipTypes: [OwnershipType]
     
     // Computed property to get the social media platforms
-    var socialMedias: [SocialMedia] {
-        return socialMedia?.keys.sorted { $0.rawValue < $1.rawValue } ?? []
+    var socialMediaPlatforms: [SocialMedia] {
+        return socialMedias?.keys.sorted { $0.rawValue < $1.rawValue } ?? []
     }
     
     var isBookmarked: Bool {
@@ -88,7 +88,99 @@ class Company: Codable, Hashable, Equatable, Identifiable {
         }
     }
     
-    init(companyId: String, entrepId: String, categoryIds: [String], name: String, logoImg: String?, headerImg: String?, aboutUs: String, dateFounded: String, portfolioImages: [String], address: String, city: String, phoneNum: String, email: String, workHours: String, services: [String], socialMedia: [SocialMedia: String]? = nil, businessModel: BusinessModel, website: String, ownershipTypes: [OwnershipType], isBookmarked: Bool = false) {
+    // Custom Codable implementation to handle socialMedias field
+    enum CodingKeys: String, CodingKey {
+        case companyId, entrepId, categoryIds, name, logoImg, headerImg, aboutUs
+        case dateFounded, portfolioImages, address, city, phoneNum, email, workHours
+        case services, socialMedias, businessModel, website, bookmarkedBy, ownershipTypes
+    }
+    
+    required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        // Decode regular properties
+        companyId = try container.decode(String.self, forKey: .companyId)
+        entrepId = try container.decode(String.self, forKey: .entrepId)
+        categoryIds = try container.decode([String].self, forKey: .categoryIds)
+        name = try container.decode(String.self, forKey: .name)
+        logoImg = try container.decodeIfPresent(String.self, forKey: .logoImg)
+        headerImg = try container.decodeIfPresent(String.self, forKey: .headerImg)
+        aboutUs = try container.decode(String.self, forKey: .aboutUs)
+        dateFounded = try container.decode(String.self, forKey: .dateFounded)
+        portfolioImages = try container.decode([String].self, forKey: .portfolioImages)
+        address = try container.decode(String.self, forKey: .address)
+        city = try container.decode(String.self, forKey: .city)
+        phoneNum = try container.decode(String.self, forKey: .phoneNum)
+        email = try container.decode(String.self, forKey: .email)
+        workHours = try container.decode(String.self, forKey: .workHours)
+        services = try container.decode([String].self, forKey: .services)
+        businessModel = try container.decode(BusinessModel.self, forKey: .businessModel)
+        website = try container.decode(String.self, forKey: .website)
+        bookmarkedBy = try container.decodeIfPresent([String].self, forKey: .bookmarkedBy) ?? []
+        ownershipTypes = try container.decode([OwnershipType].self, forKey: .ownershipTypes)
+        
+        // Special handling for socialMedias - it can be a dictionary or might be missing
+        if container.contains(.socialMedias) {
+            do {
+                // Try to decode as a dictionary where keys are platform name strings and values are URL strings
+                let socialMediaDict = try container.decode([String: String].self, forKey: .socialMedias)
+                
+                // Convert string keys to SocialMedia enum values
+                var typedSocialMedias: [SocialMedia: String] = [:]
+                
+                for (key, value) in socialMediaDict {
+                    if let platform = SocialMedia(rawValue: key) {
+                        typedSocialMedias[platform] = value
+                    } else if let platform = SocialMedia.allCases.first(where: { $0.rawValue.lowercased() == key.lowercased() }) {
+                        // Try case-insensitive matching as a fallback
+                        typedSocialMedias[platform] = value
+                    }
+                }
+                
+                self.socialMedias = typedSocialMedias.isEmpty ? nil : typedSocialMedias
+            } catch {
+                print("Error decoding socialMedias field: \(error)")
+                self.socialMedias = nil
+            }
+        } else {
+            self.socialMedias = nil
+        }
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        
+        // Encode regular properties
+        try container.encode(companyId, forKey: .companyId)
+        try container.encode(entrepId, forKey: .entrepId)
+        try container.encode(categoryIds, forKey: .categoryIds)
+        try container.encode(name, forKey: .name)
+        try container.encodeIfPresent(logoImg, forKey: .logoImg)
+        try container.encodeIfPresent(headerImg, forKey: .headerImg)
+        try container.encode(aboutUs, forKey: .aboutUs)
+        try container.encode(dateFounded, forKey: .dateFounded)
+        try container.encode(portfolioImages, forKey: .portfolioImages)
+        try container.encode(address, forKey: .address)
+        try container.encode(city, forKey: .city)
+        try container.encode(phoneNum, forKey: .phoneNum)
+        try container.encode(email, forKey: .email)
+        try container.encode(workHours, forKey: .workHours)
+        try container.encode(services, forKey: .services)
+        try container.encode(businessModel, forKey: .businessModel)
+        try container.encode(website, forKey: .website)
+        try container.encode(bookmarkedBy, forKey: .bookmarkedBy)
+        try container.encode(ownershipTypes, forKey: .ownershipTypes)
+        
+        // Special handling for socialMedias - convert to string-keyed dictionary
+        if let socialMedias = socialMedias, !socialMedias.isEmpty {
+            let stringKeyed = Dictionary(uniqueKeysWithValues: socialMedias.map { (key, value) in
+                return (key.rawValue, value)
+            })
+            try container.encode(stringKeyed, forKey: .socialMedias)
+        }
+    }
+    
+    init(companyId: String, entrepId: String, categoryIds: [String], name: String, logoImg: String?, headerImg: String?, aboutUs: String, dateFounded: String, portfolioImages: [String], address: String, city: String, phoneNum: String, email: String, workHours: String, services: [String], socialMedias: [SocialMedia: String]? = nil, businessModel: BusinessModel, website: String, ownershipTypes: [OwnershipType], isBookmarked: Bool = false) {
         self.companyId = companyId
         self.entrepId = entrepId
         self.categoryIds = categoryIds
@@ -104,7 +196,7 @@ class Company: Codable, Hashable, Equatable, Identifiable {
         self.email = email
         self.workHours = workHours
         self.services = services
-        self.socialMedia = socialMedia
+        self.socialMedias = socialMedias
         self.businessModel = businessModel
         self.website = website
         

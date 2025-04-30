@@ -152,7 +152,7 @@ struct CompanyDetailView: View {
                     .id("products")
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
               }
-              .frame(minHeight: max(600, geometry.size.height - 200)) // Ensure there's enough height to show all content
+              .frame(minHeight: max(500, geometry.size.height - 400))
               .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
               .animation(nil, value: selectedSegment)
             }

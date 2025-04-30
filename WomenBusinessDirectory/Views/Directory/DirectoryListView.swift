@@ -212,7 +212,7 @@ struct DirectoryListView: View {
           }
         }
       }
-      .navigationTitle("Business Directory")
+      .navigationTitle("Find a Business")
       .navigationBarTitleDisplayMode(.inline)
       .customNavigationBar(
         showSignInView: $showSignInView,

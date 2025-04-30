@@ -40,12 +40,12 @@ class ImageCache {
         
         // Check if image is in cache
         if let cachedImage = imageCache.image(for: URLRequest(url: url)) {
-            print("✅ Using cached image for: \(urlString.suffix(20))")
+//            print("✅ Using cached image for: \(urlString.suffix(20))")
             completion(cachedImage)
             return
         }
         
-        print("🔄 Downloading image from: \(urlString.suffix(20))")
+//        print("🔄 Downloading image from: \(urlString.suffix(20))")
         // Download image
         let urlRequest = URLRequest(url: url)
         imageDownloader.download(urlRequest, completion:  { [weak self] response in

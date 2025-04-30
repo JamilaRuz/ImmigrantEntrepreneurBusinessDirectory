@@ -32,8 +32,6 @@ struct AddCompanyView: View {
   @State private var phoneNum = ""
   @State private var email = ""
   @State private var website = ""
-  @State private var socialMediaInsta = ""
-  @State private var socialMediaFacebook = ""
   @State private var socialMediaLinks: [(platform: Company.SocialMedia, link: String)] = []
   @State private var selectedSocialMedia: Company.SocialMedia = .instagram
   @State private var socialMediaLinkInput: String = ""
@@ -74,8 +72,6 @@ struct AddCompanyView: View {
       _phoneNum = State(initialValue: company.phoneNum)
       _email = State(initialValue: company.email)
       _website = State(initialValue: company.website)
-      _socialMediaInsta = State(initialValue: company.socialMedias.contains(.instagram) ? "instagram" : "")
-      _socialMediaFacebook = State(initialValue: company.socialMedias.contains(.facebook) ? "facebook" : "")
       _selectedCategoryIds = State(initialValue: Set(company.categoryIds))
       _selectedOwnershipTypes = State(initialValue: Set(company.ownershipTypes))
       
@@ -85,8 +81,8 @@ struct AddCompanyView: View {
       
       // Initialize social media links from the company data
       var links: [(platform: Company.SocialMedia, link: String)] = []
-      for platform in company.socialMedias {
-          if let socialMedia = company.socialMedia,
+      for platform in company.socialMediaPlatforms {
+          if let socialMedia = company.socialMedias,
              let link = socialMedia[platform] {
               links.append((platform: platform, link: link))
           } else {
@@ -405,17 +401,17 @@ struct AddCompanyView: View {
                     // Update placeholder based on selected platform
                     switch platform {
                     case .instagram:
-                      socialMediaPlaceholder = "instagram.com/"
+                      socialMediaPlaceholder = "username (without @)"
                     case .facebook:
-                      socialMediaPlaceholder = "facebook.com/"
+                      socialMediaPlaceholder = "username or page-name"
                     case .twitter:
-                      socialMediaPlaceholder = "twitter.com/"
+                      socialMediaPlaceholder = "username (without @)"
                     case .linkedin:
-                      socialMediaPlaceholder = "linkedin.com/in/"
+                      socialMediaPlaceholder = "in/username or company/name"
                     case .youtube:
-                      socialMediaPlaceholder = "youtube.com/c/"
+                      socialMediaPlaceholder = "channel/ID or c/name"
                     case .other:
-                      socialMediaPlaceholder = "Enter any social media URL"
+                      socialMediaPlaceholder = "full URL (with domain name)"
                     }
                   }
                 }
@@ -439,9 +435,33 @@ struct AddCompanyView: View {
               
               // Link text field with prefix
               HStack(spacing: 0) {
-                Text("https://")
-                  .foregroundColor(.gray)
-                  .padding(.leading, 8)
+                // Show the appropriate prefix based on platform type
+                switch selectedSocialMedia {
+                case .instagram:
+                  Text("instagram.com/")
+                    .foregroundColor(.gray)
+                    .padding(.leading, 8)
+                case .facebook:
+                  Text("facebook.com/")
+                    .foregroundColor(.gray)
+                    .padding(.leading, 8)
+                case .twitter:
+                  Text("twitter.com/")
+                    .foregroundColor(.gray)
+                    .padding(.leading, 8)
+                case .linkedin:
+                  Text("linkedin.com/")
+                    .foregroundColor(.gray)
+                    .padding(.leading, 8)
+                case .youtube:
+                  Text("youtube.com/")
+                    .foregroundColor(.gray)
+                    .padding(.leading, 8)
+                case .other:
+                  Text("https://")
+                    .foregroundColor(.gray)
+                    .padding(.leading, 8)
+                }
                 
                 TextField(socialMediaPlaceholder, text: $socialMediaLinkInput)
                   .autocorrectionDisabled(true)
@@ -645,7 +665,7 @@ struct AddCompanyView: View {
     return "https://" + formattedURL
   }
   
-  // Update the validation function to handle prefilled URLs
+  // Update the validation function to handle just usernames/handles
   private func validateSocialMediaLink(platform: Company.SocialMedia, link: String) -> Bool {
     // If link is empty, it's not valid
     if link.isEmpty {
@@ -654,120 +674,53 @@ struct AddCompanyView: View {
     }
     
     // Clean the link for validation
-    var cleanLink = link.trimmingCharacters(in: .whitespacesAndNewlines)
+    let cleanLink = link.trimmingCharacters(in: .whitespacesAndNewlines)
     
-    // Remove http:// or https:// if the user added them
-    if cleanLink.lowercased().hasPrefix("http://") {
-      cleanLink = String(cleanLink.dropFirst(7))
-    } else if cleanLink.lowercased().hasPrefix("https://") {
-      cleanLink = String(cleanLink.dropFirst(8))
-    }
-    
-    // Remove www. if present
-    if cleanLink.lowercased().hasPrefix("www.") {
-      cleanLink = String(cleanLink.dropFirst(4))
-    }
-    
+    // Simplified validation based on platform
     switch platform {
     case .instagram:
-      // Check if it's a valid Instagram URL or username
-      if cleanLink.lowercased().hasPrefix("instagram.com/") {
-        let username = cleanLink.dropFirst(14)
-        if username.isEmpty {
-          socialMediaLinkError = "Please include a username after instagram.com/"
-          return false
-        }
-        // Username should not contain spaces or special characters except _ and .
-        if username.contains(where: { !$0.isLetter && !$0.isNumber && $0 != "_" && $0 != "." }) {
-          socialMediaLinkError = "Instagram username contains invalid characters"
-          return false
-        }
-        return true
-      } else if !cleanLink.contains("/") {
-        // Just a username - check if it's valid
-        if cleanLink.contains(where: { !$0.isLetter && !$0.isNumber && $0 != "_" && $0 != "." }) {
-          socialMediaLinkError = "Instagram username contains invalid characters"
-          return false
-        }
-        return true
-      } else {
-        socialMediaLinkError = "Invalid Instagram link format"
+      // For Instagram, just validate the username format
+      // Username should not contain spaces or special characters except _ and .
+      if cleanLink.contains(where: { !$0.isLetter && !$0.isNumber && $0 != "_" && $0 != "." }) {
+        socialMediaLinkError = "Instagram username contains invalid characters"
         return false
       }
+      return true
       
     case .facebook:
-      // Check if it's a valid Facebook URL or username/page name
-      if cleanLink.lowercased().hasPrefix("facebook.com/") {
-        let path = cleanLink.dropFirst(13)
-        if path.isEmpty {
-          socialMediaLinkError = "Please include a username or page name after facebook.com/"
-          return false
-        }
-        return true
-      } else if !cleanLink.contains("/") {
-        // Just a username/page name
-        return true
-      } else {
-        socialMediaLinkError = "Invalid Facebook link format"
+      // For Facebook, anything without spaces is probably valid
+      if cleanLink.contains(" ") {
+        socialMediaLinkError = "Facebook username should not contain spaces"
         return false
       }
+      return true
       
     case .twitter:
-      // Check if it's a valid Twitter/X URL or username
-      if cleanLink.lowercased().hasPrefix("twitter.com/") || cleanLink.lowercased().hasPrefix("x.com/") {
-        let username = cleanLink.contains("twitter.com/") ? 
-                      cleanLink.dropFirst(12) : 
-                      cleanLink.dropFirst(6)
-        if username.isEmpty {
-          socialMediaLinkError = "Please include a username after the domain"
-          return false
-        }
-        return true
-      } else if !cleanLink.contains("/") {
-        // Just a username
-        return true
-      } else {
-        socialMediaLinkError = "Invalid Twitter/X link format"
+      // For Twitter, just check for a valid username without @
+      if cleanLink.hasPrefix("@") {
+        socialMediaLinkError = "Don't include the @ symbol"
         return false
       }
+      if cleanLink.contains(where: { !$0.isLetter && !$0.isNumber && $0 != "_" }) {
+        socialMediaLinkError = "Twitter username contains invalid characters"
+        return false
+      }
+      return true
       
     case .linkedin:
-      // Check if it's a valid LinkedIn URL or profile ID
-      if cleanLink.lowercased().hasPrefix("linkedin.com/") {
-        let path = cleanLink.dropFirst(13)
-        if path.isEmpty {
-          socialMediaLinkError = "Please include a profile path after linkedin.com/"
-          return false
-        }
-        return true
-      } else {
-        socialMediaLinkError = "Invalid LinkedIn link format"
+      // LinkedIn can have "in/username" or "company/name" formats
+      if !cleanLink.contains("/") && !cleanLink.lowercased().hasPrefix("in/") && !cleanLink.lowercased().hasPrefix("company/") {
+        socialMediaLinkError = "Include 'in/' for profiles or 'company/' for pages"
         return false
       }
+      return true
       
     case .youtube:
-      // Check if it's a valid YouTube URL or channel name
-      if cleanLink.lowercased().hasPrefix("youtube.com/") {
-        let path = cleanLink.dropFirst(12)
-        if path.isEmpty {
-          socialMediaLinkError = "Please include a channel or video path after youtube.com/"
-          return false
-        }
-        return true
-      } else if cleanLink.lowercased().hasPrefix("youtu.be/") {
-        let videoId = cleanLink.dropFirst(9)
-        if videoId.isEmpty {
-          socialMediaLinkError = "Please include a video ID after youtu.be/"
-          return false
-        }
-        return true
-      } else {
-        socialMediaLinkError = "Invalid YouTube link format"
-        return false
-      }
+      // YouTube can have several formats, so be lenient here
+      return true
       
     case .other:
-      // For other social media platforms (TikTok, etc.), just make sure it contains a domain
+      // For other social media platforms, just make sure it contains a domain
       if !cleanLink.contains(".") {
         socialMediaLinkError = "Please enter a valid URL with a domain name"
         return false
@@ -776,19 +729,42 @@ struct AddCompanyView: View {
     }
   }
   
-  // Update the formatting function to handle prefilled URLs
+  // Update the formatting function to add appropriate prefixes based on platform
   private func formatSocialMediaLink(platform: Company.SocialMedia, link: String) -> String {
-    var formattedLink = link.trimmingCharacters(in: .whitespacesAndNewlines)
+    let formattedLink = link.trimmingCharacters(in: .whitespacesAndNewlines)
     
-    // If it already has http:// or https://, extract the actual URL
-    if formattedLink.lowercased().hasPrefix("http://") {
-      formattedLink = String(formattedLink.dropFirst(7))
-    } else if formattedLink.lowercased().hasPrefix("https://") {
-      formattedLink = String(formattedLink.dropFirst(8))
+    // Add the appropriate domain prefix based on platform
+    switch platform {
+    case .instagram:
+      return "https://instagram.com/" + formattedLink
+    case .facebook:
+      return "https://facebook.com/" + formattedLink
+    case .twitter:
+      return "https://twitter.com/" + formattedLink
+    case .linkedin:
+      // If it already has the "in/" or "company/" prefix, don't duplicate it
+      if formattedLink.lowercased().hasPrefix("in/") || formattedLink.lowercased().hasPrefix("company/") {
+        return "https://linkedin.com/" + formattedLink
+      } else {
+        // Default to "in/" prefix if none provided
+        return "https://linkedin.com/in/" + formattedLink
+      }
+    case .youtube:
+      // If it already has channel/ or c/ prefix, don't duplicate it
+      if formattedLink.lowercased().hasPrefix("channel/") || formattedLink.lowercased().hasPrefix("c/") || formattedLink.lowercased().hasPrefix("user/") {
+        return "https://youtube.com/" + formattedLink
+      } else {
+        // Default to channel prefix
+        return "https://youtube.com/channel/" + formattedLink
+      }
+    case .other:
+      // For other platforms, make sure it has https:// prefix
+      if formattedLink.lowercased().hasPrefix("http://") || formattedLink.lowercased().hasPrefix("https://") {
+        return formattedLink
+      } else {
+        return "https://" + formattedLink
+      }
     }
-    
-    // Add https:// prefix to all links
-    return "https://" + formattedLink
   }
 }
 

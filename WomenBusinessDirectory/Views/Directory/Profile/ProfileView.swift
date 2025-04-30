@@ -183,6 +183,15 @@ struct ProfileView: View {
                         VStack(spacing: 20) {
                             profileCard
                             entrepreneurStory
+                            
+                            // Add a clear heading for the businesses section
+                            Text("Businesses & Services")
+                                .font(.title3)
+                                .fontWeight(.bold)
+                                .foregroundColor(.purple1)
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .padding(.top, 10)
+                            
                             companiesList
                                 .onAppear() {
                                     viewModel.loadData(for: entrepreneur)
@@ -287,7 +296,7 @@ struct ProfileView: View {
     
     private var entrepreneurStory: some View {
         VStack(alignment: .center, spacing: 12) {
-            Text("Tell us about yourself")
+            Text("Entrepreneur's Story")
                 .font(.title2)
                 .italic()
                 .foregroundColor(.purple1)

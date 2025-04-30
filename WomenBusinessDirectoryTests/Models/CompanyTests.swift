@@ -35,7 +35,7 @@ struct CompanyTests {
             email: "test@example.com",
             workHours: "Mon-Fri 9-5",
             services: ["Service 1", "Service 2"],
-            socialMedia: [.facebook: "facebook.com/test", .linkedin: "linkedin.com/test"],
+            socialMedias: [.facebook: "facebook.com/test", .linkedin: "linkedin.com/test"],
             businessModel: .online,
             website: "www.test.com",
             ownershipTypes: [.femaleOwned, .lgbtqOwned],
@@ -58,7 +58,7 @@ struct CompanyTests {
         #expect(company.email == "test@example.com")
         #expect(company.workHours == "Mon-Fri 9-5")
         #expect(company.services == ["Service 1", "Service 2"])
-        #expect(company.socialMedia?[.facebook] == "facebook.com/test")
+        #expect(company.socialMedias?[.facebook] == "facebook.com/test")
         #expect(company.businessModel == .online)
         #expect(company.website == "www.test.com")
         #expect(company.ownershipTypes.count == 2)
@@ -84,17 +84,17 @@ struct CompanyTests {
             email: "",
             workHours: "",
             services: [],
-            socialMedia: [.facebook: "fb", .twitter: "tw", .linkedin: "li"],
+            socialMedias: [.facebook: "fb", .twitter: "tw", .linkedin: "li"],
             businessModel: .online,
             website: "",
             ownershipTypes: []
         )
         
         // Test socialMedias computed property
-        #expect(companyWithSocial.socialMedias.count == 3)
-        #expect(companyWithSocial.socialMedias.contains(.facebook))
-        #expect(companyWithSocial.socialMedias.contains(.twitter))
-        #expect(companyWithSocial.socialMedias.contains(.linkedin))
+        #expect(companyWithSocial.socialMediaPlatforms.count == 3)
+        #expect(companyWithSocial.socialMediaPlatforms.contains(.facebook))
+        #expect(companyWithSocial.socialMediaPlatforms.contains(.twitter))
+        #expect(companyWithSocial.socialMediaPlatforms.contains(.linkedin))
         
         // Test company without social media
         let companyWithoutSocial = Company(
@@ -113,14 +113,14 @@ struct CompanyTests {
             email: "",
             workHours: "",
             services: [],
-            socialMedia: nil,
+            socialMedias: nil,
             businessModel: .online,
             website: "",
             ownershipTypes: []
         )
         
         // Test socialMedias computed property with nil socialMedia
-        #expect(companyWithoutSocial.socialMedias.isEmpty)
+        #expect(companyWithoutSocial.socialMediaPlatforms.isEmpty)
     }
     
     @Test
@@ -142,7 +142,7 @@ struct CompanyTests {
             email: "",
             workHours: "",
             services: [],
-            socialMedia: nil,
+            socialMedias: nil,
             businessModel: .online,
             website: "",
             ownershipTypes: []
@@ -164,7 +164,7 @@ struct CompanyTests {
             email: "",
             workHours: "",
             services: [],
-            socialMedia: nil,
+            socialMedias: nil,
             businessModel: .online,
             website: "",
             ownershipTypes: []
@@ -190,7 +190,7 @@ struct CompanyTests {
             email: "",
             workHours: "",
             services: [],
-            socialMedia: nil,
+            socialMedias: nil,
             businessModel: .online,
             website: "",
             ownershipTypes: []

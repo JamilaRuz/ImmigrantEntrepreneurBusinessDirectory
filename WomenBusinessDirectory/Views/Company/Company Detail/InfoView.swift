@@ -81,7 +81,7 @@ struct InfoView: View {
                 Text("Connect With Us")
                     .font(.headline)
                 
-                if company.socialMedias.isEmpty {
+                if company.socialMediaPlatforms.isEmpty && company.website.isEmpty {
                     Text("No social media links available")
                         .font(.subheadline)
                         .foregroundColor(.gray)
@@ -92,8 +92,31 @@ struct InfoView: View {
                 } else {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 12) {
+                            // Website button (if available)
+                            if !company.website.isEmpty {
+                                Button(action: {
+                                    if let url = URL(string: company.website.hasPrefix("http") ? company.website : "https://" + company.website) {
+                                        UIApplication.shared.open(url)
+                                    }
+                                }) {
+                                    HStack(spacing: 6) {
+                                        Image(systemName: "globe")
+                                            .foregroundColor(.gray)
+                                            .font(.system(size: 16))
+                                        
+                                        Text("Website")
+                                            .font(.subheadline)
+                                            .foregroundColor(.gray)
+                                    }
+                                    .padding(.vertical, 8)
+                                    .padding(.horizontal, 12)
+                                    .background(colorScheme == .dark ? Color(UIColor.darkGray).opacity(0.3) : Color.gray.opacity(0.05))
+                                    .cornerRadius(8)
+                                }
+                            }
+                            
                             // Facebook
-                            if company.socialMedias.contains(.facebook) {
+                            if company.socialMediaPlatforms.contains(.facebook) {
                                 SocialMediaLinkButton(
                                     platform: .facebook,
                                     color: Color.blue1,
@@ -102,7 +125,7 @@ struct InfoView: View {
                             }
                             
                             // Instagram
-                            if company.socialMedias.contains(.instagram) {
+                            if company.socialMediaPlatforms.contains(.instagram) {
                                 SocialMediaLinkButton(
                                     platform: .instagram,
                                     color: Color.blue1,
@@ -111,7 +134,7 @@ struct InfoView: View {
                             }
                             
                             // Twitter
-                            if company.socialMedias.contains(.twitter) {
+                            if company.socialMediaPlatforms.contains(.twitter) {
                                 SocialMediaLinkButton(
                                     platform: .twitter,
                                     color: Color.blue1,
@@ -120,7 +143,7 @@ struct InfoView: View {
                             }
                             
                             // LinkedIn
-                            if company.socialMedias.contains(.linkedin) {
+                            if company.socialMediaPlatforms.contains(.linkedin) {
                                 SocialMediaLinkButton(
                                     platform: .linkedin,
                                     color: Color.blue1,
@@ -129,7 +152,7 @@ struct InfoView: View {
                             }
                             
                             // YouTube
-                            if company.socialMedias.contains(.youtube) {
+                            if company.socialMediaPlatforms.contains(.youtube) {
                                 SocialMediaLinkButton(
                                     platform: .youtube,
                                     color: Color.blue1,
@@ -138,7 +161,7 @@ struct InfoView: View {
                             }
                             
                             // Other
-                            if company.socialMedias.contains(.other) {
+                            if company.socialMediaPlatforms.contains(.other) {
                                 SocialMediaLinkButton(
                                     platform: .other,
                                     color: Color.blue1,
@@ -202,11 +225,12 @@ struct InfoView: View {
                         Text(viewModel.entrepreneur.fullName ?? "Unknown")
                             .font(.body)
                     }
-                    .padding(.vertical, 4)
+                    .padding(.vertical, 2) // Reduce padding from 4 to 2
                 }
             }
         }
         .padding(.horizontal, 16)
+        .padding(.bottom, 0)
         .onAppear {
             Task {
                 await viewModel.loadEntrepreneur(entrepId: company.entrepId)
@@ -280,35 +304,114 @@ struct SocialMediaLinkButton: View {
         Button(action: {
             openLink(for: platform)
         }) {
-            VStack(spacing: 8) {
-                // Platform icon in a circular background
-                ZStack {
-                    Circle()
-                        .fill(Color.blue1.opacity(0.2))
-                        .frame(width: 50, height: 50)
-                    
-                    Image(systemName: platform.icon)
-                        .foregroundColor(Color.blue1)
-                        .font(.system(size: 20))
+            HStack(spacing: 6) {
+                Image(systemName: platform.icon)
+                    .foregroundColor(.gray)
+                    .font(.system(size: 16))
+                
+                Text(displayName)
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+            }
+            .padding(.vertical, 8)
+            .padding(.horizontal, 12)
+            .background(colorScheme == .dark ? Color(UIColor.darkGray).opacity(0.3) : Color.gray.opacity(0.05))
+            .cornerRadius(8)
+        }
+    }
+    
+    // A computed property to show a user-friendly display name
+    private var displayName: String {
+        if let socialMedias = company.socialMedias,
+           let link = socialMedias[platform],
+           !link.isEmpty {
+            // Extract username from the full URL for better display
+            switch platform {
+            case .instagram:
+                if let username = extractUsername(from: link, prefix: "instagram.com/") {
+                    return "@\(username)"
+                }
+            case .twitter:
+                if let username = extractUsername(from: link, prefix: "twitter.com/") {
+                    return "@\(username)"
+                }
+            case .facebook:
+                if let pageName = extractUsername(from: link, prefix: "facebook.com/") {
+                    return pageName
+                }
+            case .linkedin:
+                return "LinkedIn"
+            case .youtube:
+                return "YouTube"
+            case .other:
+                // For other, try to extract the domain
+                if let domain = extractDomain(from: link) {
+                    return domain
+                }
+            }
+        }
+        
+        // Default fallback
+        return platform.rawValue
+    }
+    
+    // Helper to extract username from social media URL
+    private func extractUsername(from url: String, prefix: String) -> String? {
+        let lowercasedUrl = url.lowercased()
+        
+        // Handle URLs with or without https://
+        let prefixVariants = ["https://\(prefix)", "http://\(prefix)", "\(prefix)"]
+        
+        for variant in prefixVariants {
+            if lowercasedUrl.hasPrefix(variant) {
+                let startIndex = url.index(url.startIndex, offsetBy: variant.count)
+                var username = String(url[startIndex...])
+                
+                // Remove any trailing parameters or path components
+                if let endIndex = username.firstIndex(of: "?") {
+                    username = String(username[..<endIndex])
+                }
+                if let endIndex = username.firstIndex(of: "#") {
+                    username = String(username[..<endIndex])
+                }
+                if let endIndex = username.firstIndex(of: "/") {
+                    username = String(username[..<endIndex])
                 }
                 
-                // Platform name
-                Text(platform.rawValue)
-                    .font(.caption)
-                    .foregroundColor(.primary)
+                return username
             }
-            .frame(width: 80)
-            .padding(.vertical, 8)
-            .padding(.horizontal, 8)
-            .background(colorScheme == .dark ? Color(UIColor.darkGray).opacity(0.3) : Color.gray.opacity(0.05))
-            .cornerRadius(12)
         }
+        
+        return nil
+    }
+    
+    // Helper to extract domain from URL
+    private func extractDomain(from url: String) -> String? {
+        // Remove protocol
+        var domainString = url
+        if domainString.lowercased().hasPrefix("https://") {
+            domainString = String(domainString.dropFirst(8))
+        } else if domainString.lowercased().hasPrefix("http://") {
+            domainString = String(domainString.dropFirst(7))
+        }
+        
+        // Remove www. if present
+        if domainString.lowercased().hasPrefix("www.") {
+            domainString = String(domainString.dropFirst(4))
+        }
+        
+        // Take only the domain part (before first slash)
+        if let endIndex = domainString.firstIndex(of: "/") {
+            domainString = String(domainString[..<endIndex])
+        }
+        
+        return domainString
     }
     
     private func getSocialMediaHandle(for platform: Company.SocialMedia) -> String {
         // Check if we have a stored link for this platform
-        if let socialMedia = company.socialMedia,
-           let link = socialMedia[platform], 
+        if let socialMedias = company.socialMedias,
+           let link = socialMedias[platform], 
            !link.isEmpty {
             // Return the link exactly as entered by the user
             return link
@@ -335,15 +438,11 @@ struct SocialMediaLinkButton: View {
         var urlString: String?
         
         // Try to get the stored link first
-        if let socialMedia = company.socialMedia,
-           let link = socialMedia[platform], 
+        if let socialMedias = company.socialMedias,
+           let link = socialMedias[platform], 
            !link.isEmpty {
-            // If the link doesn't start with http:// or https://, add https://
-            if !link.lowercased().hasPrefix("http://") && !link.lowercased().hasPrefix("https://") {
-                urlString = "https://" + link
-            } else {
-                urlString = link
-            }
+            // The link should already be properly formatted with https://
+            urlString = link
         } else if platform == .other && !company.website.isEmpty {
             // For "Other" platform, use the website if available
             if !company.website.lowercased().hasPrefix("http://") && !company.website.lowercased().hasPrefix("https://") {

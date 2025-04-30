@@ -131,7 +131,7 @@ struct CompanyRowView: View {
             email: "test@example.com",
             workHours: "Mon-Fri 9-5",
             services: ["Service 1", "Service 2"],
-            socialMedia: [:],
+            socialMedias: [:],
             businessModel: .hybrid,
             website: "www.testcompany.com",
             ownershipTypes: [.asianOwned],
