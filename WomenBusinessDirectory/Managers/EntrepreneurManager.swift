@@ -278,8 +278,7 @@ func createEntrepreneur(fullName: String, email: String) async throws {
     
     // Delete profile image if it exists
     if let profileUrl = entrepreneur.profileUrl {
-      let storageRef = Storage.storage().reference(forURL: profileUrl)
-      try? await storageRef.delete()
+      try? await deleteProfileImage(imageUrl: profileUrl)
     }
     
     // Delete the entrepreneur document
@@ -298,7 +297,10 @@ func createEntrepreneur(fullName: String, email: String) async throws {
       }
       
       // Basic validation that this is a Firebase Storage URL
-      guard imageUrl.contains("firebasestorage.googleapis.com") && imageUrl.contains("/o/") else {
+      let firebasePrefixPattern = #"^https://firebasestorage\.googleapis\.com(:443)?/.*/o/"#
+      let isFirebaseStorageUrl =
+        imageUrl.range(of: firebasePrefixPattern, options: .regularExpression) != nil
+      guard isFirebaseStorageUrl else {
         print("⚠️ Not a Firebase Storage URL. Skipping deletion: \(imageUrl)")
         return
       }
