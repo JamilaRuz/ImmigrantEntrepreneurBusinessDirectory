@@ -31,6 +31,8 @@ struct AuthenticationView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dismiss) private var dismiss
 
+    let onSuccessfullySignedIn: (() -> Void)?
+
     func handleAuthError(_ error: Error) {
         alertTitle = "Sign In Error"
         alertMessage = FirebaseErrorHandler.handleError(error)
@@ -137,9 +139,13 @@ struct AuthenticationView: View {
             await MainActor.run {
                 self.userIsLoggedIn = true
                 self.showSignInView = false
-                
-                // Force UI update
-                NotificationCenter.default.post(name: NSNotification.Name("UserDidSignIn"), object: nil)
+
+                if let onSuccessfullySignedIn = onSuccessfullySignedIn {
+                    onSuccessfullySignedIn()
+                } else {
+                    // Force UI update by posting a notification
+                    NotificationCenter.default.post(name: NSNotification.Name("UserDidSignIn"), object: nil)
+                }
             }
             
         } catch {
@@ -196,9 +202,13 @@ struct AuthenticationView: View {
                                     userIsLoggedIn = true
                                     showSignInView = false
                                     print("Updated UI state: userIsLoggedIn=\(userIsLoggedIn), showSignInView=\(showSignInView)")
-                                    
-                                    // Force UI update by posting a notification
-                                    NotificationCenter.default.post(name: NSNotification.Name("UserDidSignIn"), object: nil)
+
+                                    if let onSuccessfullySignedIn = onSuccessfullySignedIn {
+                                        onSuccessfullySignedIn()
+                                    } else {
+                                        // Force UI update by posting a notification
+                                        NotificationCenter.default.post(name: NSNotification.Name("UserDidSignIn"), object: nil)
+                                    }
                                 }
                             } catch {
                                 print("Firebase sign in with Apple failed with error: \(error)")
@@ -362,6 +372,13 @@ struct AuthenticationView: View {
                                             if emailExists {
                                                 userIsLoggedIn = true
                                                 showSignInView = false
+                                                
+                                                if let onSuccessfullySignedIn = onSuccessfullySignedIn {
+                                                    onSuccessfullySignedIn()
+                                                } else {
+                                                    // Force UI update by posting a notification
+                                                    NotificationCenter.default.post(name: NSNotification.Name("UserDidSignIn"), object: nil)
+                                                }
                                             } else {
                                                 showAlert = true
                                                 alertTitle = "Sign In Error"
@@ -559,6 +576,6 @@ struct AuthenticationView: View {
 
 struct AuthenticationView_Previews: PreviewProvider {
     static var previews: some View {
-        AuthenticationView(showSignInView: .constant(true), userIsLoggedIn: .constant(false))
+        AuthenticationView(showSignInView: .constant(true), userIsLoggedIn: .constant(false)) { }
     }
 }

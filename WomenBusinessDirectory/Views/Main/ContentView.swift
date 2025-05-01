@@ -19,7 +19,7 @@ struct ContentView: View {
     var body: some View {
         Group {
             if showSignInView {
-                AuthenticationView(showSignInView: $showSignInView, userIsLoggedIn: $userIsLoggedIn)
+                AuthenticationView(showSignInView: $showSignInView, userIsLoggedIn: $userIsLoggedIn, onSuccessfullySignedIn: nil)
             } else {
                 MainTabView(
                     showSignInView: $showSignInView,

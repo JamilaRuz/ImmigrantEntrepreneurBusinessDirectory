@@ -6,10 +6,11 @@
 //
 
 import Foundation
+import FirebaseAuth
 
 @MainActor
 final class SettingsViewModel: ObservableObject {
-  @Published var showReauthDialog = false
+  @Published var showDeleteReauthDialog = false
   @Published var reauthEmail = ""
   @Published var reauthPassword = ""
   
@@ -22,6 +23,19 @@ final class SettingsViewModel: ObservableObject {
   
   func deleteAccount() async throws {
     do {
+      guard Auth.auth().currentUser != nil else {
+        throw NSError(domain: "SettingsViewModel", code: 1000, userInfo: [NSLocalizedDescriptionKey: "User not found"])
+      }
+      
+      try await performDeletion()
+    } catch {
+      print("Error in delete account flow: \(error.localizedDescription)")
+      throw error
+    }
+  }
+  
+  // This function handles the actual deletion process after authentication
+  private func performDeletion() async throws {
       // Get current user's entrepreneur data
       let authUser = try AuthenticationManager.shared.getAuthenticatedUser()
       let entrepreneur = try await EntrepreneurManager.shared.getEntrepreneur(entrepId: authUser.uid)
@@ -39,39 +53,9 @@ final class SettingsViewModel: ObservableObject {
       try await EntrepreneurManager.shared.deleteEntrepreneur(entrepId: authUser.uid)
       
       // Now delete the Firebase Auth account - this is critical
-      do {
-        try await AuthenticationManager.shared.deleteAccount()
-      } catch let error as NSError {
-        // Firebase requires recent authentication to delete an account
-        if error.domain == "FIRAuthErrorDomain" && error.code == 17014 {
-          print("Unable to delete Firebase Auth account: requires recent authentication")
-          // We'll at least sign out the user
-          try? AuthenticationManager.shared.signOut()
-          
-          // Throw a specialized error that tells the user they need to sign out and sign back in first
-          throw NSError(
-            domain: "SettingsViewModel",
-            code: 1001,
-            userInfo: [NSLocalizedDescriptionKey: "For security reasons, please sign out and sign in again before deleting your account."]
-          )
-        } else {
-          print("Could not delete auth account, but removed all user data: \(error.localizedDescription)")
-          // Force sign out to ensure the user session is cleared
-          try? AuthenticationManager.shared.signOut()
-          throw error
-        }
-      }
+      try await AuthenticationManager.shared.deleteAccount()
       
       // Reset the skipped authentication state when account is deleted
       UserDefaults.standard.set(false, forKey: "hasSkippedAuthentication")
-    } catch {
-      print("Error deleting account: \(error.localizedDescription)")
-      throw error
-    }
-  }
-  
-  func reauthenticateAndDelete(email: String, password: String) async throws {
-    try await AuthenticationManager.shared.reauthenticate(email: email, password: password)
-    try await deleteAccount()
   }
 }

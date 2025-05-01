@@ -37,6 +37,8 @@ struct AddCompanyView: View {
   @State private var socialMediaLinkInput: String = ""
   @State private var socialMediaLinkError: String? = nil
   @State private var socialMediaPlaceholder: String = "instagram.com/"
+  @State private var isAddingSocialMedia: Bool = false
+  @State private var platformSelected: Bool = false
   
   @State private var selectedCategoryIds: Set<String> = []
   @State private var isImagePickerPresented = false
@@ -106,16 +108,22 @@ struct AddCompanyView: View {
   var body: some View {
     NavigationView {
       VStack(spacing: 20) {
-        // Enhanced Step Indicator
+        // Enhanced Step Indicator - now interactive
         HStack(spacing: 15) {
           ForEach(0..<3) { index in
-            VStack(spacing: 8) {
-              Circle()
-                .fill(index == currentPage ? Color.yellow : Color.gray.opacity(0.3))
-                .frame(width: 12, height: 12)
-              Text(stepTitle(for: index))
-                .font(.caption2)
-                .foregroundColor(index == currentPage ? .yellow : .gray)
+            Button(action: {
+              withAnimation {
+                currentPage = index
+              }
+            }) {
+              VStack(spacing: 8) {
+                Circle()
+                  .fill(index == currentPage ? Color.yellow : Color.gray.opacity(0.3))
+                  .frame(width: 12, height: 12)
+                Text(stepTitle(for: index))
+                  .font(.caption2)
+                  .foregroundColor(index == currentPage ? .yellow : .gray)
+              }
             }
             if index < 2 {
               Rectangle()
@@ -140,44 +148,39 @@ struct AddCompanyView: View {
         }
         .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
         
-        // Enhanced Navigation Button
-        Button(action: {
-          if currentPage < 2 {
-            withAnimation {
-              currentPage += 1
-            }
-          } else {
+        // Remove the Next button - users will navigate using swipes or step indicator
+      }
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        ToolbarItem(placement: .navigationBarTrailing) {
+          Button(action: {
             Task {
               do {
-                  viewModel.isSaving = true  // Show progress view
-                  try await saveOrUpdateCompany()
-                  viewModel.isSaving = false  // Hide progress view
+                viewModel.isSaving = true  // Show progress view
+                try await saveOrUpdateCompany()
+                viewModel.isSaving = false  // Hide progress view
               } catch {
-                  viewModel.isSaving = false  // Hide progress view on error
-                  print("Failed to save company: \(error)")
+                viewModel.isSaving = false  // Hide progress view on error
+                print("Failed to save company: \(error)")
               }
             }
+          }) {
+            Text(editingCompany != nil ? "Update" : "Save")
+              .foregroundColor(isFormValid ? .pink1 : .gray)
+              .fontWeight(.semibold)
           }
-        }) {
-          HStack {
-            Text(currentPage < 2 ? "Next" : (editingCompany != nil ? "Update" : "Save"))
-              .fontWeight(.regular)
-          }
-          .frame(width: 100, height: 40)
-          .foregroundColor(.yellow)
-          .background(colorScheme == .dark ? Color(UIColor.darkGray) : Color.white)
-          .cornerRadius(10)
-          .overlay(
-            RoundedRectangle(cornerRadius: 10)
-              .stroke(colorScheme == .dark ? Color.gray.opacity(0.5) : Color.gray, lineWidth: 1)
-          )
+          .disabled(!isFormValid)
         }
-        .disabled(!isFormValid)
-        .padding(.horizontal)
-        .padding(.bottom)
+        
+        // Add a custom title to ensure it displays on one line
+        ToolbarItem(placement: .principal) {
+          Text(editingCompany != nil ? "Edit Business/Service" : "Add Business/Service")
+            .font(.system(size: 17))
+            .fontWeight(.semibold)
+            .lineLimit(1)
+            .truncationMode(.tail)
+        }
       }
-      .navigationTitle(editingCompany != nil ? "Edit Business/Service" : "Add Business/Service")
-      .navigationBarTitleDisplayMode(.inline)
       .sheet(isPresented: $isImagePickerPresented) {
         ImagePicker(image: $logoImage)
       }
@@ -360,14 +363,29 @@ struct AddCompanyView: View {
                     .foregroundColor(.gray)
                 
                 HStack(spacing: 0) {
-                    Text("https://")
-                        .foregroundColor(.gray)
-                        .padding(.leading, 8)
+                    // Only show the prefix if it's not already in the website value
+                    if !website.lowercased().hasPrefix("http://") && !website.lowercased().hasPrefix("https://") {
+                        Text("https://")
+                            .foregroundColor(.gray)
+                            .padding(.leading, 8)
+                    } else {
+                        // Add some padding if we're not showing the prefix
+                        Spacer()
+                            .frame(width: 8)
+                    }
                     
                     TextField("website.com", text: $website)
                         .autocorrectionDisabled(true)
                         .textInputAutocapitalization(.never)
                         .keyboardType(.URL)
+                        .onChange(of: website) { oldValue, newValue in
+                            // If user manually types https://, don't add our prefix
+                            if newValue.lowercased().hasPrefix("https://https://") {
+                                website = String(newValue.dropFirst(8))
+                            } else if newValue.lowercased().hasPrefix("http://https://") {
+                                website = String(newValue.dropFirst(7))
+                            }
+                        }
                 }
                 .padding(.vertical, 8)
                 .padding(.trailing, 12)
@@ -379,7 +397,7 @@ struct AddCompanyView: View {
             }
           }
           
-          VStack(alignment: .leading, spacing: 12) {
+          VStack(alignment: .leading, spacing: 5) {
             Text("Social Media of the company")
               .font(.subheadline)
               .foregroundColor(.gray)
@@ -389,121 +407,7 @@ struct AddCompanyView: View {
               .foregroundColor(.gray)
               .padding(.bottom, 4)
             
-            HStack(spacing: 10) {
-              // Platform dropdown
-              Menu {
-                ForEach(Company.SocialMedia.allCases, id: \.self) { platform in
-                  Button(platform.rawValue) {
-                    selectedSocialMedia = platform
-                    socialMediaLinkError = nil // Clear error when changing platform
-                    socialMediaLinkInput = "" // Clear input when changing platform
-                    
-                    // Update placeholder based on selected platform
-                    switch platform {
-                    case .instagram:
-                      socialMediaPlaceholder = "username (without @)"
-                    case .facebook:
-                      socialMediaPlaceholder = "username or page-name"
-                    case .twitter:
-                      socialMediaPlaceholder = "username (without @)"
-                    case .linkedin:
-                      socialMediaPlaceholder = "in/username or company/name"
-                    case .youtube:
-                      socialMediaPlaceholder = "channel/ID or c/name"
-                    case .other:
-                      socialMediaPlaceholder = "full URL (with domain name)"
-                    }
-                  }
-                }
-              } label: {
-                HStack {
-                  Text(selectedSocialMedia.rawValue)
-                    .foregroundColor(.primary)
-                  Spacer()
-                  Image(systemName: "chevron.down")
-                    .foregroundColor(.gray)
-                }
-                .frame(width: 120)
-                .padding(.vertical, 8)
-                .padding(.horizontal, 12)
-                .background(colorScheme == .dark ? Color(UIColor.darkGray) : Color.white)
-                .overlay(
-                  RoundedRectangle(cornerRadius: 8)
-                    .stroke(colorScheme == .dark ? Color.gray.opacity(0.5) : Color.gray.opacity(0.3), lineWidth: 1)
-                )
-              }
-              
-              // Link text field with prefix
-              HStack(spacing: 0) {
-                // Show the appropriate prefix based on platform type
-                switch selectedSocialMedia {
-                case .instagram:
-                  Text("instagram.com/")
-                    .foregroundColor(.gray)
-                    .padding(.leading, 8)
-                case .facebook:
-                  Text("facebook.com/")
-                    .foregroundColor(.gray)
-                    .padding(.leading, 8)
-                case .twitter:
-                  Text("twitter.com/")
-                    .foregroundColor(.gray)
-                    .padding(.leading, 8)
-                case .linkedin:
-                  Text("linkedin.com/")
-                    .foregroundColor(.gray)
-                    .padding(.leading, 8)
-                case .youtube:
-                  Text("youtube.com/")
-                    .foregroundColor(.gray)
-                    .padding(.leading, 8)
-                case .other:
-                  Text("https://")
-                    .foregroundColor(.gray)
-                    .padding(.leading, 8)
-                }
-                
-                TextField(socialMediaPlaceholder, text: $socialMediaLinkInput)
-                  .autocorrectionDisabled(true)
-                  .textInputAutocapitalization(.never)
-                  .keyboardType(.URL)
-              }
-              .padding(.vertical, 8)
-              .padding(.trailing, 12)
-              .background(colorScheme == .dark ? Color(UIColor.darkGray) : Color.white)
-              .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                  .stroke(socialMediaLinkError != nil ? Color.red : (colorScheme == .dark ? Color.gray.opacity(0.5) : Color.gray.opacity(0.3)), lineWidth: 1)
-              )
-              .onChange(of: socialMediaLinkInput) { _, _ in
-                socialMediaLinkError = nil // Clear error when typing
-              }
-              
-              // Add button
-              Button(action: {
-                if validateSocialMediaLink(platform: selectedSocialMedia, link: socialMediaLinkInput) {
-                  let formattedLink = formatSocialMediaLink(platform: selectedSocialMedia, link: socialMediaLinkInput)
-                  socialMediaLinks.append((selectedSocialMedia, formattedLink))
-                  socialMediaLinkInput = ""
-                  socialMediaLinkError = nil
-                }
-              }) {
-                Image(systemName: "plus.circle.fill")
-                  .foregroundColor(.yellow)
-                  .font(.title3)
-              }
-              .disabled(socialMediaLinkInput.isEmpty)
-            }
-            
-            // Display error if any
-            if let error = socialMediaLinkError {
-              Text(error)
-                .font(.caption)
-                .foregroundColor(.red)
-                .padding(.top, 4)
-            }
-            
-            // Display added social media links
+            // Display added social media links first
             if !socialMediaLinks.isEmpty {
               VStack(alignment: .leading, spacing: 8) {
                 Text("Added Profiles:")
@@ -541,7 +445,215 @@ struct AddCompanyView: View {
                   .cornerRadius(8)
                 }
               }
+            } else {
+              // Show message when no social media profiles exist
+              HStack {
+                Image(systemName: "exclamationmark.circle")
+                  .foregroundColor(.gray)
+                Text("No social media added yet")
+                  .font(.caption)
+                  .foregroundColor(.gray)
+              }
+              .padding(12)
+              .frame(maxWidth: .infinity, alignment: .center)
+              .background(Color.gray.opacity(0.1))
+              .cornerRadius(8)
             }
+            
+            // Only show the form when adding social media
+            if isAddingSocialMedia {
+              VStack(spacing: 16) {
+                // Step 1: Show platform dropdown
+                VStack(alignment: .leading, spacing: 8) {
+                  Text("Step 1: Choose social media platform")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                    
+                  // Platform dropdown
+                  Menu {
+                    ForEach(Company.SocialMedia.allCases, id: \.self) { platform in
+                      Button(platform.rawValue) {
+                        selectedSocialMedia = platform
+                        platformSelected = true
+                        socialMediaLinkError = nil // Clear error when changing platform
+                        socialMediaLinkInput = "" // Clear input when changing platform
+                        
+                        // Update placeholder based on selected platform
+                        switch platform {
+                        case .instagram:
+                          socialMediaPlaceholder = "username (without @)"
+                        case .facebook:
+                          socialMediaPlaceholder = "username or page-name"
+                        case .twitter:
+                          socialMediaPlaceholder = "username (without @)"
+                        case .linkedin:
+                          socialMediaPlaceholder = "in/username or company/name"
+                        case .youtube:
+                          socialMediaPlaceholder = "channel/ID or c/name"
+                        case .other:
+                          socialMediaPlaceholder = "full URL (with domain name)"
+                        }
+                      }
+                    }
+                  } label: {
+                    HStack {
+                      Text(selectedSocialMedia.rawValue)
+                        .foregroundColor(.primary)
+                      Spacer()
+                      Image(systemName: "chevron.down")
+                        .foregroundColor(.gray)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 12)
+                    .background(colorScheme == .dark ? Color(UIColor.darkGray) : Color.white)
+                    .overlay(
+                      RoundedRectangle(cornerRadius: 8)
+                        .stroke(colorScheme == .dark ? Color.gray.opacity(0.5) : Color.gray.opacity(0.3), lineWidth: 1)
+                    )
+                  }
+                }
+                
+                // Step 2: Show the text field only after a platform has been selected
+                if platformSelected {
+                  VStack(alignment: .leading, spacing: 8) {
+                    Text("Step 2: Enter your \(selectedSocialMedia.rawValue) profile info")
+                      .font(.caption)
+                      .foregroundColor(.gray)
+                  
+                    // Link text field with prefix
+                    HStack(spacing: 0) {
+                      // Show the appropriate prefix based on platform type
+                      switch selectedSocialMedia {
+                      case .instagram:
+                        Text("instagram.com/")
+                          .foregroundColor(.gray)
+                          .padding(.leading, 8)
+                      case .facebook:
+                        Text("facebook.com/")
+                          .foregroundColor(.gray)
+                          .padding(.leading, 8)
+                      case .twitter:
+                        Text("twitter.com/")
+                          .foregroundColor(.gray)
+                          .padding(.leading, 8)
+                      case .linkedin:
+                        Text("linkedin.com/")
+                          .foregroundColor(.gray)
+                          .padding(.leading, 8)
+                      case .youtube:
+                        Text("youtube.com/")
+                          .foregroundColor(.gray)
+                          .padding(.leading, 8)
+                      case .other:
+                        Text("https://")
+                          .foregroundColor(.gray)
+                          .padding(.leading, 8)
+                      }
+                      
+                      // Use empty placeholder in editing mode
+                      TextField("", text: $socialMediaLinkInput)
+                        .autocorrectionDisabled(true)
+                        .textInputAutocapitalization(.never)
+                        .keyboardType(.URL)
+                        .onChange(of: socialMediaLinkInput) { _, newValue in
+                          // Clean up any entered URLs that already include the prefix
+                          let prefix: String
+                          switch selectedSocialMedia {
+                          case .instagram:
+                            prefix = "instagram.com/"
+                          case .facebook:
+                            prefix = "facebook.com/"
+                          case .twitter:
+                            prefix = "twitter.com/"
+                          case .linkedin:
+                            prefix = "linkedin.com/"
+                          case .youtube:
+                            prefix = "youtube.com/"
+                          case .other:
+                            prefix = "https://"
+                          }
+                          
+                          if newValue.lowercased().hasPrefix(prefix.lowercased()) {
+                            socialMediaLinkInput = String(newValue.dropFirst(prefix.count))
+                          }
+                          
+                          socialMediaLinkError = nil // Clear error when typing
+                        }
+                    }
+                    .padding(.vertical, 8)
+                    .padding(.trailing, 12)
+                    .background(colorScheme == .dark ? Color(UIColor.darkGray) : Color.white)
+                    .overlay(
+                      RoundedRectangle(cornerRadius: 8)
+                        .stroke(socialMediaLinkError != nil ? Color.red : (colorScheme == .dark ? Color.gray.opacity(0.5) : Color.gray.opacity(0.3)), lineWidth: 1)
+                    )
+                    
+                    // Display error if any
+                    if let error = socialMediaLinkError {
+                      Text(error)
+                        .font(.caption)
+                        .foregroundColor(.red)
+                        .padding(.top, 4)
+                    }
+                    
+                    // Save and Cancel buttons in horizontal layout
+                    HStack(spacing: 30) {
+                      Button(action: {
+                        // Cancel action - reset and hide form
+                        isAddingSocialMedia = false
+                        platformSelected = false
+                        socialMediaLinkInput = ""
+                        socialMediaLinkError = nil
+                      }) {
+                        Text("Cancel")
+                          .foregroundColor(.gray)
+                      }
+                      
+                      Button(action: {
+                        if validateSocialMediaLink(platform: selectedSocialMedia, link: socialMediaLinkInput) {
+                          let formattedLink = formatSocialMediaLink(platform: selectedSocialMedia, link: socialMediaLinkInput)
+                          socialMediaLinks.append((selectedSocialMedia, formattedLink))
+                          // Reset the form and hide it
+                          isAddingSocialMedia = false
+                          platformSelected = false
+                          socialMediaLinkInput = ""
+                          socialMediaLinkError = nil
+                        }
+                      }) {
+                        Text("Save")
+                          .foregroundColor(socialMediaLinkInput.isEmpty ? .gray : .green)
+                      }
+                      .disabled(socialMediaLinkInput.isEmpty)
+                    }
+                    .padding(.top, 16)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                  }
+                }
+              }
+              .padding(12)
+              .background(Color.gray.opacity(0.05))
+              .cornerRadius(10)
+            }
+            
+            // Add Media button for showing the form
+            Button(action: {
+              // Toggle form visibility
+              isAddingSocialMedia.toggle()
+              
+              // Reset form state if we're opening the form
+              if isAddingSocialMedia {
+                platformSelected = false
+                selectedSocialMedia = .instagram
+                socialMediaLinkInput = ""
+                socialMediaLinkError = nil
+              }
+            }) {
+              Text(isAddingSocialMedia ? "Cancel" : "Add Media")
+                .foregroundColor(isAddingSocialMedia ? .gray : .yellow)
+            }
+            .frame(maxWidth: .infinity, alignment: .center)
+            .padding(.vertical, 8)
           }
         }
       }

@@ -226,14 +226,6 @@ struct DirectoryListView: View {
         viewModel.setViewActive(false)
       }
     }
-    .alert("Delete Account", isPresented: $showDeleteConfirmation) {
-      Button("Cancel", role: .cancel) {}
-      Button("Delete", role: .destructive) {
-        // Handle account deletion
-      }
-    } message: {
-      Text("Are you sure you want to delete your account? This will permanently delete all your data including your profile, companies, and all associated images. This action cannot be undone.")
-    }
   }
 }
 

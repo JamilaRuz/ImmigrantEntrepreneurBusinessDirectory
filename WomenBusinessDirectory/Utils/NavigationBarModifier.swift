@@ -143,36 +143,61 @@ struct NavigationBarModifier: ViewModifier {
             .sheet(isPresented: $showTermsOfService) {
                 LegalDocumentsView(documentType: .termsOfService)
             }
-            .alert("Delete Account", isPresented: $showDeleteConfirmation) {
-                Button("Cancel", role: .cancel) {}
-                Button("Delete", role: .destructive) {
+            .sheet(isPresented: $viewModel.showDeleteReauthDialog) {
+                AuthenticationView(showSignInView: .constant(true), userIsLoggedIn: .constant(false)) {
                     Task {
                         do {
                             try await viewModel.deleteAccount()
-                            isLoggedIn = false
-                            showSignInView = true
-                            showToast = true
-                            toastMessage = "Your account has been deleted"
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                                showToast = false
-                            }
-                        } catch {
-                            deleteError = error.localizedDescription
-                            if error.localizedDescription.contains("sign out and sign in again") {
+
+                            let alertController = UIAlertController(
+                                title: "Delete Account",
+                                message: "Your account has been deleted.",
+                                preferredStyle: .alert
+                            )
+                            alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
+                                viewModel.showDeleteReauthDialog = false
                                 do {
                                     try viewModel.signOut()
                                     isLoggedIn = false
-                                    showSignInView = true
-                                    toastMessage = "Please sign in again to delete your account"
-                                    showToast = true
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                                        showToast = false
-                                    }
                                 } catch {
                                     print("Error signing out: \(error)")
                                 }
+                            }))
+                            
+                            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                            let rootViewController = windowScene.windows.first?.rootViewController {
+                                var currentVC = rootViewController
+                                while let presentedVC = currentVC.presentedViewController {
+                                    currentVC = presentedVC
+                                }
+                                currentVC.present(alertController, animated: true)
                             }
+                        } catch {
+                            deleteError = error.localizedDescription
                         }
+                    }
+                }
+            }
+            .alert("Delete Account", isPresented: $showDeleteConfirmation) {
+                Button("Cancel", role: .cancel) {}
+                Button("Delete", role: .destructive) {
+                    let alertController = UIAlertController(
+                        title: "Delete Account",
+                        message: "Please sign in again before deleting your account.",
+                        preferredStyle: .alert
+                    )
+                    alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
+                        viewModel.showDeleteReauthDialog = true
+                    }))
+                    alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+                    
+                    if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                       let rootViewController = windowScene.windows.first?.rootViewController {
+                        var currentVC = rootViewController
+                        while let presentedVC = currentVC.presentedViewController {
+                            currentVC = presentedVC
+                        }
+                        currentVC.present(alertController, animated: true)
                     }
                 }
             } message: {

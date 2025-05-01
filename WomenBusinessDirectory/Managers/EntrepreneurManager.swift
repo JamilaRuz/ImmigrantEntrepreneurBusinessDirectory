@@ -315,8 +315,6 @@ func createEntrepreneur(fullName: String, email: String) async throws {
           print("❌ Storage error: \(storageError.localizedDescription)")
         }
       }
-    } catch {
-      print("⚠️ Error handling profile image deletion (non-critical): \(error)")
     }
   }
 }

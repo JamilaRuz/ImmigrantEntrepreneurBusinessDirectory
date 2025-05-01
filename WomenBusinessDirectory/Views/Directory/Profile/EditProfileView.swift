@@ -231,14 +231,10 @@ class EditProfileViewModel: ObservableObject {
         // Only try to verify Firebase Storage URLs
         do {
             // Using try? to prevent fatal errors
-            if let storageRef = try? Storage.storage().reference(forURL: imageUrl) {
-                _ = try? await storageRef.getMetadata()
-                print("✓ Verified image exists in storage: \(imageUrl)")
-                return true
-            } else {
-                print("⚠️ Could not create storage reference for URL")
-                return false
-            }
+            let storageRef = Storage.storage().reference(forURL: imageUrl)
+            _ = try await storageRef.getMetadata()
+            print("✓ Verified image exists in storage: \(imageUrl)")
+            return true
         } catch {
             print("✗ Image does not exist in storage: \(imageUrl)")
             print("  Error: \(error.localizedDescription)")
