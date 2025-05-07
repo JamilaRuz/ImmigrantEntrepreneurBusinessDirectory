@@ -85,7 +85,7 @@ private struct FilterContentView: View {
             VStack(alignment: .leading, spacing: 20) {
                 // Business Location Section
                 FilterSection(
-                    title: "Filter by Business Location",
+                    title: "Business Location",
                     items: viewModel.cities,
                     selectedItems: viewModel.selectedCities,
                     itemTitle: { $0 },
@@ -101,7 +101,7 @@ private struct FilterContentView: View {
                 // Entrepreneur's Country of Origin Section
                 if !viewModel.countries.isEmpty {
                     FilterSection(
-                        title: "Filter by Founder's Country of Origin",
+                        title: "Founder's Country of Origin",
                         items: viewModel.countries,
                         selectedItems: viewModel.selectedCountries,
                         itemTitle: { $0 },
@@ -109,7 +109,7 @@ private struct FilterContentView: View {
                     )
                 } else {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Filter by Founder's Country of Origin")
+                        Text("Founder's Country of Origin")
                             .font(.headline)
                             .padding(.horizontal)
                         
