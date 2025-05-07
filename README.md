@@ -54,3 +54,4 @@ To enable automatic deployment to TestFlight:
 
 
 # Project renamed from WomenBusinessDirectory to ImmigrantEntrepreneurCanada
+Repository renamed to match project name
