@@ -36,8 +36,7 @@ class Company: Codable, Hashable, Equatable, Identifiable {
                lhs.workHours == rhs.workHours &&
                lhs.services == rhs.services &&
                lhs.website == rhs.website &&
-               lhs.ownershipTypes == rhs.ownershipTypes &&
-               lhs.categoryIds == rhs.categoryIds
+               lhs.bookmarkedBy == rhs.bookmarkedBy
     }
     
     func hash(into hasher: inout Hasher) {
@@ -71,7 +70,6 @@ class Company: Codable, Hashable, Equatable, Identifiable {
     let businessModel: BusinessModel
     let website: String
     var bookmarkedBy: [String]
-    let ownershipTypes: [OwnershipType]
     
     // Computed property to get the social media platforms
     var socialMediaPlatforms: [SocialMedia] {
@@ -92,7 +90,7 @@ class Company: Codable, Hashable, Equatable, Identifiable {
     enum CodingKeys: String, CodingKey {
         case companyId, entrepId, categoryIds, name, logoImg, headerImg, aboutUs
         case dateFounded, portfolioImages, address, city, phoneNum, email, workHours
-        case services, socialMedias, businessModel, website, bookmarkedBy, ownershipTypes
+        case services, socialMedias, businessModel, website, bookmarkedBy
     }
     
     required init(from decoder: Decoder) throws {
@@ -117,7 +115,6 @@ class Company: Codable, Hashable, Equatable, Identifiable {
         businessModel = try container.decode(BusinessModel.self, forKey: .businessModel)
         website = try container.decode(String.self, forKey: .website)
         bookmarkedBy = try container.decodeIfPresent([String].self, forKey: .bookmarkedBy) ?? []
-        ownershipTypes = try container.decode([OwnershipType].self, forKey: .ownershipTypes)
         
         // Special handling for socialMedias - it can be a dictionary or might be missing
         if container.contains(.socialMedias) {
@@ -169,7 +166,6 @@ class Company: Codable, Hashable, Equatable, Identifiable {
         try container.encode(businessModel, forKey: .businessModel)
         try container.encode(website, forKey: .website)
         try container.encode(bookmarkedBy, forKey: .bookmarkedBy)
-        try container.encode(ownershipTypes, forKey: .ownershipTypes)
         
         // Special handling for socialMedias - convert to string-keyed dictionary
         if let socialMedias = socialMedias, !socialMedias.isEmpty {
@@ -180,7 +176,7 @@ class Company: Codable, Hashable, Equatable, Identifiable {
         }
     }
     
-    init(companyId: String, entrepId: String, categoryIds: [String], name: String, logoImg: String?, headerImg: String?, aboutUs: String, dateFounded: String, portfolioImages: [String], address: String, city: String, phoneNum: String, email: String, workHours: String, services: [String], socialMedias: [SocialMedia: String]? = nil, businessModel: BusinessModel, website: String, ownershipTypes: [OwnershipType], isBookmarked: Bool = false) {
+    init(companyId: String, entrepId: String, categoryIds: [String], name: String, logoImg: String?, headerImg: String?, aboutUs: String, dateFounded: String, portfolioImages: [String], address: String, city: String, phoneNum: String, email: String, workHours: String, services: [String], socialMedias: [SocialMedia: String]? = nil, businessModel: BusinessModel, website: String, isBookmarked: Bool = false) {
         self.companyId = companyId
         self.entrepId = entrepId
         self.categoryIds = categoryIds
@@ -206,8 +202,6 @@ class Company: Codable, Hashable, Equatable, Identifiable {
         } else {
             self.bookmarkedBy = []
         }
-        
-        self.ownershipTypes = ownershipTypes
     }
     
     enum BusinessModel: String, CaseIterable, Codable {
@@ -234,14 +228,6 @@ class Company: Codable, Hashable, Equatable, Identifiable {
             case .other: return "link"
             }
         }
-    }
-    
-    enum OwnershipType: String, Codable, CaseIterable {
-        case femaleOwned = "Female Owned"
-        case latinxOwned = "Latinx Owned"
-        case asianOwned = "Asian Owned"
-        case lgbtqOwned = "LGBTQ+ Owned"
-        case blackOwned = "Black Owned"
     }
     
     enum WorkingHoursType: String, CaseIterable, Codable {

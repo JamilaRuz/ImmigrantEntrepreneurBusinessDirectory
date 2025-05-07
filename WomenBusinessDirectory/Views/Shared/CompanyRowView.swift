@@ -134,7 +134,6 @@ struct CompanyRowView: View {
             socialMedias: [:],
             businessModel: .hybrid,
             website: "www.testcompany.com",
-            ownershipTypes: [.asianOwned],
             isBookmarked: false
         ),
         categories: [

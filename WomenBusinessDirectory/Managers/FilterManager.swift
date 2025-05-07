@@ -11,12 +11,13 @@ import FirebaseFirestore
 protocol FilterManaging {
     // Add nonisolated to methods that don't need MainActor isolation
     nonisolated func getSelectedCities() -> Set<String>
-    nonisolated func getSelectedOwnershipTypes() -> Set<Company.OwnershipType>
+    nonisolated func getSelectedCountries() -> Set<String>
     func saveSelectedCities(_ cities: Set<String>)
-    func saveSelectedOwnershipTypes(_ types: Set<Company.OwnershipType>)
+    func saveSelectedCountries(_ countries: Set<String>)
     func clearAllFilters()
     func fetchCities() async throws -> [String]
-    nonisolated func fetchOwnershipTypes() -> [Company.OwnershipType]
+    func fetchCountries() async throws -> [String]
+    func setAvailableCountries(_ countries: [String]) async throws
     nonisolated func applyFilters(to companies: [Company]) -> [Company]
     func clearCache() async
     nonisolated func standardizeCity(_ city: String) -> String
@@ -32,10 +33,11 @@ class FilterManager: FilterManaging {
     
     // UserDefaults keys
     private let selectedCitiesKey = "selectedCities"
-    private let selectedOwnershipTypesKey = "selectedOwnershipTypes"
+    private let selectedCountriesKey = "selectedCountries"
     
     // Cache for available options
     private var availableCitiesCache: [String]?
+    private var availableCountriesCache: [String]?
     
     // Dictionary to map amalgamated cities to their parent cities
     private let amalgamatedCitiesMap: [String: String] = [
@@ -111,23 +113,22 @@ class FilterManager: FilterManaging {
         return Set(array)
     }
     
-    nonisolated func getSelectedOwnershipTypes() -> Set<Company.OwnershipType> {
-        let rawValues = UserDefaults.standard.stringArray(forKey: selectedOwnershipTypesKey) ?? []
-        return Set(rawValues.compactMap { Company.OwnershipType(rawValue: $0) })
+    nonisolated func getSelectedCountries() -> Set<String> {
+        let array = UserDefaults.standard.stringArray(forKey: selectedCountriesKey) ?? []
+        return Set(array)
     }
     
     nonisolated func saveSelectedCities(_ cities: Set<String>) {
         UserDefaults.standard.set(Array(cities), forKey: selectedCitiesKey)
     }
     
-    nonisolated func saveSelectedOwnershipTypes(_ types: Set<Company.OwnershipType>) {
-        let rawValues = types.map { $0.rawValue }
-        UserDefaults.standard.set(rawValues, forKey: selectedOwnershipTypesKey)
+    nonisolated func saveSelectedCountries(_ countries: Set<String>) {
+        UserDefaults.standard.set(Array(countries), forKey: selectedCountriesKey)
     }
     
     nonisolated func clearAllFilters() {
         UserDefaults.standard.removeObject(forKey: selectedCitiesKey)
-        UserDefaults.standard.removeObject(forKey: selectedOwnershipTypesKey)
+        UserDefaults.standard.removeObject(forKey: selectedCountriesKey)
     }
     
     // MARK: - Available Options Fetching
@@ -169,15 +170,43 @@ class FilterManager: FilterManaging {
         return uniqueCities
     }
     
-    nonisolated func fetchOwnershipTypes() -> [Company.OwnershipType] {
-        return Company.OwnershipType.allCases
+    func fetchCountries() async throws -> [String] {
+        if let cached = availableCountriesCache {
+            print("Debug - Using cached countries: \(cached)")
+            return cached
+        }
+        
+        // Fetch unique countries from all entrepreneurs
+        let snapshot = try await Firestore.firestore()
+            .collection("entrepreneurs")
+            .getDocuments()
+        
+        print("Debug - Firestore entrepreneurs count: \(snapshot.documents.count)")
+        
+        let countries = snapshot.documents
+            .compactMap { document -> String? in
+                let data = document.data()
+                let country = data["countryOfOrigin"] as? String
+                print("Debug - Found country in document \(document.documentID): \(country ?? "nil")")
+                return country
+            }
+            .filter { !$0.isEmpty } // Filter out empty strings
+        
+        print("Debug - All countries before deduplication: \(countries)")
+        
+        // Remove duplicates and sort
+        let uniqueCountries = Array(Set(countries)).sorted()
+        print("Debug - Unique countries after deduplication: \(uniqueCountries)")
+        
+        availableCountriesCache = uniqueCountries
+        return uniqueCountries
     }
     
     // MARK: - Filter Application
     
     nonisolated func applyFilters(to companies: [Company]) -> [Company] {
         let selectedCitiesRaw = getSelectedCities()
-        let selectedTypes = getSelectedOwnershipTypes()
+        _ = getSelectedCountries()
         
         // Standardize the selected cities the same way we do for the displayed cities
         let standardizedSelectedCities = Set(selectedCitiesRaw.map(standardizeCity))
@@ -195,13 +224,6 @@ class FilterManager: FilterManaging {
             }
         }
         
-        // Apply ownership type filter if types are selected
-        if !selectedTypes.isEmpty {
-            filtered = filtered.filter { company in
-                !selectedTypes.isDisjoint(with: Set(company.ownershipTypes))
-            }
-        }
-        
         return filtered
     }
     
@@ -209,6 +231,13 @@ class FilterManager: FilterManaging {
     
     func clearCache() async {
         availableCitiesCache = nil
+        availableCountriesCache = nil
+    }
+    
+    func setAvailableCountries(_ countries: [String]) async throws {
+        // Simply update the cache with the provided countries
+        self.availableCountriesCache = countries
+        print("FilterManager: Updated available countries: \(countries)")
     }
 }
 

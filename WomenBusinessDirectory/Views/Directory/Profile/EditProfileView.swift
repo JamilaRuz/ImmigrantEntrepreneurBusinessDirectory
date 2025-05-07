@@ -15,6 +15,8 @@ struct EditProfileView: View {
     @State private var isImagePickerPresented = false
     @State private var isSaving = false
     @State private var bioText: String = ""
+    @State private var selectedCountry: String?
+    @State private var showCountryPicker = false
     @Environment(\.presentationMode) var presentationMode
     @Environment(\.colorScheme) private var colorScheme
     @StateObject private var viewModel = EditProfileViewModel()
@@ -23,6 +25,7 @@ struct EditProfileView: View {
     init(entrepreneur: Entrepreneur, onSave: (() -> Void)? = nil) {
         self._entrepreneur = State(initialValue: entrepreneur)
         self._bioText = State(initialValue: entrepreneur.bioDescr ?? "")
+        self._selectedCountry = State(initialValue: entrepreneur.countryOfOrigin)
         self.onSave = onSave
     }
     
@@ -39,6 +42,23 @@ struct EditProfileView: View {
                         TextField("Full Name", text: $entrepreneur.fullName.bound)
                         Text(entrepreneur.email ?? "No email provided")
                             .foregroundColor(.secondary)
+                            
+                        // Country of Origin picker
+                        HStack {
+                            Text("Country of Origin")
+                            Spacer()
+                            Button(action: {
+                                showCountryPicker = true
+                            }) {
+                                HStack {
+                                    Text(selectedCountry ?? "Select Country")
+                                        .foregroundColor(selectedCountry == nil ? .gray : .primary)
+                                    Image(systemName: "chevron.down")
+                                        .font(.caption)
+                                        .foregroundColor(.gray)
+                                }
+                            }
+                        }
                     }
                     
                     Section(header: Text("Tell us about yourself")) {
@@ -83,6 +103,9 @@ struct EditProfileView: View {
         }
         .sheet(isPresented: $isImagePickerPresented) {
             ImagePicker(image: $selectedImage)
+        }
+        .sheet(isPresented: $showCountryPicker) {
+            CountryPickerView(selectedCountry: $selectedCountry)
         }
         .onAppear {
             print("EditProfileView appeared with bio: \(entrepreneur.bioDescr ?? "nil")")
@@ -143,8 +166,10 @@ struct EditProfileView: View {
                 isSaving = true
                 do {
                     entrepreneur.bioDescr = bioText.isEmpty ? nil : bioText
+                    entrepreneur.countryOfOrigin = selectedCountry
                     
                     print("Saving entrepreneur with bio: \(entrepreneur.bioDescr ?? "nil")")
+                    print("Saving entrepreneur with country: \(entrepreneur.countryOfOrigin ?? "nil")")
                     try await viewModel.saveProfile(entrepreneur: entrepreneur, newImage: selectedImage)
                     onSave?()
                     presentationMode.wrappedValue.dismiss()

@@ -25,11 +25,65 @@ final class AddCompanyViewModel: ObservableObject {
         }
     }
     
-    func createCompany(company: Company) async throws {
+    func createCompany(
+        entrepreneur: Entrepreneur,
+        companyName: String,
+        logoImage: UIImage?,
+        headerImage: UIImage?,
+        portfolioImages: [UIImage],
+        aboutUs: String,
+        dateFounded: Date,
+        workHours: String,
+        services: String,
+        businessModel: Company.BusinessModel,
+        address: String,
+        city: String,
+        phoneNum: String,
+        email: String,
+        website: String,
+        socialMediaLinks: [(platform: Company.SocialMedia, link: String)],
+        selectedCategoryIds: Set<String>
+    ) async throws {
         isSaving = true
         defer { isSaving = false }
-        try await RealCompanyManager.shared.createCompany(company: company)
-        try await EntrepreneurManager.shared.addCompany(company: company)
+        
+        // Convert social media links to dictionary
+        var socialMediaDict: [Company.SocialMedia: String] = [:]
+        for (platform, link) in socialMediaLinks where !link.isEmpty {
+            socialMediaDict[platform] = link
+        }
+        
+        // Upload images
+        let logoUrlString = logoImage != nil ? try await uploadImage(logoImage!, to: "logos") : nil
+        let headerUrlString = headerImage != nil ? try await uploadImage(headerImage!, to: "headers") : nil
+        
+        // Upload portfolio images in parallel
+        let portfolioUrls = try await uploadPortfolioImages(portfolioImages)
+        
+        // Create company object
+        let newCompany = Company(
+            companyId: "",
+            entrepId: entrepreneur.entrepId,
+            categoryIds: Array(selectedCategoryIds),
+            name: companyName,
+            logoImg: logoUrlString,
+            headerImg: headerUrlString,
+            aboutUs: aboutUs,
+            dateFounded: formatDate(dateFounded),
+            portfolioImages: portfolioUrls,
+            address: address,
+            city: city,
+            phoneNum: phoneNum,
+            email: email,
+            workHours: workHours,
+            services: services.split(separator: ",").map { String($0.trimmingCharacters(in: .whitespaces)) },
+            socialMedias: socialMediaDict,
+            businessModel: businessModel,
+            website: website,
+            isBookmarked: false
+        )
+        
+        try await RealCompanyManager.shared.createCompany(company: newCompany)
     }
     
     func saveCompany(
@@ -49,8 +103,7 @@ final class AddCompanyViewModel: ObservableObject {
         email: String,
         website: String,
         socialMediaLinks: [(platform: Company.SocialMedia, link: String)],
-        selectedCategoryIds: Set<String>,
-        selectedOwnershipTypes: Set<Company.OwnershipType>
+        selectedCategoryIds: Set<String>
     ) async throws {
         isSaving = true
         defer { isSaving = false }
@@ -100,7 +153,6 @@ final class AddCompanyViewModel: ObservableObject {
             socialMedias: socialMediaDict,
             businessModel: Company.BusinessModel(rawValue: businessModel.rawValue) ?? .offline,
             website: website,
-            ownershipTypes: Array(selectedOwnershipTypes),
             isBookmarked: false
         )
         
@@ -124,8 +176,7 @@ final class AddCompanyViewModel: ObservableObject {
         email: String,
         website: String,
         socialMediaLinks: [(platform: Company.SocialMedia, link: String)],
-        selectedCategoryIds: Set<String>,
-        selectedOwnershipTypes: Set<Company.OwnershipType>
+        selectedCategoryIds: Set<String>
     ) async throws {
         guard !selectedCategoryIds.isEmpty else {
             throw NSError(domain: "AddCompanyViewModel", code: 0, userInfo: [NSLocalizedDescriptionKey: "No categories selected"])
@@ -210,7 +261,6 @@ final class AddCompanyViewModel: ObservableObject {
             socialMedias: socialMediaDict,
             businessModel: businessModel,
             website: website,
-            ownershipTypes: Array(selectedOwnershipTypes),
             isBookmarked: company.isBookmarked
         )
         
@@ -228,5 +278,27 @@ final class AddCompanyViewModel: ObservableObject {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         return formatter.string(from: date)
+    }
+    
+    // Helper methods for uploading images
+    private func uploadImage(_ image: UIImage, to folder: String) async throws -> String {
+        switch folder {
+        case "logos":
+            return try await RealCompanyManager.shared.uploadLogoImage(image)
+        case "headers":
+            return try await RealCompanyManager.shared.uploadHeaderImage(image)
+        default:
+            throw NSError(domain: "AddCompanyViewModel", code: 0, userInfo: [NSLocalizedDescriptionKey: "Unknown folder: \(folder)"])
+        }
+    }
+    
+    private func uploadPortfolioImages(_ images: [UIImage]) async throws -> [String] {
+        return try await RealCompanyManager.shared.uploadPortfolioImages(images)
+    }
+    
+    // Error handling for the company parameter that was removed
+    private func createCompany(company: Company) async throws {
+        try await RealCompanyManager.shared.createCompany(company: company)
+        try await EntrepreneurManager.shared.addCompany(company: company)
     }
 }

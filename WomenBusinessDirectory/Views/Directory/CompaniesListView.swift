@@ -43,14 +43,6 @@ final class CompaniesListViewModel: ObservableObject {
             }
         }
         
-        // Apply ownership types filter if selected
-        let selectedOwnershipTypes = filterManager.getSelectedOwnershipTypes()
-        if !selectedOwnershipTypes.isEmpty {
-            filtered = filtered.filter { company in
-                !Set(company.ownershipTypes).isDisjoint(with: Set(selectedOwnershipTypes))
-            }
-        }
-        
         return filtered
     }
     

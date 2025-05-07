@@ -83,9 +83,9 @@ private struct FilterContentView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                // Location Section
+                // Business Location Section
                 FilterSection(
-                    title: "Location",
+                    title: "Filter by Business Location",
                     items: viewModel.cities,
                     selectedItems: viewModel.selectedCities,
                     itemTitle: { $0 },
@@ -98,14 +98,28 @@ private struct FilterContentView: View {
                     }
                 )
                 
-                // Ownership Type Section
-                FilterSection(
-                    title: "Ownership Type",
-                    items: viewModel.ownershipTypes,
-                    selectedItems: viewModel.selectedOwnershipTypes,
-                    itemTitle: { $0.rawValue },
-                    onToggle: viewModel.toggleOwnershipType
-                )
+                // Entrepreneur's Country of Origin Section
+                if !viewModel.countries.isEmpty {
+                    FilterSection(
+                        title: "Filter by Founder's Country of Origin",
+                        items: viewModel.countries,
+                        selectedItems: viewModel.selectedCountries,
+                        itemTitle: { $0 },
+                        onToggle: viewModel.toggleCountry
+                    )
+                } else {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Filter by Founder's Country of Origin")
+                            .font(.headline)
+                            .padding(.horizontal)
+                        
+                        Text("No countries available yet. Countries will appear here when entrepreneurs add their country of origin.")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                            .padding(.horizontal)
+                            .padding(.top, 4)
+                    }
+                }
             }
             .padding(.vertical)
         }

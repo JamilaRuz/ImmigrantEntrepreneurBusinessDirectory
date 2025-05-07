@@ -15,6 +15,7 @@ struct AddCompanyView: View {
   @Environment(\.dismiss) private var dismiss
   @Environment(\.colorScheme) private var colorScheme
   @StateObject var viewModel: AddCompanyViewModel
+  @Environment(\.presentationMode) var presentationMode
   let entrepreneur: Entrepreneur
   var editingCompany: Company?
   
@@ -22,32 +23,32 @@ struct AddCompanyView: View {
   @State private var logoImage: UIImage?
   @State private var headerImage: UIImage?
   @State private var portfolioImages: [UIImage] = []
-  @State private var dateFounded = Date()
   @State private var aboutUs = ""
+  @State private var dateFounded = Date()
   @State private var workHours = ""
   @State private var services = ""
-  @State private var businessModel = Company.BusinessModel.offline
+  @State private var businessModel: Company.BusinessModel = .offline
   @State private var address = ""
   @State private var city = ""
   @State private var phoneNum = ""
   @State private var email = ""
   @State private var website = ""
   @State private var socialMediaLinks: [(platform: Company.SocialMedia, link: String)] = []
-  @State private var selectedSocialMedia: Company.SocialMedia = .instagram
-  @State private var socialMediaLinkInput: String = ""
-  @State private var socialMediaLinkError: String? = nil
-  @State private var socialMediaPlaceholder: String = "instagram.com/"
-  @State private var isAddingSocialMedia: Bool = false
-  @State private var platformSelected: Bool = false
-  
   @State private var selectedCategoryIds: Set<String> = []
   @State private var isImagePickerPresented = false
   @State private var isHeaderImagePickerPresented = false
   @State private var isPortfolioPickerPresented = false
   @State private var currentPage = 0
-  @State private var selectedOwnershipTypes: Set<Company.OwnershipType> = []
   @State private var workHoursType = Company.WorkingHoursType.standard
   @State private var customWorkHours = ""
+  @State private var socialMediaLinkInput: String = ""
+  @State private var socialMediaLinkError: String? = nil
+  @State private var socialMediaPlaceholder: String = "instagram.com/"
+  @State private var isAddingSocialMedia: Bool = false
+  @State private var platformSelected: Bool = false
+  @State private var showsValidationAlert = false
+  @State private var validationMessage = ""
+  @State private var selectedSocialMedia: Company.SocialMedia = .instagram
   
   @StateObject private var addressCompleter = AddressCompleter()
   @State private var showAddressSuggestions = false
@@ -62,10 +63,11 @@ struct AddCompanyView: View {
     self.entrepreneur = entrepreneur
     self.editingCompany = editingCompany
     
-    // Pre-fill form if editing
+    // If editing, initialize form fields with company data
     if let company = editingCompany {
       _companyName = State(initialValue: company.name)
       _aboutUs = State(initialValue: company.aboutUs)
+      _dateFounded = State(initialValue: formatStringToDate(company.dateFounded))
       _workHours = State(initialValue: company.workHours)
       _services = State(initialValue: company.services.joined(separator: ", "))
       _businessModel = State(initialValue: company.businessModel)
@@ -75,33 +77,22 @@ struct AddCompanyView: View {
       _email = State(initialValue: company.email)
       _website = State(initialValue: company.website)
       _selectedCategoryIds = State(initialValue: Set(company.categoryIds))
-      _selectedOwnershipTypes = State(initialValue: Set(company.ownershipTypes))
+      
+      // Initialize social media links
+      if let socialMedias = company.socialMedias {
+        _socialMediaLinks = State(initialValue: Company.SocialMedia.allCases.map { platform in
+          (platform: platform, link: socialMedias[platform] ?? "")
+        })
+      }
       
       // Validate phone number during initialization
       _isValidPhone = State(initialValue: NSPredicate(format: "SELF MATCHES %@", canadianPhonePattern)
           .evaluate(with: company.phoneNum))
-      
-      // Initialize social media links from the company data
-      var links: [(platform: Company.SocialMedia, link: String)] = []
-      for platform in company.socialMediaPlatforms {
-          if let socialMedia = company.socialMedias,
-             let link = socialMedia[platform] {
-              links.append((platform: platform, link: link))
-          } else {
-              // If we have the platform but no link, add a default empty link
-              links.append((platform: platform, link: ""))
-          }
-      }
-      _socialMediaLinks = State(initialValue: links)
-      
-      let formatter = DateFormatter()
-      formatter.dateFormat = "yyyy-MM"
-      if let date = formatter.date(from: company.dateFounded.prefix(7).description) {
-        _dateFounded = State(initialValue: date)
-      }
     } else {
-      // For new company, pre-fill with entrepreneur's email
-      _email = State(initialValue: entrepreneur.email ?? "")
+      // Default for new company
+      _socialMediaLinks = State(initialValue: Company.SocialMedia.allCases.map { 
+        (platform: $0, link: "")
+      })
     }
   }
   
@@ -157,11 +148,8 @@ struct AddCompanyView: View {
             Task {
               do {
                 viewModel.isSaving = true  // Show progress view
-                try await saveOrUpdateCompany()
+                await saveCompany()
                 viewModel.isSaving = false  // Hide progress view
-              } catch {
-                viewModel.isSaving = false  // Hide progress view on error
-                print("Failed to save company: \(error)")
               }
             }
           }) {
@@ -217,7 +205,6 @@ struct AddCompanyView: View {
         dateFounded: $dateFounded,
         aboutUs: $aboutUs,
         selectedCategoryIds: $selectedCategoryIds,
-        selectedOwnershipTypes: $selectedOwnershipTypes,
         isImagePickerPresented: $isImagePickerPresented,
         isHeaderImagePickerPresented: $isHeaderImagePickerPresented,
         isPortfolioPickerPresented: $isPortfolioPickerPresented,
@@ -237,23 +224,6 @@ struct AddCompanyView: View {
         .padding(.horizontal)
       
       CategorySelectionGrid(selectedIds: $selectedCategoryIds)
-    }
-  }
-  
-  private var ownershipSection: some View {
-    VStack(alignment: .leading, spacing: 8) {
-        HStack {
-            Text("Ownership Type")
-                .font(.subheadline)
-                .foregroundColor(.gray)
-            Text("(Optional)")
-                .font(.caption)
-                .foregroundColor(.gray)
-                .italic()
-        }
-        .padding(.horizontal)
-      
-        OwnershipTypeGrid(selectedTypes: $selectedOwnershipTypes)
     }
   }
   
@@ -709,54 +679,60 @@ struct AddCompanyView: View {
     }
   }
   
-  private func saveOrUpdateCompany() async throws {
-    // Format website URL to ensure it has https:// prefix
-    let formattedWebsite = formatWebsiteURL(website)
-    
-    if let editingCompany = editingCompany {
-      try await viewModel.updateCompany(
-        company: editingCompany,
-        companyName: companyName,
-        logoImage: logoImage,
-        headerImage: headerImage,
-        portfolioImages: portfolioImages,
-        aboutUs: aboutUs,
-        dateFounded: dateFounded,
-        workHours: workHoursValue,
-        services: services,
-        businessModel: businessModel,
-        address: address,
-        city: city,
-        phoneNum: phoneNum,
-        email: email,
-        website: formattedWebsite,
-        socialMediaLinks: socialMediaLinks,
-        selectedCategoryIds: selectedCategoryIds,
-        selectedOwnershipTypes: selectedOwnershipTypes
-      )
-    } else {
-      try await viewModel.saveCompany(
-        entrepreneur: entrepreneur,
-        companyName: companyName,
-        logoImage: logoImage,
-        headerImage: headerImage,
-        portfolioImages: portfolioImages,
-        aboutUs: aboutUs,
-        dateFounded: dateFounded,
-        workHours: workHoursValue,
-        services: services,
-        businessModel: businessModel,
-        address: address,
-        city: city,
-        phoneNum: phoneNum,
-        email: email,
-        website: formattedWebsite,
-        socialMediaLinks: socialMediaLinks,
-        selectedCategoryIds: selectedCategoryIds,
-        selectedOwnershipTypes: selectedOwnershipTypes
-      )
+  private func saveCompany() async {
+    do {
+      var formattedWebsite = website.lowercased()
+      if !formattedWebsite.hasPrefix("http") && !formattedWebsite.isEmpty {
+        formattedWebsite = "https://" + formattedWebsite
+      }
+      
+      if let company = editingCompany {
+        try await viewModel.updateCompany(
+          company: company,
+          companyName: companyName,
+          logoImage: logoImage,
+          headerImage: headerImage,
+          portfolioImages: portfolioImages,
+          aboutUs: aboutUs,
+          dateFounded: dateFounded,
+          workHours: workHours,
+          services: services,
+          businessModel: businessModel,
+          address: address,
+          city: city,
+          phoneNum: phoneNum,
+          email: email,
+          website: formattedWebsite,
+          socialMediaLinks: socialMediaLinks,
+          selectedCategoryIds: selectedCategoryIds
+        )
+      } else {
+        try await viewModel.createCompany(
+          entrepreneur: entrepreneur,
+          companyName: companyName,
+          logoImage: logoImage,
+          headerImage: headerImage,
+          portfolioImages: portfolioImages,
+          aboutUs: aboutUs,
+          dateFounded: dateFounded,
+          workHours: workHours,
+          services: services,
+          businessModel: businessModel,
+          address: address,
+          city: city,
+          phoneNum: phoneNum,
+          email: email,
+          website: formattedWebsite,
+          socialMediaLinks: socialMediaLinks,
+          selectedCategoryIds: selectedCategoryIds
+        )
+      }
+      
+      // Dismiss the view when done
+      presentationMode.wrappedValue.dismiss()
+    } catch {
+      print("Error saving company: \(error)")
     }
-    dismiss()
   }
   
   // Helper function to format website URL
@@ -888,7 +864,6 @@ struct CompanyInfoSection: View {
     @Binding var dateFounded: Date
     @Binding var aboutUs: String
     @Binding var selectedCategoryIds: Set<String>
-    @Binding var selectedOwnershipTypes: Set<Company.OwnershipType>
     @Binding var isImagePickerPresented: Bool
     @Binding var isHeaderImagePickerPresented: Bool
     @Binding var isPortfolioPickerPresented: Bool
@@ -1008,20 +983,6 @@ struct CompanyInfoSection: View {
                             .foregroundColor(.gray)
                         CategorySelectionGrid(selectedIds: $selectedCategoryIds)
                             .environmentObject(viewModel)
-                    }
-                    
-                    // Ownership Types
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Text("Ownership Type")
-                                .font(.subheadline)
-                                .foregroundColor(.gray)
-                            Text("(Optional)")
-                                .font(.caption)
-                                .foregroundColor(.gray)
-                                .italic()
-                        }
-                        OwnershipTypeGrid(selectedTypes: $selectedOwnershipTypes)
                     }
                 }
             }
@@ -1580,39 +1541,6 @@ struct CategorySelectionGrid: View {
     }
 }
 
-struct OwnershipTypeGrid: View {
-    @Binding var selectedTypes: Set<Company.OwnershipType>
-    
-    var body: some View {
-        LazyVGrid(columns: [
-            GridItem(.flexible()),
-            GridItem(.flexible())
-        ], spacing: 8) {
-            ForEach(Company.OwnershipType.allCases, id: \.self) { type in
-                Button(action: {
-                    if selectedTypes.contains(type) {
-                        selectedTypes.remove(type)
-                    } else {
-                        selectedTypes.insert(type)
-                    }
-                }) {
-                    HStack {
-                        Image(systemName: selectedTypes.contains(type) ? "checkmark.circle.fill" : "circle")
-                            .foregroundColor(selectedTypes.contains(type) ? .yellow : .gray)
-                        Text(type.rawValue)
-                            .font(.caption)
-                            .foregroundColor(.primary)
-                        Spacer()
-                    }
-                    .padding(8)
-                    .background(Color.gray.opacity(0.1))
-                    .cornerRadius(8)
-                }
-            }
-        }
-    }
-}
-
 struct SocialMediaToggle: View {
     let title: String
     let icon: String
@@ -1648,4 +1576,19 @@ struct SocialMediaToggle: View {
 
 #Preview {
   AddCompanyView(viewModel: AddCompanyViewModel(), entrepreneur: createStubEntrepreneurs()[0])
+}
+
+func formatStringToDate(_ dateString: String) -> Date {
+    let formatter = DateFormatter()
+    formatter.dateFormat = "yyyy-MM-dd"
+    if let date = formatter.date(from: dateString) {
+        return date
+    } else {
+        // Fallback to parsing just the year and month
+        formatter.dateFormat = "yyyy-MM"
+        if let date = formatter.date(from: dateString.prefix(7).description) {
+            return date
+        }
+    }
+    return Date() // Return current date as fallback
 }

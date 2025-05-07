@@ -12,7 +12,7 @@ final class ProfileViewModel: ObservableObject {
     private var loadTask: Task<Void, Never>?
     
     init() {
-        self.entrepreneur = Entrepreneur(entrepId: "", fullName: "", profileUrl: nil, email: "", bioDescr: "", companyIds: [])
+        self.entrepreneur = Entrepreneur(entrepId: "", fullName: "", profileUrl: nil, email: "", bioDescr: "", companyIds: [], countryOfOrigin: "")
     }
     
     // Main public interface - cancels any in-flight operations and starts a new load
@@ -278,7 +278,7 @@ struct ProfileView: View {
                 }
             }
             
-            // Name and email
+            // Name, email, and country
             VStack(alignment: .leading, spacing: 5) {
                 Text(viewModel.entrepreneur.fullName ?? "Entrepreneur Name")
                     .font(.title3)
@@ -287,6 +287,20 @@ struct ProfileView: View {
                 Text(viewModel.entrepreneur.email ?? "email@example.com")
                     .font(.subheadline)
                     .foregroundColor(.gray)
+                
+                // Country of origin with flag
+                if let country = viewModel.entrepreneur.countryOfOrigin, !country.isEmpty {
+                    HStack(spacing: 4) {
+                        Image(systemName: "globe")
+                            .font(.caption)
+                            .foregroundColor(.purple1)
+                        
+                        Text(country)
+                            .font(.subheadline)
+                            .foregroundColor(.purple1)
+                    }
+                    .padding(.top, 2)
+                }
             }
             
             Spacer()

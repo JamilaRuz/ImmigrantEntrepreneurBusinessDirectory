@@ -18,6 +18,7 @@ struct Entrepreneur: Codable, Hashable {
   var email: String?
   var bioDescr: String?
   var companyIds: [String] = []
+  var countryOfOrigin: String?
   
   init(auth: AuthDataResultModel) {
     self.entrepId = auth.uid
@@ -26,9 +27,10 @@ struct Entrepreneur: Codable, Hashable {
     self.dateCreated = Date()
     self.bioDescr = ""
     self.profileUrl = nil
+    self.countryOfOrigin = nil
   }
   
-  init(entrepId: String, fullName: String, profileUrl: String?, email: String, bioDescr: String, companyIds: [String]) {
+  init(entrepId: String, fullName: String, profileUrl: String?, email: String, bioDescr: String, companyIds: [String], countryOfOrigin: String? = nil) {
     self.entrepId = entrepId
     self.fullName = fullName
     self.profileUrl = profileUrl
@@ -36,6 +38,7 @@ struct Entrepreneur: Codable, Hashable {
     self.bioDescr = bioDescr
     self.companyIds = companyIds
     self.dateCreated = Date()
+    self.countryOfOrigin = countryOfOrigin
   }
   
   // Add a custom decoder initializer to handle potential null values
@@ -49,6 +52,7 @@ struct Entrepreneur: Codable, Hashable {
     self.email = try container.decodeIfPresent(String.self, forKey: .email)
     self.bioDescr = try container.decodeIfPresent(String.self, forKey: .bioDescr)
     self.companyIds = try container.decodeIfPresent([String].self, forKey: .companyIds) ?? []
+    self.countryOfOrigin = try container.decodeIfPresent(String.self, forKey: .countryOfOrigin)
   }
 }
 
@@ -71,7 +75,7 @@ func createEntrepreneur(fullName: String, email: String) async throws {
         throw NSError(domain: "AuthError", code: 0, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])
     }
     print("Creating entrepreneur with uid: \(uid)")
-    let entrepreneur = Entrepreneur(entrepId: uid, fullName: fullName, profileUrl: nil, email: email, bioDescr: "", companyIds: [])
+    let entrepreneur = Entrepreneur(entrepId: uid, fullName: fullName, profileUrl: nil, email: email, bioDescr: "", companyIds: [], countryOfOrigin: nil)
     print("Entrepreneur created: \(entrepreneur)")
     
     // Create a dictionary with all the fields to ensure they're all properly set
@@ -82,7 +86,8 @@ func createEntrepreneur(fullName: String, email: String) async throws {
         "dateCreated": entrepreneur.dateCreated,
         "email": entrepreneur.email ?? "",
         "bioDescr": entrepreneur.bioDescr ?? "",
-        "companyIds": entrepreneur.companyIds
+        "companyIds": entrepreneur.companyIds,
+        "countryOfOrigin": entrepreneur.countryOfOrigin ?? NSNull()
     ]
     
     try await entrepDocument(entrepId: uid).setData(data)
@@ -173,7 +178,8 @@ func createEntrepreneur(fullName: String, email: String) async throws {
     var data: [String: Any] = [
         "entrepId": entrepreneur.entrepId,
         "dateCreated": entrepreneur.dateCreated,
-        "companyIds": entrepreneur.companyIds
+        "companyIds": entrepreneur.companyIds,
+        "countryOfOrigin": entrepreneur.countryOfOrigin ?? NSNull()
     ]
     
     // Add optional fields, using NSNull for nil values
@@ -249,7 +255,8 @@ func createEntrepreneur(fullName: String, email: String) async throws {
             "dateCreated": data["createdAt"] as? Timestamp ?? Timestamp(),
             "bioDescr": data["bioDescr"] as? String ?? "",
             "companyIds": data["companyIds"] as? [String] ?? [],
-            "profileUrl": data["profileUrl"] as? String ?? NSNull()
+            "profileUrl": data["profileUrl"] as? String ?? NSNull(),
+            "countryOfOrigin": data["countryOfOrigin"] as? String ?? NSNull()
         ]
         
         // Update the document with the correct field names
@@ -263,7 +270,8 @@ func createEntrepreneur(fullName: String, email: String) async throws {
             profileUrl: updatedData["profileUrl"] as? String,
             email: updatedData["email"] as? String ?? "",
             bioDescr: updatedData["bioDescr"] as? String ?? "",
-            companyIds: updatedData["companyIds"] as? [String] ?? []
+            companyIds: updatedData["companyIds"] as? [String] ?? [],
+            countryOfOrigin: updatedData["countryOfOrigin"] as? String
         )
     } else {
         throw NSError(domain: "EntrepreneurManager", code: 2, userInfo: [NSLocalizedDescriptionKey: "Document does not have expected fields for migration"])

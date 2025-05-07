@@ -73,7 +73,6 @@ func createStubCompanies() -> [Company] {
     socialMedias: [:],
     businessModel: .online,
     website: "www.techinnovators.com",
-    ownershipTypes: [.femaleOwned],
     isBookmarked: false
   )
   
@@ -96,7 +95,6 @@ func createStubCompanies() -> [Company] {
     socialMedias: [:],
     businessModel: .hybrid,
     website: "www.greenenergy.com",
-    ownershipTypes: [.asianOwned],
     isBookmarked: false
   )
   
@@ -119,7 +117,6 @@ func createStubCompanies() -> [Company] {
     socialMedias: [:],
     businessModel: .offline,
     website: "www.companythree.com",
-    ownershipTypes: [.latinxOwned],
     isBookmarked: false
   )
   
@@ -142,7 +139,6 @@ func createStubCompanies() -> [Company] {
     socialMedias: [:],
     businessModel: .online,
     website: "www.companyfour.com",
-    ownershipTypes: [.lgbtqOwned],
     isBookmarked: false
   )
   

@@ -6,8 +6,20 @@ final class EntrepreneursListViewModel: ObservableObject {
     @Published private(set) var entrepreneurs: [Entrepreneur] = []
     @Published private(set) var entrepreneurCompanies: [String: [Company]] = [:]
     @Published var searchTerm = ""
+    @Published var selectedCountry: String? = nil
     @Published var isLoading = true
     @Published var error: String?
+    @Published var availableCountries: [String] = []
+    
+    private let filterManager: FilterManaging
+    
+    init(filterManager: FilterManaging? = nil) {
+        // Use the passed filterManager or get it on the main actor
+        self.filterManager = filterManager ?? FilterManager.shared
+        
+        // Load entrepreneurs
+        loadEntrepreneurs()
+    }
     
     var filteredEntrepreneurs: [Entrepreneur] {
         // First filter out entrepreneurs with incomplete profiles
@@ -22,18 +34,37 @@ final class EntrepreneursListViewModel: ObservableObject {
             return hasName && (hasBio || hasProfileImage) && hasCompanies
         }
         
+        // Apply country filter if selected in the FilterManager
+        let selectedCountries = filterManager.getSelectedCountries()
+        let countryFiltered = selectedCountries.isEmpty
+            ? completedEntrepreneurs 
+            : completedEntrepreneurs.filter { 
+                // If entrepreneur has a country of origin, check if it's in the selected countries
+                guard let country = $0.countryOfOrigin, !country.isEmpty else {
+                    return false
+                }
+                return selectedCountries.contains(country)
+            }
+            
+        // Also apply individual view's selected country filter if set
+        let viewFilteredEntrepreneurs = selectedCountry == nil 
+            ? countryFiltered 
+            : countryFiltered.filter { $0.countryOfOrigin == selectedCountry }
+        
         // Then apply search filter
         if searchTerm.isEmpty {
-            return completedEntrepreneurs
+            return viewFilteredEntrepreneurs
         }
-        return completedEntrepreneurs.filter { entrepreneur in
+        return viewFilteredEntrepreneurs.filter { entrepreneur in
             let name = entrepreneur.fullName?.lowercased() ?? ""
             let bio = entrepreneur.bioDescr?.lowercased() ?? ""
             let companies = entrepreneurCompanies[entrepreneur.entrepId]?.map { $0.name.lowercased() } ?? []
+            let country = entrepreneur.countryOfOrigin?.lowercased() ?? ""
             let searchLower = searchTerm.lowercased()
             
             return name.contains(searchLower) || 
                    bio.contains(searchLower) ||
+                   country.contains(searchLower) ||
                    companies.contains { $0.contains(searchLower) }
         }
     }
@@ -47,6 +78,14 @@ final class EntrepreneursListViewModel: ObservableObject {
                 print("EntrepreneursListViewModel: Loading entrepreneurs...")
                 self.entrepreneurs = try await EntrepreneurManager.shared.getAllEntrepreneurs()
                 print("EntrepreneursListViewModel: Successfully loaded \(entrepreneurs.count) entrepreneurs")
+                
+                // Extract all unique countries
+                let countries = entrepreneurs.compactMap { $0.countryOfOrigin }
+                    .filter { !$0.isEmpty }
+                self.availableCountries = Array(Set(countries)).sorted()
+                
+                // Send countries to FilterManager for the filter view
+                await updateAvailableCountriesInFilterManager()
                 
                 // Load companies for each entrepreneur
                 for entrepreneur in entrepreneurs {
@@ -70,6 +109,15 @@ final class EntrepreneursListViewModel: ObservableObject {
                 isLoading = false
                 print("Error loading entrepreneurs: \(error)")
             }
+        }
+    }
+    
+    // New function to update available countries in the FilterManager
+    private func updateAvailableCountriesInFilterManager() async {
+        do {
+            try await filterManager.setAvailableCountries(availableCountries)
+        } catch {
+            print("Error updating available countries in FilterManager: \(error)")
         }
     }
     
@@ -116,6 +164,17 @@ struct EntrepreneurRowView: View {
                     Text(email)
                         .font(.subheadline)
                         .foregroundColor(.gray)
+                }
+                
+                // Country of origin if available
+                if let country = entrepreneur.countryOfOrigin, !country.isEmpty {
+                    HStack(spacing: 4) {
+                        Image(systemName: "globe")
+                            .font(.caption2)
+                        Text(country)
+                            .font(.caption)
+                    }
+                    .foregroundColor(.orange1)
                 }
                 
                 // Company names or placeholder
@@ -170,10 +229,63 @@ struct EntrepreneursListView: View {
     @Environment(\.dismiss) private var dismiss
     @Binding var showSignInView: Bool
     @Binding var userIsLoggedIn: Bool
+    @State private var showCountryFilter = false
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
+                // Search and Filter Bar
+                HStack {
+                    // Search Field
+                    HStack {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundColor(.gray)
+                        TextField("Search", text: $viewModel.searchTerm)
+                            .foregroundColor(.primary)
+                    }
+                    .padding(8)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(10)
+                    
+                    // Country Filter Button
+                    Button(action: {
+                        showCountryFilter = true
+                    }) {
+                        HStack {
+                            Image(systemName: "globe")
+                            if let country = viewModel.selectedCountry {
+                                Text(country)
+                                    .lineLimit(1)
+                            }
+                        }
+                        .padding(8)
+                        .background(viewModel.selectedCountry != nil ? Color.orange1.opacity(0.2) : Color(.systemGray6))
+                        .foregroundColor(viewModel.selectedCountry != nil ? .orange1 : .gray)
+                        .cornerRadius(10)
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.top, 8)
+                .padding(.bottom, 8)
+                
+                // Active Filter Indicator
+                if viewModel.selectedCountry != nil {
+                    HStack {
+                        Text("Filtered by: \(viewModel.selectedCountry ?? "")")
+                            .font(.caption)
+                            .foregroundColor(.orange1)
+                        
+                        Button(action: {
+                            viewModel.selectedCountry = nil
+                        }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.orange1)
+                        }
+                    }
+                    .padding(.horizontal)
+                    .padding(.bottom, 8)
+                }
+                
                 if viewModel.isLoading {
                     ProgressView()
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -199,7 +311,7 @@ struct EntrepreneursListView: View {
                                     .fill(Color.orange1.opacity(0.1))
                                     .frame(width: 120, height: 120)
                             )
-                        if viewModel.searchTerm.isEmpty {
+                        if viewModel.searchTerm.isEmpty && viewModel.selectedCountry == nil {
                             Text("No entrepreneurs found")
                                 .font(.title2)
                                 .fontWeight(.semibold)
@@ -211,7 +323,7 @@ struct EntrepreneursListView: View {
                                 .foregroundColor(.secondary)
                                 .padding(.horizontal)
                         } else {
-                            Text("No entrepreneurs match your search")
+                            Text("No entrepreneurs match your filters")
                                 .font(.title2)
                                 .fontWeight(.semibold)
                                 .foregroundColor(Color.orange1)
@@ -245,6 +357,12 @@ struct EntrepreneursListView: View {
                 showSignInView: $showSignInView,
                 isLoggedIn: $userIsLoggedIn
             )
+            .sheet(isPresented: $showCountryFilter) {
+                CountryFilterView(
+                    selectedCountry: $viewModel.selectedCountry,
+                    availableCountries: viewModel.availableCountries
+                )
+            }
         }
         .tint(Color.orange1)
         .task {

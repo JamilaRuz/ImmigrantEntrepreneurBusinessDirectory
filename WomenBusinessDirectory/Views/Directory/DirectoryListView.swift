@@ -14,6 +14,9 @@ final class DirectoryListViewModel: ObservableObject {
   @Published var isLoading = false
   private var hasInitialLoad = false
   
+  // Store entrepreneur data for country filtering
+  @Published private(set) var entrepreneursMap: [String: Entrepreneur] = [:]
+  
   private let filterManager: FilterManaging
   private var notificationObserver: NSObjectProtocol?
   
@@ -22,8 +25,8 @@ final class DirectoryListViewModel: ObservableObject {
   
   var activeFiltersCount: Int {
     let selectedCities = filterManager.getSelectedCities().count
-    let selectedOwnershipTypes = filterManager.getSelectedOwnershipTypes().count
-    return selectedCities + selectedOwnershipTypes
+    let selectedCountries = filterManager.getSelectedCountries().count
+    return selectedCities + selectedCountries
   }
   
   init(filterManager: FilterManaging? = nil) {
@@ -64,11 +67,17 @@ final class DirectoryListViewModel: ObservableObject {
       }
     }
     
-    // Apply ownership types filter if selected
-    let selectedOwnershipTypes = filterManager.getSelectedOwnershipTypes()
-    if !selectedOwnershipTypes.isEmpty {
+    // Apply country filter if countries are selected
+    let selectedCountries = filterManager.getSelectedCountries()
+    if !selectedCountries.isEmpty {
       filtered = filtered.filter { company in
-        !Set(company.ownershipTypes).isDisjoint(with: Set(selectedOwnershipTypes))
+        // Look up entrepreneur from our preloaded map
+        if let entrepreneur = entrepreneursMap[company.entrepId],
+           let country = entrepreneur.countryOfOrigin,
+           !country.isEmpty {
+          return selectedCountries.contains(country)
+        }
+        return false
       }
     }
     
@@ -110,9 +119,15 @@ final class DirectoryListViewModel: ObservableObject {
       // Load all data concurrently
       async let categoriesTask = CategoryManager.shared.getCategories()
       async let companiesTask = RealCompanyManager.shared.getCompanies()
+      async let entrepreneursTask = EntrepreneurManager.shared.getAllEntrepreneurs()
       
       self.categories = try await categoriesTask
       self.allCompanies = try await companiesTask
+      
+      // Create a map of entrepreneur IDs to entrepreneurs for efficient lookup
+      let entrepreneurs = try await entrepreneursTask
+      self.entrepreneursMap = Dictionary(uniqueKeysWithValues: entrepreneurs.map { ($0.entrepId, $0) })
+      
       hasInitialLoad = true
       isLoading = false
     } catch {
@@ -135,9 +150,15 @@ final class DirectoryListViewModel: ObservableObject {
         // Load all data concurrently with cache policy to fetch from server
         async let categoriesTask = CategoryManager.shared.getCategories()
         async let companiesTask = RealCompanyManager.shared.getCompanies(source: .server)
+        async let entrepreneursTask = EntrepreneurManager.shared.getAllEntrepreneurs()
         
         self.categories = try await categoriesTask
         self.allCompanies = try await companiesTask
+        
+        // Update entrepreneurs map
+        let entrepreneurs = try await entrepreneursTask
+        self.entrepreneursMap = Dictionary(uniqueKeysWithValues: entrepreneurs.map { ($0.entrepId, $0) })
+        
         hasInitialLoad = true
         isLoading = false
         print("DirectoryListView: Finished force reloading data")

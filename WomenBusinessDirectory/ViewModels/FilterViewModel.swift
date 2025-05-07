@@ -11,10 +11,10 @@ import SwiftUI
 @MainActor
 class FilterViewModel: ObservableObject {
     @Published var cities: [String] = []
-    @Published var ownershipTypes: [Company.OwnershipType] = []
+    @Published var countries: [String] = []
     @Published var isLoading = true
     @Published var selectedCities: Set<String> = []
-    @Published var selectedOwnershipTypes: Set<Company.OwnershipType> = []
+    @Published var selectedCountries: Set<String> = []
     
     private let filterManager: FilterManaging
     
@@ -31,12 +31,12 @@ class FilterViewModel: ObservableObject {
         
         // Initialize with empty sets then load properly
         self.selectedCities = []
-        self.selectedOwnershipTypes = []
+        self.selectedCountries = []
         
         // Load initial values
         Task {
             self.selectedCities = self.filterManager.getSelectedCities()
-            self.selectedOwnershipTypes = self.filterManager.getSelectedOwnershipTypes()
+            self.selectedCountries = self.filterManager.getSelectedCountries()
             await fetchFilterOptions()
         }
     }
@@ -47,12 +47,13 @@ class FilterViewModel: ObservableObject {
             let fetchedCities = try await filterManager.fetchCities()
             print("Debug - Cities from Firestore: \(fetchedCities)")
             
-            // Get ownership types synchronously
-            let fetchedOwnershipTypes = filterManager.fetchOwnershipTypes()
+            // Fetch countries asynchronously
+            let fetchedCountries = try await filterManager.fetchCountries()
+            print("Debug - Countries from Firestore: \(fetchedCountries)")
             
             // Update published properties on main actor
             cities = fetchedCities
-            ownershipTypes = fetchedOwnershipTypes
+            countries = fetchedCountries
             isLoading = false
             
             // After loading cities, ensure selected cities are standardized
@@ -100,20 +101,20 @@ class FilterViewModel: ObservableObject {
         }
     }
     
-    func toggleOwnershipType(_ type: Company.OwnershipType) {
-        if selectedOwnershipTypes.contains(type) {
-            selectedOwnershipTypes.remove(type)
+    func toggleCountry(_ country: String) {
+        if selectedCountries.contains(country) {
+            selectedCountries.remove(country)
         } else {
-            selectedOwnershipTypes.insert(type)
+            selectedCountries.insert(country)
         }
         Task {
-            filterManager.saveSelectedOwnershipTypes(selectedOwnershipTypes)
+            filterManager.saveSelectedCountries(selectedCountries)
         }
     }
     
     func clearFilters() {
         selectedCities.removeAll()
-        selectedOwnershipTypes.removeAll()
+        selectedCountries.removeAll()
         Task {
             filterManager.clearAllFilters()
         }
