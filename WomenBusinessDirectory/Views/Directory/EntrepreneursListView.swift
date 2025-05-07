@@ -237,15 +237,8 @@ struct EntrepreneursListView: View {
                 // Search and Filter Bar
                 HStack {
                     // Search Field
-                    HStack {
-                        Image(systemName: "magnifyingglass")
-                            .foregroundColor(.gray)
-                        TextField("Search", text: $viewModel.searchTerm)
-                            .foregroundColor(.primary)
-                    }
-                    .padding(8)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
+                    SearchBar(text: $viewModel.searchTerm)
+                        .frame(maxWidth: .infinity)
                     
                     // Country Filter Button
                     Button(action: {
@@ -265,8 +258,7 @@ struct EntrepreneursListView: View {
                     }
                 }
                 .padding(.horizontal)
-                .padding(.top, 8)
-                .padding(.bottom, 8)
+                .padding(.vertical, 8)
                 
                 // Active Filter Indicator
                 if viewModel.selectedCountry != nil {
