@@ -77,7 +77,7 @@ struct SignUpEmailView: View {
     ZStack {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 0) {
-                LogoView(width: 100, height: 120)
+                LogoView(width: 100, height: 100)
                     .padding(.vertical, 20)
                 
                 // form fields
@@ -88,6 +88,8 @@ struct SignUpEmailView: View {
                         placeholder: "name@example.com",
                         isSecuredField: false)
                         .autocapitalization(.none)
+                        .keyboardType(.emailAddress)
+                        .textContentType(.emailAddress)
                     
                     InputView(
                         text: $viewModel.fullName,

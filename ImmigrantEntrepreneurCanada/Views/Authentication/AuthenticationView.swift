@@ -35,7 +35,29 @@ struct AuthenticationView: View {
 
     func handleAuthError(_ error: Error) {
         alertTitle = "Sign In Error"
-        alertMessage = FirebaseErrorHandler.handleError(error)
+        
+        // Check for specific Firebase auth errors
+        if let errorCode = FirebaseAuth.AuthErrorCode(_nsError: error as NSError) {
+            switch errorCode.code {
+            case .wrongPassword, .invalidCredential, .invalidEmail, .userNotFound:
+                alertMessage = "Incorrect email or password. Please try again."
+            case .tooManyRequests:
+                alertMessage = "Too many unsuccessful attempts. Please try again later."
+            case .networkError:
+                alertMessage = "Network error. Please check your internet connection."
+            case .userDisabled:
+                alertMessage = "This account has been disabled. Please contact support."
+            case .emailAlreadyInUse:
+                alertMessage = "This email is already in use with a different account."
+            case .weakPassword:
+                alertMessage = "Your password is too weak. Please use a stronger password."
+            default:
+                alertMessage = FirebaseErrorHandler.handleError(error)
+            }
+        } else {
+            alertMessage = FirebaseErrorHandler.handleError(error)
+        }
+        
         showAlert = true
     }
 
@@ -153,8 +175,8 @@ struct AuthenticationView: View {
             print("Google sign in error: \(error)")
             await MainActor.run {
                 self.showAlert = true
-                self.alertTitle = "Sign In Error"
-                self.alertMessage = "Failed to sign in with Google: \(error.localizedDescription)"
+                self.alertTitle = "Error"
+                self.alertMessage = "Failed to sign in with Google. Please try again or use another sign-in method."
             }
             
             // Re-throw the error to be caught by the outer catch block
@@ -217,7 +239,7 @@ struct AuthenticationView: View {
                                 DispatchQueue.main.async {
                                     showAlert = true
                                     alertTitle = "Sign In Error"
-                                    alertMessage = "Failed to sign in with Apple: \(error.localizedDescription)"
+                                    alertMessage = "Failed to sign in with Apple. Please try again or use another sign-in method."
                                 }
                             }
                             
@@ -230,25 +252,25 @@ struct AuthenticationView: View {
                         print("Failed to convert token to string")
                         showAlert = true
                         alertTitle = "Sign In Error"
-                        alertMessage = "Failed to get Apple ID token"
+                        alertMessage = "Unable to authenticate with Apple. Please try again later."
                     }
                 } else {
                     print("Apple ID token is nil")
                     showAlert = true
                     alertTitle = "Sign In Error"
-                    alertMessage = "Failed to get Apple ID token"
+                    alertMessage = "Unable to authenticate with Apple. Please try again later."
                 }
             } else {
                 print("Failed to get Apple ID credential")
                 showAlert = true
                 alertTitle = "Sign In Error"
-                alertMessage = "Failed to get Apple ID credential"
+                alertMessage = "Unable to authenticate with Apple. Please try again later."
             }
         case .failure(let error):
             print("Apple Sign In failed with error: \(error)")
             showAlert = true
             alertTitle = "Sign In Error"
-            alertMessage = "Failed to sign in with Apple: \(error.localizedDescription)"
+            alertMessage = "Failed to sign in with Apple. Please try again or use another sign-in method."
         }
     }
 
@@ -279,7 +301,8 @@ struct AuthenticationView: View {
                                     .autocapitalization(.none)
                                     .textInputAutocapitalization(.never)
                                     .autocorrectionDisabled()
-                                    .textContentType(.none)
+                                    .keyboardType(.emailAddress)
+                                    .textContentType(.emailAddress)
                                     .padding(.vertical, 15)
                                     .padding(.horizontal)
                                     .frame(height: 50)
