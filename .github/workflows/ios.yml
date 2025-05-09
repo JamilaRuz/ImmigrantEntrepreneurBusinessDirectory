@@ -37,11 +37,11 @@ jobs:
       - name: Check for Firebase configuration
         run: |
           # Check if GoogleService-Info.plist exists
-          if [ ! -f "WomenBusinessDirectory/GoogleService-Info.plist" ]; then
+          if [ ! -f "ImmigrantEntrepreneurCanada/GoogleService-Info.plist" ]; then
             echo "Warning: GoogleService-Info.plist not found. Firebase functionality may not work in tests."
             # For CI, we can create a dummy file if needed
             echo "Creating dummy GoogleService-Info.plist for CI"
-            echo '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>API_KEY</key><string>dummy_api_key</string><key>GCM_SENDER_ID</key><string>dummy_sender_id</string><key>PLIST_VERSION</key><string>1</string><key>BUNDLE_ID</key><string>com.example.WomenBusinessDirectory</string><key>PROJECT_ID</key><string>dummy-project-id</string><key>STORAGE_BUCKET</key><string>dummy-bucket.appspot.com</string><key>IS_ADS_ENABLED</key><false></false><key>IS_ANALYTICS_ENABLED</key><false></false><key>IS_APPINVITE_ENABLED</key><true></true><key>IS_GCM_ENABLED</key><true></true><key>IS_SIGNIN_ENABLED</key><true></true><key>GOOGLE_APP_ID</key><string>1:123456789012:ios:1234567890abcdef</string></dict></plist>' > WomenBusinessDirectory/GoogleService-Info.plist
+            echo '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>API_KEY</key><string>dummy_api_key</string><key>GCM_SENDER_ID</key><string>dummy_sender_id</string><key>PLIST_VERSION</key><string>1</string><key>BUNDLE_ID</key><string>com.example.ImmigrantEntrepreneurCanada</string><key>PROJECT_ID</key><string>dummy-project-id</string><key>STORAGE_BUCKET</key><string>dummy-bucket.appspot.com</string><key>IS_ADS_ENABLED</key><false></false><key>IS_ANALYTICS_ENABLED</key><false></false><key>IS_APPINVITE_ENABLED</key><true></true><key>IS_GCM_ENABLED</key><true></true><key>IS_SIGNIN_ENABLED</key><true></true><key>GOOGLE_APP_ID</key><string>1:123456789012:ios:1234567890abcdef</string></dict></plist>' > ImmigrantEntrepreneurCanada/GoogleService-Info.plist
           fi
       
       - name: Create ExportOptions.plist
@@ -55,8 +55,8 @@ jobs:
               <string>app-store</string>
               <key>provisioningProfiles</key>
               <dict>
-                  <key>com.jamilaruzimetova.WomenBusinessDirectory</key>
-                  <string>match AppStore com.jamilaruzimetova.WomenBusinessDirectory</string>
+                  <key>com.ruzimetova.WomenBusinessDirectory</key>
+                  <string>match AppStore com.ruzimetova.WomenBusinessDirectory</string>
               </dict>
               <key>signingCertificate</key>
               <string>Apple Distribution</string>
@@ -173,7 +173,7 @@ jobs:
             desc "Upload to TestFlight"
             lane :upload do
               # Use altool directly instead of app_store_connect_api_key
-              sh("xcrun altool --upload-app --type ios --file ./build/WomenBusinessDirectory.ipa --apiKey #{ENV['APP_STORE_CONNECT_API_KEY_ID']} --apiIssuer #{ENV['APP_STORE_CONNECT_API_KEY_ISSUER_ID']} --verbose")
+              sh("xcrun altool --upload-app --type ios --file ./build/ImmigrantEntrepreneurCanada.ipa --apiKey #{ENV['APP_STORE_CONNECT_API_KEY_ID']} --apiIssuer #{ENV['APP_STORE_CONNECT_API_KEY_ISSUER_ID']} --verbose")
             end
           end
           EOF
@@ -181,38 +181,38 @@ jobs:
       - name: Check and create scheme if needed
         run: |
           # Check if scheme exists
-          if ! xcodebuild -list -project WomenBusinessDirectory.xcodeproj | grep -q "WomenBusinessDirectory"; then
+          if ! xcodebuild -list -project ImmigrantEntrepreneurCanada.xcodeproj | grep -q "ImmigrantEntrepreneurCanada"; then
             echo "Scheme not found, attempting to create a basic scheme..."
             
             # Find the main target
-            MAIN_TARGET=$(xcodebuild -list -project WomenBusinessDirectory.xcodeproj | grep -A 10 "Targets:" | grep -v "Targets:" | head -n 1 | xargs)
+            MAIN_TARGET=$(xcodebuild -list -project ImmigrantEntrepreneurCanada.xcodeproj | grep -A 10 "Targets:" | grep -v "Targets:" | head -n 1 | xargs)
             echo "Main target appears to be: $MAIN_TARGET"
             
             # Create schemes directory if it doesn't exist
-            mkdir -p WomenBusinessDirectory.xcodeproj/xcshareddata/xcschemes
+            mkdir -p ImmigrantEntrepreneurCanada.xcodeproj/xcshareddata/xcschemes
             
             # Create a simple scheme file with multiple echo commands instead of heredoc
-            echo '<?xml version="1.0" encoding="UTF-8"?>' > WomenBusinessDirectory.xcodeproj/xcshareddata/xcschemes/WomenBusinessDirectory.xcscheme
-            echo '<Scheme LastUpgradeVersion="1510" version="1.7">' >> WomenBusinessDirectory.xcodeproj/xcshareddata/xcschemes/WomenBusinessDirectory.xcscheme
-            echo '  <BuildAction parallelizeBuildables="YES" buildImplicitDependencies="YES">' >> WomenBusinessDirectory.xcodeproj/xcshareddata/xcschemes/WomenBusinessDirectory.xcscheme
-            echo '    <BuildActionEntries>' >> WomenBusinessDirectory.xcodeproj/xcshareddata/xcschemes/WomenBusinessDirectory.xcscheme
-            echo '      <BuildActionEntry buildForTesting="YES" buildForRunning="YES" buildForProfiling="YES" buildForArchiving="YES" buildForAnalyzing="YES">' >> WomenBusinessDirectory.xcodeproj/xcshareddata/xcschemes/WomenBusinessDirectory.xcscheme
-            echo '        <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="1234567890ABCDEF" BuildableName="WomenBusinessDirectory.app" BlueprintName="PLACEHOLDER_TARGET" ReferencedContainer="container:WomenBusinessDirectory.xcodeproj"></BuildableReference>' >> WomenBusinessDirectory.xcodeproj/xcshareddata/xcschemes/WomenBusinessDirectory.xcscheme
-            echo '      </BuildActionEntry>' >> WomenBusinessDirectory.xcodeproj/xcshareddata/xcschemes/WomenBusinessDirectory.xcscheme
-            echo '    </BuildActionEntries>' >> WomenBusinessDirectory.xcodeproj/xcshareddata/xcschemes/WomenBusinessDirectory.xcscheme
-            echo '  </BuildAction>' >> WomenBusinessDirectory.xcodeproj/xcshareddata/xcschemes/WomenBusinessDirectory.xcscheme
-            echo '  <TestAction buildConfiguration="Debug" selectedDebuggerIdentifier="Xcode.DebuggerFoundation.Debugger.LLDB" selectedLauncherIdentifier="Xcode.DebuggerFoundation.Launcher.LLDB" shouldUseLaunchSchemeArgsEnv="YES"></TestAction>' >> WomenBusinessDirectory.xcodeproj/xcshareddata/xcschemes/WomenBusinessDirectory.xcscheme
-            echo '  <LaunchAction buildConfiguration="Debug" selectedDebuggerIdentifier="Xcode.DebuggerFoundation.Debugger.LLDB" selectedLauncherIdentifier="Xcode.DebuggerFoundation.Launcher.LLDB" launchStyle="0" useCustomWorkingDirectory="NO" ignoresPersistentStateOnLaunch="NO" debugDocumentVersioning="YES" debugServiceExtension="internal" allowLocationSimulation="YES"></LaunchAction>' >> WomenBusinessDirectory.xcodeproj/xcshareddata/xcschemes/WomenBusinessDirectory.xcscheme
-            echo '  <ProfileAction buildConfiguration="Release" shouldUseLaunchSchemeArgsEnv="YES" savedToolIdentifier="" useCustomWorkingDirectory="NO" debugDocumentVersioning="YES"></ProfileAction>' >> WomenBusinessDirectory.xcodeproj/xcshareddata/xcschemes/WomenBusinessDirectory.xcscheme
-            echo '  <AnalyzeAction buildConfiguration="Debug"></AnalyzeAction>' >> WomenBusinessDirectory.xcodeproj/xcshareddata/xcschemes/WomenBusinessDirectory.xcscheme
-            echo '  <ArchiveAction buildConfiguration="Release" revealArchiveInOrganizer="YES"></ArchiveAction>' >> WomenBusinessDirectory.xcodeproj/xcshareddata/xcschemes/WomenBusinessDirectory.xcscheme
-            echo '</Scheme>' >> WomenBusinessDirectory.xcodeproj/xcshareddata/xcschemes/WomenBusinessDirectory.xcscheme
+            echo '<?xml version="1.0" encoding="UTF-8"?>' > ImmigrantEntrepreneurCanada.xcodeproj/xcshareddata/xcschemes/ImmigrantEntrepreneurCanada.xcscheme
+            echo '<Scheme LastUpgradeVersion="1510" version="1.7">' >> ImmigrantEntrepreneurCanada.xcodeproj/xcshareddata/xcschemes/ImmigrantEntrepreneurCanada.xcscheme
+            echo '  <BuildAction parallelizeBuildables="YES" buildImplicitDependencies="YES">' >> ImmigrantEntrepreneurCanada.xcodeproj/xcshareddata/xcschemes/ImmigrantEntrepreneurCanada.xcscheme
+            echo '    <BuildActionEntries>' >> ImmigrantEntrepreneurCanada.xcodeproj/xcshareddata/xcschemes/ImmigrantEntrepreneurCanada.xcscheme
+            echo '      <BuildActionEntry buildForTesting="YES" buildForRunning="YES" buildForProfiling="YES" buildForArchiving="YES" buildForAnalyzing="YES">' >> ImmigrantEntrepreneurCanada.xcodeproj/xcshareddata/xcschemes/ImmigrantEntrepreneurCanada.xcscheme
+            echo '        <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="1234567890ABCDEF" BuildableName="ImmigrantEntrepreneurCanada.app" BlueprintName="PLACEHOLDER_TARGET" ReferencedContainer="container:ImmigrantEntrepreneurCanada.xcodeproj"></BuildableReference>' >> ImmigrantEntrepreneurCanada.xcodeproj/xcshareddata/xcschemes/ImmigrantEntrepreneurCanada.xcscheme
+            echo '      </BuildActionEntry>' >> ImmigrantEntrepreneurCanada.xcodeproj/xcshareddata/xcschemes/ImmigrantEntrepreneurCanada.xcscheme
+            echo '    </BuildActionEntries>' >> ImmigrantEntrepreneurCanada.xcodeproj/xcshareddata/xcschemes/ImmigrantEntrepreneurCanada.xcscheme
+            echo '  </BuildAction>' >> ImmigrantEntrepreneurCanada.xcodeproj/xcshareddata/xcschemes/ImmigrantEntrepreneurCanada.xcscheme
+            echo '  <TestAction buildConfiguration="Debug" selectedDebuggerIdentifier="Xcode.DebuggerFoundation.Debugger.LLDB" selectedLauncherIdentifier="Xcode.DebuggerFoundation.Launcher.LLDB" shouldUseLaunchSchemeArgsEnv="YES"></TestAction>' >> ImmigrantEntrepreneurCanada.xcodeproj/xcshareddata/xcschemes/ImmigrantEntrepreneurCanada.xcscheme
+            echo '  <LaunchAction buildConfiguration="Debug" selectedDebuggerIdentifier="Xcode.DebuggerFoundation.Debugger.LLDB" selectedLauncherIdentifier="Xcode.DebuggerFoundation.Launcher.LLDB" launchStyle="0" useCustomWorkingDirectory="NO" ignoresPersistentStateOnLaunch="NO" debugDocumentVersioning="YES" debugServiceExtension="internal" allowLocationSimulation="YES"></LaunchAction>' >> ImmigrantEntrepreneurCanada.xcodeproj/xcshareddata/xcschemes/ImmigrantEntrepreneurCanada.xcscheme
+            echo '  <ProfileAction buildConfiguration="Release" shouldUseLaunchSchemeArgsEnv="YES" savedToolIdentifier="" useCustomWorkingDirectory="NO" debugDocumentVersioning="YES"></ProfileAction>' >> ImmigrantEntrepreneurCanada.xcodeproj/xcshareddata/xcschemes/ImmigrantEntrepreneurCanada.xcscheme
+            echo '  <AnalyzeAction buildConfiguration="Debug"></AnalyzeAction>' >> ImmigrantEntrepreneurCanada.xcodeproj/xcshareddata/xcschemes/ImmigrantEntrepreneurCanada.xcscheme
+            echo '  <ArchiveAction buildConfiguration="Release" revealArchiveInOrganizer="YES"></ArchiveAction>' >> ImmigrantEntrepreneurCanada.xcodeproj/xcshareddata/xcschemes/ImmigrantEntrepreneurCanada.xcscheme
+            echo '</Scheme>' >> ImmigrantEntrepreneurCanada.xcodeproj/xcshareddata/xcschemes/ImmigrantEntrepreneurCanada.xcscheme
             
             # Replace placeholder with actual target name
-            sed -i.bak "s/PLACEHOLDER_TARGET/$MAIN_TARGET/g" WomenBusinessDirectory.xcodeproj/xcshareddata/xcschemes/WomenBusinessDirectory.xcscheme
+            sed -i.bak "s/PLACEHOLDER_TARGET/$MAIN_TARGET/g" ImmigrantEntrepreneurCanada.xcodeproj/xcshareddata/xcschemes/ImmigrantEntrepreneurCanada.xcscheme
             
             echo "Basic scheme created. Verifying..."
-            xcodebuild -list -project WomenBusinessDirectory.xcodeproj
+            xcodebuild -list -project ImmigrantEntrepreneurCanada.xcodeproj
           else
             echo "Scheme exists, proceeding with build..."
           fi
@@ -226,20 +226,20 @@ jobs:
           
           # List available schemes
           echo "Available schemes:"
-          xcodebuild -list -project WomenBusinessDirectory.xcodeproj || true
+          xcodebuild -list -project ImmigrantEntrepreneurCanada.xcodeproj || true
           
           # Try a simple build first to see if it works
           echo "Attempting simple build..."
           xcodebuild clean build \
-            -project WomenBusinessDirectory.xcodeproj \
-            -scheme WomenBusinessDirectory \
+            -project ImmigrantEntrepreneurCanada.xcodeproj \
+            -scheme ImmigrantEntrepreneurCanada \
             -configuration Release \
             -sdk iphoneos \
             CODE_SIGN_IDENTITY="Apple Distribution" \
             CODE_SIGN_STYLE=Manual \
-            PROVISIONING_PROFILE_SPECIFIER="match AppStore com.jamilaruzimetova.WomenBusinessDirectory" \
+            PROVISIONING_PROFILE_SPECIFIER="match AppStore com.ruzimetova.WomenBusinessDirectory" \
             DEVELOPMENT_TEAM="${{ secrets.TEAM_ID }}" \
-            PRODUCT_BUNDLE_IDENTIFIER="com.jamilaruzimetova.WomenBusinessDirectory" \
+            PRODUCT_BUNDLE_IDENTIFIER="com.ruzimetova.WomenBusinessDirectory" \
             COMPILER_INDEX_STORE_ENABLE=NO \
             IDEPackageSupportUseBuiltinSCM=YES \
             DISABLE_FILE_SYSTEM_SYNCHRONIZATION=1 \
@@ -264,19 +264,19 @@ jobs:
           DEVELOPER_DIR: /Applications/Xcode_15.1.app/Contents/Developer
         run: |
           # Try building with workspace if it exists
-          if [ -f "WomenBusinessDirectory.xcworkspace/contents.xcworkspacedata" ]; then
+          if [ -f "ImmigrantEntrepreneurCanada.xcworkspace/contents.xcworkspacedata" ]; then
             echo "Building with workspace..."
             xcodebuild clean archive \
-              -workspace WomenBusinessDirectory.xcworkspace \
-              -scheme WomenBusinessDirectory \
+              -workspace ImmigrantEntrepreneurCanada.xcworkspace \
+              -scheme ImmigrantEntrepreneurCanada \
               -configuration Release \
               -sdk iphoneos \
-              -archivePath ./build/WomenBusinessDirectory.xcarchive \
+              -archivePath ./build/ImmigrantEntrepreneurCanada.xcarchive \
               CODE_SIGN_IDENTITY="Apple Distribution" \
               CODE_SIGN_STYLE=Manual \
-              PROVISIONING_PROFILE_SPECIFIER="match AppStore com.jamilaruzimetova.WomenBusinessDirectory" \
+              PROVISIONING_PROFILE_SPECIFIER="match AppStore com.ruzimetova.WomenBusinessDirectory" \
               DEVELOPMENT_TEAM="${{ secrets.TEAM_ID }}" \
-              PRODUCT_BUNDLE_IDENTIFIER="com.jamilaruzimetova.WomenBusinessDirectory" \
+              PRODUCT_BUNDLE_IDENTIFIER="com.ruzimetova.WomenBusinessDirectory" \
               MARKETING_VERSION="1.0.0" \
               CURRENT_PROJECT_VERSION="1" \
               OTHER_LDFLAGS="-ObjC" \
@@ -289,19 +289,19 @@ jobs:
           fi
           
           # Try building with project if workspace build failed or doesn't exist
-          if [ ! -d "./build/WomenBusinessDirectory.xcarchive" ]; then
+          if [ ! -d "./build/ImmigrantEntrepreneurCanada.xcarchive" ]; then
             echo "Building with project..."
             xcodebuild clean archive \
-              -project WomenBusinessDirectory.xcodeproj \
-              -scheme WomenBusinessDirectory \
+              -project ImmigrantEntrepreneurCanada.xcodeproj \
+              -scheme ImmigrantEntrepreneurCanada \
               -configuration Release \
               -sdk iphoneos \
-              -archivePath ./build/WomenBusinessDirectory.xcarchive \
+              -archivePath ./build/ImmigrantEntrepreneurCanada.xcarchive \
               CODE_SIGN_IDENTITY="Apple Distribution" \
               CODE_SIGN_STYLE=Manual \
-              PROVISIONING_PROFILE_SPECIFIER="match AppStore com.jamilaruzimetova.WomenBusinessDirectory" \
+              PROVISIONING_PROFILE_SPECIFIER="match AppStore com.ruzimetova.WomenBusinessDirectory" \
               DEVELOPMENT_TEAM="${{ secrets.TEAM_ID }}" \
-              PRODUCT_BUNDLE_IDENTIFIER="com.jamilaruzimetova.WomenBusinessDirectory" \
+              PRODUCT_BUNDLE_IDENTIFIER="com.ruzimetova.WomenBusinessDirectory" \
               MARKETING_VERSION="1.0.0" \
               CURRENT_PROJECT_VERSION="1" \
               OTHER_LDFLAGS="-ObjC" \
@@ -328,30 +328,30 @@ jobs:
           fi
           
           # Check if archive was created
-          if [ -d "./build/WomenBusinessDirectory.xcarchive" ]; then
+          if [ -d "./build/ImmigrantEntrepreneurCanada.xcarchive" ]; then
             echo "Archive created successfully, exporting IPA..."
             
             # Export the archive to IPA
             xcodebuild -exportArchive \
-              -archivePath ./build/WomenBusinessDirectory.xcarchive \
+              -archivePath ./build/ImmigrantEntrepreneurCanada.xcarchive \
               -exportOptionsPlist ExportOptions.plist \
               -exportPath ./build \
               | tee export_log.txt || echo "Export failed, trying manual IPA creation"
               
             # Check if IPA was created
-            if [ -f "./build/WomenBusinessDirectory.ipa" ]; then
+            if [ -f "./build/ImmigrantEntrepreneurCanada.ipa" ]; then
               echo "IPA created successfully"
             else
               echo "IPA not created by export, trying manual creation..."
               
               # Try to manually create IPA from archive
-              cd ./build/WomenBusinessDirectory.xcarchive/Products/Applications/
+              cd ./build/ImmigrantEntrepreneurCanada.xcarchive/Products/Applications/
               mkdir -p Payload
               cp -R *.app Payload/
-              zip -r ../../../../build/WomenBusinessDirectory.ipa Payload
+              zip -r ../../../../build/ImmigrantEntrepreneurCanada.ipa Payload
               cd ../../../../
               
-              if [ -f "./build/WomenBusinessDirectory.ipa" ]; then
+              if [ -f "./build/ImmigrantEntrepreneurCanada.ipa" ]; then
                 echo "IPA created manually"
               else
                 echo "Failed to create IPA"
@@ -363,13 +363,13 @@ jobs:
             # Try a desperate measure - create a dummy IPA for testing upload
             echo "Creating a dummy IPA for testing upload process..."
             mkdir -p build/dummy/Payload
-            mkdir -p build/dummy/Payload/WomenBusinessDirectory.app
-            echo "Dummy app" > build/dummy/Payload/WomenBusinessDirectory.app/Info.plist
+            mkdir -p build/dummy/Payload/ImmigrantEntrepreneurCanada.app
+            echo "Dummy app" > build/dummy/Payload/ImmigrantEntrepreneurCanada.app/Info.plist
             cd build/dummy
-            zip -r ../WomenBusinessDirectory.ipa Payload
+            zip -r ../ImmigrantEntrepreneurCanada.ipa Payload
             cd ../..
             
-            if [ -f "./build/WomenBusinessDirectory.ipa" ]; then
+            if [ -f "./build/ImmigrantEntrepreneurCanada.ipa" ]; then
               echo "Dummy IPA created for testing upload process"
               echo "NOTE: This is not a real app, just for testing the upload process!"
             fi
@@ -388,7 +388,7 @@ jobs:
           FASTLANE_SKIP_UPDATE_CHECK: 1
         run: |
           # Check if IPA exists
-          if [ -f "./build/WomenBusinessDirectory.ipa" ]; then
+          if [ -f "./build/ImmigrantEntrepreneurCanada.ipa" ]; then
             echo "IPA file found, uploading to TestFlight..."
             
             # Verify API key file again
@@ -437,7 +437,7 @@ jobs:
               echo "Uploading with altool..."
               xcrun altool --upload-app \
                 --type ios \
-                --file ./build/WomenBusinessDirectory.ipa \
+                --file ./build/ImmigrantEntrepreneurCanada.ipa \
                 --apiKey @apiKey.json \
                 --verbose \
                 || echo "Upload failed with altool"
@@ -449,10 +449,10 @@ jobs:
             echo "IPA file not found. Build process failed to create an IPA file."
             echo "Checking for archive..."
             
-            if [ -d "./build/WomenBusinessDirectory.xcarchive" ]; then
+            if [ -d "./build/ImmigrantEntrepreneurCanada.xcarchive" ]; then
               echo "Archive exists but IPA creation failed."
               echo "Archive contents:"
-              ls -la ./build/WomenBusinessDirectory.xcarchive || true
+              ls -la ./build/ImmigrantEntrepreneurCanada.xcarchive || true
             else
               echo "Archive does not exist. Build process failed completely."
             fi
